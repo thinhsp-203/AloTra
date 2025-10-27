@@ -1,22 +1,28 @@
 package model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 
-/**
- * Category Model - KHÔNG DÙNG LOMBOK để tránh conflict
- * Giữ tên getter/setter đồng nhất với legacy code
- */
+@Entity
+@Table(name = "Category")
 public class Category implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    private int id;        // legacy code dùng .getId()
-    private String name;   // legacy code dùng .getName()
-    private String icon;   // legacy code dùng .getIcon()
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cate_id")
+    private int id;
+    
+    @Column(name = "cate_name")
+    private String name;
+    
+    @Column(name = "icons")
+    private String icon;
     
     // Constructors
     public Category() {}
     
-    // Getters and Setters - QUAN TRỌNG: giữ đồng nhất
+    // Getters and Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     

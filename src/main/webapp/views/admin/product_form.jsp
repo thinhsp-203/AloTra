@@ -22,7 +22,8 @@
       <div class="mb-2"><label class="form-label">Danh mục</label>
         <select class="form-select" name="cate_id">
           <c:forEach var="c" items="${categories}">
-            <option value="${c.cate_id}" ${p.category.cate_id==c.cate_id?'selected':''}>${c.cate_name}</option>
+             <%-- Sửa lại các thuộc tính ở đây --%>
+             <option value="${c.id}" ${p.category.id == c.id ? 'selected' : ''}>${c.name}</option>
           </c:forEach>
         </select></div>
       <div class="mb-2"><label class="form-label">Nhà cung cấp</label>

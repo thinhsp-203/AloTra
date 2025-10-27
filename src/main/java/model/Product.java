@@ -34,7 +34,7 @@ public class Product {
   private String images;
 
   @ManyToOne 
-  @JoinColumn(name="cate_id", referencedColumnName="id")
+  @JoinColumn(name="cate_id", referencedColumnName="cate_id") // Sửa tại đây
   private Category category;
 
   @ManyToOne @JoinColumn(name="supplier_id")

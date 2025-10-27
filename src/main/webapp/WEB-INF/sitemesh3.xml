@@ -1,5 +1,5 @@
 <sitemesh>
-  <mapping path="/*" decorator="views/_layouts/main.jsp"/>
+  <mapping path="/*" decorator="web.jsp"/>
   <excludes>
     <pattern>/assets/*</pattern>
     <pattern>/api/*</pattern>
