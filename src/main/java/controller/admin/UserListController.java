@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import model.User;
 import service.UserService;
-import service.UserServiceImpl;
+import service.impl.UserServiceImpl;
 import utils.Roles;
 
 @WebServlet(urlPatterns = "/admin/users")
@@ -25,7 +25,7 @@ public class UserListController extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
-        if (currentUser == null || currentUser.getRoleId() != 1) {
+        if (currentUser == null || currentUser.getRoleid() != 1) {
             resp.sendRedirect(req.getContextPath()  "/login");
             return;
         }

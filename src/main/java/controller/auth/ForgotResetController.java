@@ -7,7 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.WebServlet;
 import model.User;
-import util.PasswordUtil;
+import utils.PasswordUtil;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -112,7 +112,7 @@ public class ForgotResetController extends HttpServlet {
         var tx = em.getTransaction(); tx.begin();
         try {
           User u = uopt.get();
-          u.setPassword(util.PasswordUtil.hash(p1));
+          u.setPassword(PasswordUtil.hash(p1));
           u.setResetToken(null);
           u.setTokenExpiry(null);
           em.merge(u);

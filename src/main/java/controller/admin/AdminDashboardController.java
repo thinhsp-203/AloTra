@@ -18,7 +18,7 @@ public class AdminDashboardController extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
-        if (currentUser == null || currentUser.getRoleId() != 1) {
+        if (currentUser == null || currentUser.getRoleid() != 1) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }

@@ -12,7 +12,7 @@ public class ProductDetailController extends HttpServlet {
       req.setAttribute("p", p);
       var sameCate = em.createQuery(
         "select x from Product x where x.category.cate_id=:c and x.product_id<>:id order by x.createdDate desc", Product.class)
-        .setParameter("c", p.getCategory().getCate_id()).setParameter("id", p.getProduct_id())
+        .setParameter("c", p.getCategory().getId()).setParameter("id", p.getProduct_id())
         .setMaxResults(8).getResultList();
       var sameSup  = em.createQuery(
         "select x from Product x where x.supplier.supplier_id=:s and x.product_id<>:id order by x.createdDate desc", Product.class)
