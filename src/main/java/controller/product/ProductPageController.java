@@ -1,7 +1,15 @@
 package controller.product;
-import jakarta.servlet.*; import jakarta.servlet.http.*; import java.io.IOException; import java.math.BigDecimal; import java.util.*;
-import config.JpaUtil; import dao.jpa.ProductQueryRepository; import model.Product;
+import jakarta.servlet.*; 
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*; 
+import java.io.IOException; 
+import java.math.BigDecimal; 
+import java.util.*;
+import config.JpaUtil; 
+import dao.jpa.ProductQueryRepository;
+import model.Product;
 
+@WebServlet(urlPatterns = "/products/page")
 public class ProductPageController extends HttpServlet {
   @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     int page = p(req.getParameter("page"),0), size = p(req.getParameter("size"),12);

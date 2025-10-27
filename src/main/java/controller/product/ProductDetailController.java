@@ -1,7 +1,13 @@
 package controller.product;
-import jakarta.servlet.*; import jakarta.servlet.http.*; import java.io.IOException;
-import config.JpaUtil; import jakarta.persistence.EntityManager; import model.Product;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import config.JpaUtil; 
+import jakarta.persistence.EntityManager;
+import model.Product;
 
+@WebServlet(urlPatterns = "/p") 
 public class ProductDetailController extends HttpServlet {
   @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     int id = Integer.parseInt(req.getParameter("id"));

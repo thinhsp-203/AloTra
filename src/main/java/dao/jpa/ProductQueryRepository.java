@@ -9,7 +9,7 @@ public class ProductQueryRepository {
     CriteriaBuilder cb = em.getCriteriaBuilder(); CriteriaQuery<Product> cq = cb.createQuery(Product.class);
     Root<Product> root = cq.from(Product.class);
     List<Predicate> ps = new ArrayList<>(); ps.add(cb.isTrue(root.get("isActive")));
-    if(cateId!=null) ps.add(cb.equal(root.get("category").get("cate_id"), cateId));
+    if(cateId!=null) ps.add(cb.equal(root.get("category").get("id"), cateId));
     if(supplierId!=null) ps.add(cb.equal(root.get("supplier").get("supplier_id"), supplierId));
     if(min!=null) ps.add(cb.ge(root.get("price"), min));
     if(max!=null) ps.add(cb.le(root.get("price"), max));
@@ -22,7 +22,7 @@ public class ProductQueryRepository {
     CriteriaBuilder cb = em.getCriteriaBuilder(); CriteriaQuery<Long> cq = cb.createQuery(Long.class);
     Root<Product> root = cq.from(Product.class);
     List<Predicate> ps = new ArrayList<>(); ps.add(cb.isTrue(root.get("isActive")));
-    if(cateId!=null) ps.add(cb.equal(root.get("category").get("cate_id"), cateId));
+    if(cateId!=null) ps.add(cb.equal(root.get("category").get("id"), cateId));
     if(supplierId!=null) ps.add(cb.equal(root.get("supplier").get("supplier_id"), supplierId));
     if(min!=null) ps.add(cb.ge(root.get("price"), min));
     if(max!=null) ps.add(cb.le(root.get("price"), max));

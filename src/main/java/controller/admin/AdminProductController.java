@@ -1,6 +1,7 @@
 package controller.admin;
 
 import jakarta.servlet.*; 
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException; 
 import java.math.BigDecimal;
@@ -9,6 +10,7 @@ import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import model.*;
 
+@WebServlet(urlPatterns = {"/admin/products", "/admin/products/*"})
 public class AdminProductController extends HttpServlet {
 
   @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -28,7 +30,7 @@ public class AdminProductController extends HttpServlet {
         Product p = em.find(Product.class, id);
         if (p == null){ resp.sendError(404); return; }
         req.setAttribute("p", p);
-        req.setAttribute("categories", em.createQuery("select c from Category c order by c.displayOrder", Category.class).getResultList());
+        req.setAttribute("categories", em.createQuery("select c from Category c order by c.id", Category.class).getResultList());
         req.setAttribute("suppliers",  em.createQuery("select s from Supplier s where s.isActive=true order by s.supplier_name", Supplier.class).getResultList());
         req.getRequestDispatcher("/views/admin/product_form.jsp").forward(req, resp);
       } else if ("/delete".equals(path)){

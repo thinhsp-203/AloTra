@@ -1,11 +1,16 @@
 package controller.cart;
 
-import jakarta.servlet.*; import jakarta.servlet.http.*; import java.io.IOException;
-import java.math.BigDecimal; import java.util.*;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*; 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
 import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import model.*;
 
+@WebServlet(urlPatterns = {"/cart", "/cart/*"})
 public class CartController extends HttpServlet {
   @SuppressWarnings("unchecked")
   private List<CartItem> cart(HttpSession session){

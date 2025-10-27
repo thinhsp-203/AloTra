@@ -1,12 +1,14 @@
 package controller.admin;
 
-import jakarta.servlet.*; 
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*; 
 import java.io.IOException; 
 import java.util.*;
 import config.JpaUtil; 
 import jakarta.persistence.EntityManager;
 
+@WebServlet(urlPatterns = "/admin/reports")
 public class AdminReportController extends HttpServlet {
   @Override 
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

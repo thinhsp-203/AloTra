@@ -1,11 +1,18 @@
 package controller.order;
 
-import jakarta.servlet.*; import jakarta.servlet.http.*; import java.io.IOException;
-import java.math.BigDecimal; import java.util.*;
-import config.JpaUtil; import jakarta.persistence.EntityManager;
-import dao.jpa.OrderRepository; import dao.jpa.VoucherRepository;
+import jakarta.servlet.*; 
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
+import config.JpaUtil;
+import jakarta.persistence.EntityManager;
+import dao.jpa.OrderRepository; 
+import dao.jpa.VoucherRepository;
 import model.*;
 
+@WebServlet(urlPatterns = {"/checkout", "/checkout/*"})
 public class CheckoutController extends HttpServlet {
 
   @SuppressWarnings("unchecked")

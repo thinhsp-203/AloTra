@@ -17,7 +17,7 @@ public class ProductsListController extends HttpServlet {
         var em = JpaUtil.em();
         try {
             // Load categories cho filter sidebar
-            var categories = em.createQuery("SELECT c FROM Category c WHERE c.isActive = true ORDER BY c.displayOrder", model.Category.class)
+        	var categories = em.createQuery("SELECT c FROM Category c ORDER BY c.id", model.Category.class)
                               .getResultList();
             req.setAttribute("categories", categories);
             

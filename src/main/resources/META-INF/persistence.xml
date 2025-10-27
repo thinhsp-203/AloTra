@@ -12,8 +12,8 @@
     <properties>
       <property name="jakarta.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
       <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://DESKTOP-84O1O38:6316;databaseName=AloTra;encrypt=false;trustServerCertificate=true"/>
-      <property name="jakarta.persistence.jdbc.user" value="your_database_user"/>
-      <property name="jakarta.persistence.jdbc.password" value="your_database_password"/>
+      <property name="jakarta.persistence.jdbc.user" value="webuser"/>
+      <property name="jakarta.persistence.jdbc.password" value="WebUser@123"/>
       <property name="hibernate.hbm2ddl.auto" value="validate"/>
       <property name="hibernate.show_sql" value="false"/>
       <property name="hibernate.format_sql" value="true"/>

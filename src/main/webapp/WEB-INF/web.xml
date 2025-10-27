@@ -2,7 +2,8 @@
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-         version="6.0">
+         version="6.0"
+         metadata-complete="true">
 
   <display-name>24tx810029_NguyenTanThinh</display-name>
 
@@ -14,71 +15,15 @@
 	<filter>
 	  <filter-name>sitemesh</filter-name>
 	  <filter-class>org.sitemesh.config.ConfigurableSiteMeshFilter</filter-class>
+	  <init-param>
+	      <param-name>configFile</param-name>
+	      <param-value>/WEB-INF/sitemesh3.xml</param-value>
+	  </init-param>
 	</filter>
 	<filter-mapping>
 	  <filter-name>sitemesh</filter-name>
 	  <url-pattern>/*</url-pattern>
 	</filter-mapping>
-	
-	<!-- Product paging (AJAX) -->
-	<servlet>
-	  <servlet-name>ProductPageController</servlet-name>
-	  <servlet-class>controller.product.ProductPageController</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	  <servlet-name>ProductPageController</servlet-name>
-	  <url-pattern>/products/page</url-pattern>
-	</servlet-mapping>
-	
-	<!-- Product detail -->
-	<servlet>
-	  <servlet-name>ProductDetailController</servlet-name>
-	  <servlet-class>controller.product.ProductDetailController</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	  <servlet-name>ProductDetailController</servlet-name>
-	  <url-pattern>/p</url-pattern>
-	</servlet-mapping>
-	
-		<!-- Cart -->
-	<servlet>
-	  <servlet-name>CartController</servlet-name>
-	  <servlet-class>controller.cart.CartController</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	  <servlet-name>CartController</servlet-name>
-	  <url-pattern>/cart/*</url-pattern>
-	</servlet-mapping>
-	
-	<!-- Checkout -->
-	<servlet>
-	  <servlet-name>CheckoutController</servlet-name>
-	  <servlet-class>controller.order.CheckoutController</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	  <servlet-name>CheckoutController</servlet-name>
-	  <url-pattern>/checkout/*</url-pattern>
-	</servlet-mapping>
-	
-	<!-- Admin: Product CRUD -->
-	<servlet>
-	  <servlet-name>AdminProductController</servlet-name>
-	  <servlet-class>controller.admin.AdminProductController</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	  <servlet-name>AdminProductController</servlet-name>
-	  <url-pattern>/admin/products/*</url-pattern>
-	</servlet-mapping>
-	
-	<!-- Admin: Reports -->
-	<servlet>
-	  <servlet-name>AdminReportController</servlet-name>
-	  <servlet-class>controller.admin.AdminReportController</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	  <servlet-name>AdminReportController</servlet-name>
-	  <url-pattern>/admin/reports</url-pattern>
-	</servlet-mapping>
 	
 	<!-- Auth: Forgot / Reset -->
 	<servlet>
@@ -94,38 +39,5 @@
 	  <url-pattern>/auth/reset</url-pattern>
 	</servlet-mapping>
 	
-	<!-- Admin Dashboard Report -->
-	<servlet>
-	  <servlet-name>AdminDashboardReportController</servlet-name>
-	  <servlet-class>controller.admin.AdminDashboardReportController</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	  <servlet-name>AdminDashboardReportController</servlet-name>
-	  <url-pattern>/admin/dashboard</url-pattern>
-	</servlet-mapping>
-	
-	<!-- Admin Orders -->
-	<servlet>
-	  <servlet-name>AdminOrderController</servlet-name>
-	  <servlet-class>controller.admin.AdminOrderController</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	  <servlet-name>AdminOrderController</servlet-name>
-	  <url-pattern>/admin/orders</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-	  <servlet-name>AdminOrderController</servlet-name>
-	  <url-pattern>/admin/orders/*</url-pattern>
-	</servlet-mapping>
-	
-	<!-- Admin Dashboard -->
-	<servlet>
-	  <servlet-name>AdminDashboardController</servlet-name>
-	  <servlet-class>controller.admin.AdminDashboardController</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	  <servlet-name>AdminDashboardController</servlet-name>
-	  <url-pattern>/admin</url-pattern>
-	</servlet-mapping>
  
 </web-app>
