@@ -41,7 +41,7 @@ public class User {
   private LocalDateTime tokenExpiry;
   // ⬇️ THÊM TRANSIENT METHODS
   @Transient
-  public String getUserName() {
+  public String getUsername() {
     return this.username;
   }
   
