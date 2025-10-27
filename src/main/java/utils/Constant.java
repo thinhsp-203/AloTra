@@ -1,6 +1,6 @@
 package utils;
 
 public class Constant {
-    // TODO: Configure this path in a properties file or as an environment variable
-	public static final String DIR = "C:/uploads";
+    // Sử dụng đường dẫn tương đối để tương thích với mọi môi trường
+    public static final String DIR = "/uploads";
 }

@@ -3,50 +3,79 @@ package dao.impl;
 import java.util.List;
 import config.JpaUtil;
 import dao.CategoryDao;
+import dao.jpa.CategoryRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import model.Category;
 
 public class CategoryDaoImpl implements CategoryDao {
 
     @Override
     public void insert(Category category) {
-        // Implementation for inserting a category
+        EntityManager em = JpaUtil.em();
+        try {
+            new CategoryRepository(em).insert(category);
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public void edit(Category category) {
-        // Implementation for editing a category
+        EntityManager em = JpaUtil.em();
+        try {
+            new CategoryRepository(em).update(category);
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public void delete(int id) {
-        // Implementation for deleting a category
+        EntityManager em = JpaUtil.em();
+        try {
+            new CategoryRepository(em).delete(id);
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public Category get(int id) {
-        // Implementation for getting a category by ID
-        return null;
+        EntityManager em = JpaUtil.em();
+        try {
+            return new CategoryRepository(em).findById(id);
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public Category get(String name) {
-        // Implementation for getting a category by name
-        return null;
+        EntityManager em = JpaUtil.em();
+        try {
+            return new CategoryRepository(em).findByName(name);
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public List<Category> getAll() {
         EntityManager em = JpaUtil.em();
-        String jpql = "SELECT c FROM Category c";
-        TypedQuery<Category> query = em.createQuery(jpql, Category.class);
-        return query.getResultList();
+        try {
+            return new CategoryRepository(em).findAll();
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public List<Category> search(String keyword) {
-        // Implementation for searching categories
-        return null;
+        EntityManager em = JpaUtil.em();
+        try {
+            return new CategoryRepository(em).search(keyword);
+        } finally {
+            em.close();
+        }
     }
 }

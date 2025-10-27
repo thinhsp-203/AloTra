@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <h2 class="h5 mb-3">Sản phẩm nổi bật</h2>
 <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
   <c:forEach var="product" items="${featured}">

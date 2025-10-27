@@ -124,9 +124,9 @@
       <tbody>
       <c:forEach var="user" items="${users}" varStatus="st">
         <tr>
-          <td>${fromRecord  st.index}</td>
-          <td>${user.userName}</td>
-          <td>${empty user.fullName ? '-' : user.fullName}</td>
+          <td>${fromRecord + st.index}</td>
+          <td>${user.username}</td> <%-- Sửa từ userName --%>
+          <td>${empty user.fullname ? '-' : user.fullname}</td> <%-- Sửa từ fullName --%>
           <td>${user.email}</td>
           <td>${empty user.phone ? '-' : user.phone}</td>
           <td>${user.roleName}</td>
