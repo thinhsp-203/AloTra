@@ -1,0 +1,23 @@
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence">
+  <persistence-unit name="alotraPU" transaction-type="RESOURCE_LOCAL">
+    <!-- liệt kê entity trong package model (khớp DB sẵn) -->
+    <class>model.User</class>
+    <class>model.Category</class>
+    <class>model.Supplier</class>
+    <class>model.Product</class>
+    <class>model.ProductSize</class>
+    <class>model.Topping</class>
+    <class>model.Voucher</class>
+    <class>model.Orders</class>
+    <class>model.OrderDetail</class>
+    <properties>
+      <property name="jakarta.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;databaseName=AloTra;encrypt=false;trustServerCertificate=true"/>
+      <property name="jakarta.persistence.jdbc.user" value="webuser"/>
+      <property name="jakarta.persistence.jdbc.password" value="WebUser@123"/>
+      <property name="hibernate.hbm2ddl.auto" value="validate"/>
+      <property name="hibernate.show_sql" value="false"/>
+      <property name="hibernate.format_sql" value="true"/>
+    </properties>
+  </persistence-unit>
+</persistence>
