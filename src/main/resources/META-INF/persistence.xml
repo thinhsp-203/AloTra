@@ -2,7 +2,6 @@
   <persistence-unit name="alotraPU" transaction-type="RESOURCE_LOCAL">
     <!-- liệt kê entity trong package model (khớp DB sẵn) -->
     <class>model.User</class>
-    <class>model.Category</class>
     <class>model.Supplier</class>
     <class>model.Product</class>
     <class>model.ProductSize</class>

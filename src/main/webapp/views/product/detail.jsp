@@ -25,3 +25,4 @@
     <jsp:include page="/views/_partials/product_card.jsp"><jsp:param name="product" value="x"/></jsp:include>
   </c:forEach>
 </div>
+<jsp:include page="/views/_partials/recently_viewed.jsp"/>
