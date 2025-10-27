@@ -157,7 +157,7 @@
         <li class="${page <= 1 ? 'disabled' : ''}"><a href="${pageContext.request.contextPath}${prevUrl}">«</a></li>
 
         <c:forEach begin="1" end="${totalPages}" var="p">
-          <c:if test="${p == 1 || p == totalPages || (p >= page - 2 && p <= page  2)}">
+          <c:if test="${p == 1 || p == totalPages || (p >= page - 2 && p <= page + 2)}">
             <c:url var="pageUrl" value="/admin/users">
               <c:param name="page" value="${p}"/>
               <c:param name="size" value="${pageSize}"/>

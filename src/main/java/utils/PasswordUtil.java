@@ -16,6 +16,7 @@ public class PasswordUtil {
     return BCrypt.checkpw(plain, hashed);
   }
 
+  // For production, consider a more robust token generation mechanism (e.g., JWT)
   public static String newUrlToken() {
     byte[] buf = new byte[32];
     RNG.nextBytes(buf);

@@ -18,10 +18,14 @@ public class AdminDashboardController extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
-        if (currentUser == null || currentUser.getRoleid() != 1) {
+        
+        // Allow both Admin (roleId=1) and Manager (roleId=2), consistent with AdminAuthorizationFilter
+        if (currentUser == null || (currentUser.getRoleid() != 1 && currentUser.getRoleid() != 2)) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
-        resp.sendRedirect(req.getContextPath() + "admin/category/list");
+        
+        // Redirect to a valid admin page
+        resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
     }
 }

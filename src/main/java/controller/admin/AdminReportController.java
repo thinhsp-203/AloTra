@@ -1,10 +1,15 @@
 package controller.admin;
 
-import jakarta.servlet.*; import jakarta.servlet.http.*; import java.io.IOException; import java.util.*;
-import config.JpaUtil; import jakarta.persistence.EntityManager;
+import jakarta.servlet.*; 
+import jakarta.servlet.http.*; 
+import java.io.IOException; 
+import java.util.*;
+import config.JpaUtil; 
+import jakarta.persistence.EntityManager;
 
 public class AdminReportController extends HttpServlet {
-  @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  @Override 
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     EntityManager em = JpaUtil.em();
     try {
       // Doanh thu theo tháng (năm hiện tại)
@@ -29,6 +34,8 @@ public class AdminReportController extends HttpServlet {
       req.setAttribute("top", top);
       req.setAttribute("stock", stock);
       req.getRequestDispatcher("/views/admin/reports.jsp").forward(req, resp);
-    } finally { em.close(); }
+    } finally { 
+      em.close(); 
+    }
   }
 }

@@ -1,5 +1,6 @@
 package utils;
 
 public class Constant {
-    public static final String DIR = "E:\\upload";
+    // TODO: Configure this path in a properties file or as an environment variable
+    public static final String DIR = "/path/to/your/uploads";
 }
