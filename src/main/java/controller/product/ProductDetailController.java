@@ -11,8 +11,8 @@ public class ProductDetailController extends HttpServlet {
       if (p==null){ resp.sendError(404); return; }
       req.setAttribute("p", p);
       var sameCate = em.createQuery(
-        "select x from Product x where x.category.cate_id=:c and x.product_id<>:id order by x.createdDate desc", Product.class)
-        .setParameter("c", p.getCategory().getId()).setParameter("id", p.getProduct_id())
+    	"select x from Product x where x.category.id=:c and x.product_id<>:id order by x.createdDate desc", Product.class)
+    	.setParameter("c", p.getCategory() != null ? p.getCategory().getId() : 0)
         .setMaxResults(8).getResultList();
       var sameSup  = em.createQuery(
         "select x from Product x where x.supplier.supplier_id=:s and x.product_id<>:id order by x.createdDate desc", Product.class)

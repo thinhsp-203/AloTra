@@ -73,7 +73,12 @@ public class AdminProductController extends HttpServlet {
       p.setDiscount(discount);
       p.setStock(stock);
       p.setThumbnail(thumbnail);
-      if (cateId != null) p.setCategory(em.find(Category.class, cateId));
+      if (cateId != null) {
+    	  Category cat = em.find(Category.class, cateId);
+    	  if (cat != null) {
+    	    p.setCategory(cat);
+    	  }
+    	}
       if (supId  != null) p.setSupplier(em.find(Supplier.class, supId));
       p.setIsActive(active);
       p.setIsFeatured(featured);

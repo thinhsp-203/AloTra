@@ -94,5 +94,38 @@
 	  <url-pattern>/auth/reset</url-pattern>
 	</servlet-mapping>
 	
+	<!-- Admin Dashboard Report -->
+	<servlet>
+	  <servlet-name>AdminDashboardReportController</servlet-name>
+	  <servlet-class>controller.admin.AdminDashboardReportController</servlet-class>
+	</servlet>
+	<servlet-mapping>
+	  <servlet-name>AdminDashboardReportController</servlet-name>
+	  <url-pattern>/admin/dashboard</url-pattern>
+	</servlet-mapping>
+	
+	<!-- Admin Orders -->
+	<servlet>
+	  <servlet-name>AdminOrderController</servlet-name>
+	  <servlet-class>controller.admin.AdminOrderController</servlet-class>
+	</servlet>
+	<servlet-mapping>
+	  <servlet-name>AdminOrderController</servlet-name>
+	  <url-pattern>/admin/orders</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+	  <servlet-name>AdminOrderController</servlet-name>
+	  <url-pattern>/admin/orders/*</url-pattern>
+	</servlet-mapping>
+	
+	<!-- Admin Dashboard -->
+	<servlet>
+	  <servlet-name>AdminDashboardController</servlet-name>
+	  <servlet-class>controller.admin.AdminDashboardController</servlet-class>
+	</servlet>
+	<servlet-mapping>
+	  <servlet-name>AdminDashboardController</servlet-name>
+	  <url-pattern>/admin</url-pattern>
+	</servlet-mapping>
  
 </web-app>

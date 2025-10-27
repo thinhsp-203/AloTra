@@ -33,7 +33,8 @@ public class Product {
   @Column(columnDefinition="NVARCHAR(MAX)")
   private String images;
 
-  @ManyToOne @JoinColumn(name="cate_id")
+  @ManyToOne 
+  @JoinColumn(name="cate_id", referencedColumnName="id")
   private Category category;
 
   @ManyToOne @JoinColumn(name="supplier_id")
