@@ -41,7 +41,7 @@
                                         <div class="col-md-2">
                                             <div class="small text-muted">Tổng tiền</div>
                                             <div class="fw-bold text-primary">
-                                                <fmt:formatNumber value="${order.total_amount}" pattern="#,##0₫"/>
+                                               <fmt:formatNumber value="${detail.lineTotal}" pattern="#,##0₫"/>
                                             </div>
                                         </div>
                                         

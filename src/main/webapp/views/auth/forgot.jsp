@@ -12,5 +12,5 @@
     <input class="form-control" type="email" name="email" required />
   </div>
   <button class="btn btn-primary">Gửi hướng dẫn đặt lại</button>
-  <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/auth/login">Về đăng nhập</a>
+  <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/login">Về đăng nhập</a>
 </form>

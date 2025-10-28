@@ -35,7 +35,7 @@
 	</servlet>
 	<servlet-mapping>
 	  <servlet-name>ForgotResetController</servlet-name>
-	  <url-pattern>/auth/forgot</url-pattern>
+	  <url-pattern>/auth/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 	  <servlet-name>ForgotResetController</servlet-name>

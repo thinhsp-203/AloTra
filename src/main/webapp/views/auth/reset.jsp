@@ -25,4 +25,4 @@
   </form>
 </c:if>
 
-<a class="btn btn-outline-secondary mt-3" href="${pageContext.request.contextPath}/auth/login">Về đăng nhập</a>
+<a class="btn btn-outline-secondary mt-3" href="${pageContext.request.contextPath}/login">Về đăng nhập</a>

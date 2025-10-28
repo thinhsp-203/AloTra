@@ -3,12 +3,10 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom sticky-top">
   <div class="container">
     <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/home">AloTra</a>
-
-    <form class="d-flex mx-auto" style="min-width: 40%;" action="${pageContext.request.contextPath}/products" method="get">
-      <input class="form-control me-2" type="search" name="q" placeholder="Tìm trà sữa, cà phê..." value="${param.q}"/>
-      <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Tìm</button>
-    </form>
-
+	<form class="d-flex mx-auto" style="min-width: 40%;" action="${pageContext.request.contextPath}/products" method="get">
+	  <input class="form-control me-2" type="search" name="q" placeholder="Tìm trà sữa, cà phê..." value="${param.q}"/>
+	  <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Tìm</button>
+	</form>
     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
       <c:choose>
         <%-- KHI CHƯA ĐĂNG NHẬP --%>

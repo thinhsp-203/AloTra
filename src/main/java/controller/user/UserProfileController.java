@@ -42,6 +42,7 @@ public class UserProfileController extends HttpServlet {
                 List<Orders> orders = em.createQuery(
                     "SELECT DISTINCT o FROM Orders o " +
                     "LEFT JOIN FETCH o.orderDetails " +
+                    "LEFT JOIN FETCH od.product " +
                     "WHERE o.user.id = :uid " +
                     "ORDER BY o.createdDate DESC",
                     Orders.class)
