@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.User;
 import model.Orders;
-import model.OrderDetail;
 import utils.PasswordUtil;
 
 import java.io.IOException;
@@ -32,17 +31,16 @@ public class UserProfileController extends HttpServlet {
         
         try {
             if (uri.endsWith("/profile")) {
-                // Refresh user data from DB
                 User user = em.find(User.class, currentUser.getId());
                 req.setAttribute("user", user);
                 req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
                 
             } else if (uri.endsWith("/orders")) {
-                // Danh sách đơn hàng của user với EAGER loading cho orderDetails
+                // SỬA LỖI Ở ĐÂY: Sửa lại câu truy vấn JPQL
                 List<Orders> orders = em.createQuery(
                     "SELECT DISTINCT o FROM Orders o " +
-                    "LEFT JOIN FETCH o.orderDetails " +
-                    "LEFT JOIN FETCH od.product " +
+                    "LEFT JOIN FETCH o.orderDetails od " + // Join và đặt alias `od`
+                    "LEFT JOIN FETCH od.product " +          // Join từ alias `od` đến thuộc tính `product`
                     "WHERE o.user.id = :uid " +
                     "ORDER BY o.createdDate DESC",
                     Orders.class)
@@ -57,10 +55,13 @@ public class UserProfileController extends HttpServlet {
             req.setAttribute("error", "Có lỗi xảy ra khi tải dữ liệu: " + e.getMessage());
             req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
         } finally {
-            em.close();
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
     }
     
+    // Phương thức doPost không thay đổi...
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
@@ -90,7 +91,6 @@ public class UserProfileController extends HttpServlet {
                 em.merge(user);
                 tx.commit();
                 
-                // Update session
                 req.getSession().setAttribute("currentUser", user);
                 req.setAttribute("success", "Cập nhật thông tin thành công!");
                 
@@ -113,18 +113,20 @@ public class UserProfileController extends HttpServlet {
                 }
             }
             
-            // Reload user data
-            User updatedUser = em.find(User.class, currentUser.getId());
-            req.setAttribute("user", updatedUser);
+            // Tải lại dữ liệu sau khi cập nhật để hiển thị
+            req.setAttribute("user", em.find(User.class, currentUser.getId()));
             req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
             
         } catch (Exception e) {
             if (tx.isActive()) tx.rollback();
             e.printStackTrace();
             req.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+            req.setAttribute("user", em.find(User.class, currentUser.getId())); // Tải lại dữ liệu khi có lỗi
             req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
         } finally {
-            em.close();
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
     }
 }

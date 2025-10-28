@@ -2,7 +2,6 @@ package model;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -10,12 +9,13 @@ import java.util.Objects;
 public class CartItem {
   private Integer productId;
   private String productName;
-  private String sizeName;       // optional
-  private String toppingsCsv;    // optional "1,3,5"
+  private String thumbnail; 
+  private String sizeName;
+  private String toppingsCsv;
   private int quantity;
-  private BigDecimal unitPrice;        // giá gốc
-  private BigDecimal sizeAdj;          // +size
-  private BigDecimal toppingsCost;     // +topping
+  private BigDecimal unitPrice;
+  private BigDecimal sizeAdj;
+  private BigDecimal toppingsCost;
 
   public BigDecimal getLineTotal() {
     BigDecimal base = unitPrice != null ? unitPrice : BigDecimal.ZERO;

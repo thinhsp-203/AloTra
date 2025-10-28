@@ -1,6 +1,45 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ page contentType="text/html; charset=UTF-8" %>
 
+<style>
+    .category-section {
+        background-color: #fff;
+        padding: 1.5rem;
+        border-radius: 0.25rem;
+        box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1);
+    }
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 1rem;
+    }
+    .category-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        text-decoration: none;
+        color: #333;
+        transition: transform 0.2s;
+    }
+    .category-item:hover {
+        transform: translateY(-5px);
+        color: #0d6efd;
+    }
+    .category-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 0.5rem;
+        background-color: #f0f0f0;
+        border: 1px solid #eee;
+    }
+    .category-name {
+        font-size: 0.85rem;
+    }
+</style>
+
 <div class="row g-4 mb-5">
     <div class="col-md-7 pt-5">
         <h1 class="display-4 fw-bold mb-3">AloTra – Thưởng thức trà sữa chuẩn vị mỗi ngày</h1>
@@ -19,6 +58,19 @@
     </div>
 </div>
 
+<c:if test="${not empty categories}">
+    <div class="category-section mb-5">
+        <h2 class="h5 mb-3 text-uppercase text-muted">Danh Mục</h2>
+        <div class="category-grid">
+            <c:forEach var="cat" items="${categories}">
+                <a href="${pageContext.request.contextPath}/products?cate=${cat.id}" class="category-item">
+                    <img src="${pageContext.request.contextPath}/${cat.icon}" class="category-icon" alt="${cat.name}">
+                    <span class="category-name">${cat.name}</span>
+                </a>
+            </c:forEach>
+        </div>
+    </div>
+</c:if>
 <h2 class="h4 mb-3"><i class="bi bi-fire text-danger me-2"></i>Sản phẩm nổi bật</h2>
 
 <div class="row row-cols-2 row-cols-md-4 g-3 mb-5">
