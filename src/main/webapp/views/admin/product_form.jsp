@@ -1,3 +1,4 @@
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <h1 class="h5 mb-3">${empty p ? 'Thêm' : 'Sửa'} sản phẩm</h1>
@@ -22,22 +23,21 @@
       <div class="mb-2"><label class="form-label">Danh mục</label>
         <select class="form-select" name="cate_id">
           <c:forEach var="c" items="${categories}">
-             <%-- Sửa lại các thuộc tính ở đây --%>
-             <option value="${c.id}" ${p.category.id == c.id ? 'selected' : ''}>${c.name}</option>
+            <option value="${c.id}" ${p.category != null && p.category.id == c.id ? 'selected' : ''}>${c.name}</option>
           </c:forEach>
         </select></div>
       <div class="mb-2"><label class="form-label">Nhà cung cấp</label>
         <select class="form-select" name="supplier_id">
           <c:forEach var="s" items="${suppliers}">
-            <option value="${s.supplier_id}" ${p.supplier.supplier_id==s.supplier_id?'selected':''}>${s.supplier_name}</option>
+            <option value="${s.supplier_id}" ${p.supplier != null && p.supplier.supplier_id == s.supplier_id ? 'selected' : ''}>${s.supplier_name}</option>
           </c:forEach>
         </select></div>
       <div class="form-check mb-2">
-        <input class="form-check-input" type="checkbox" name="isActive" ${p.isActive?'checked':''} id="a1"/>
+        <input class="form-check-input" type="checkbox" name="isActive" ${p.isActive != null && p.isActive ? 'checked' : ''} id="a1"/>
         <label class="form-check-label" for="a1">Hiển thị</label>
       </div>
       <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" name="isFeatured" ${p.isFeatured?'checked':''} id="a2"/>
+        <input class="form-check-input" type="checkbox" name="isFeatured" ${p.isFeatured != null && p.isFeatured ? 'checked' : ''} id="a2"/>
         <label class="form-check-label" for="a2">Nổi bật</label>
       </div>
       <button class="btn btn-primary">Lưu</button>

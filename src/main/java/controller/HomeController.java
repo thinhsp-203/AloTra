@@ -14,9 +14,6 @@ public class HomeController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-
-        // Trang chủ nên public. Nếu bạn muốn chặn, xem biến thể B bên dưới.
-        // Nạp dữ liệu bằng JPA trước khi forward
         var em = JpaUtil.em();
         try {
             var repo = new ProductRepository(em);

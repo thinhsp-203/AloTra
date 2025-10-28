@@ -1,7 +1,10 @@
 <sitemesh>
+  <mapping path="/admin/*" decorator="admin.jsp"/> 
   <mapping path="/*" decorator="web.jsp"/>
+  
   <excludes>
     <pattern>/assets/*</pattern>
     <pattern>/api/*</pattern>
+    <pattern>/uploads/*</pattern>
   </excludes>
 </sitemesh>

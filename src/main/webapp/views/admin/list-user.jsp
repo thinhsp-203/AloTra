@@ -27,6 +27,9 @@
     color: #fff;
     cursor: pointer;
   }
+  .user-filter-form button:hover {
+    background-color: #0b5ed7;
+  }
   .user-filter-form .btn-reset {
     background-color: #6c757d;
     color: #fff;
@@ -34,6 +37,9 @@
     display: inline-block;
     padding: 7px 16px;
     border-radius: 4px;
+  }
+  .user-filter-form .btn-reset:hover {
+    background-color: #5c636a;
   }
   table.user-table {
     border-collapse: collapse;
@@ -46,12 +52,14 @@
   }
   table.user-table th {
     background-color: #f8f9fa;
+    font-weight: 600;
   }
   .pagination {
     display: flex;
     list-style: none;
     gap: 6px;
     padding: 0;
+    margin-top: 16px;
   }
   .pagination li a {
     display: block;
@@ -61,13 +69,18 @@
     text-decoration: none;
     color: #0d6efd;
   }
+  .pagination li a:hover {
+    background-color: #e9ecef;
+  }
   .pagination li.active a {
     background-color: #0d6efd;
     color: #fff;
+    border-color: #0d6efd;
   }
   .pagination li.disabled a {
     color: #adb5bd;
     pointer-events: none;
+    background-color: #f8f9fa;
   }
   .alert {
     padding: 12px 16px;
@@ -125,8 +138,8 @@
       <c:forEach var="user" items="${users}" varStatus="st">
         <tr>
           <td>${fromRecord + st.index}</td>
-          <td>${user.username}</td> <%-- Sửa từ userName --%>
-          <td>${empty user.fullname ? '-' : user.fullname}</td> <%-- Sửa từ fullName --%>
+          <td>${user.username}</td>
+          <td>${empty user.fullname ? '-' : user.fullname}</td>
           <td>${user.email}</td>
           <td>${empty user.phone ? '-' : user.phone}</td>
           <td>${user.roleName}</td>
@@ -168,7 +181,7 @@
           </c:if>
         </c:forEach>
 
-        <c:set var="nextPage" value="${page < totalPages ? page  1 : totalPages}"/>
+        <c:set var="nextPage" value="${page < totalPages ? page + 1 : totalPages}"/>
         <c:url var="nextUrl" value="/admin/users">
           <c:param name="page" value="${nextPage}"/>
           <c:param name="size" value="${pageSize}"/>

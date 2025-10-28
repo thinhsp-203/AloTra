@@ -84,12 +84,17 @@ public class CheckoutController extends HttpServlet {
         BigDecimal grand = total.subtract(discountAmount);
         if (grand.compareTo(BigDecimal.ZERO) < 0) grand = BigDecimal.ZERO;
 
-        // Giả user đăng nhập (nếu đã có session user -> dùng luôn)
         User current = (User) req.getSession().getAttribute("currentUser");
         if (current == null){
-          // fallback: đơn vãng lai -> cần user id; ở đây demo lấy user id=3 "Khách hàng"
-          current = em.find(User.class, 3); // KHÁCH HÀNG mẫu trong seed của bạn
+          // Nếu chưa đăng nhập, chuyển hướng về trang login
+          req.getSession().setAttribute("redirectAfterLogin", req.getContextPath() + "/checkout");
+          resp.sendRedirect(req.getContextPath() + "/login");
+          em.close(); // Đảm bảo EntityManager được đóng trước khi return
+          return;
         }
+        
+        // Cần refresh lại entity User nếu muốn dùng nó để persist Order
+        current = em.find(User.class, current.getId());
 
         var repo = new OrderRepository(em);
         Orders order = repo.createOrder(current, fullname, phone, address, note,

@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 
 <h1 class="h5 mb-3">Kết quả thanh toán</h1>
 <c:choose>

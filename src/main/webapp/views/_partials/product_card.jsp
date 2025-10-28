@@ -1,7 +1,10 @@
+<%-- Trong file _partials/product_card.jsp --%>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<c:set var="product" value="${param.product != null ? requestScope[param.product] : product}" />
-<c:set var="p" value="${product}" />
+<%-- Xóa các dòng <c:set> cũ ở đây.
+     Biến 'p' đã có sẵn từ requestScope. --%>
+
 <div class="col">
   <div class="card h-100">
     <img class="card-img-top" src="${p.thumbnail}" alt="${p.product_name}"/>

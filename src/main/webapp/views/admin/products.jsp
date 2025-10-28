@@ -1,5 +1,6 @@
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
->
+
 <h1 class="h5 mb-3">Quản lý sản phẩm</h1>
 <a class="btn btn-primary btn-sm mb-3" href="${pageContext.request.contextPath}/admin/products/create">Thêm sản phẩm</a>
 <table class="table table-sm align-middle">

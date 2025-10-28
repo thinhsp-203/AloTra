@@ -21,7 +21,7 @@ public class ProductsListController extends HttpServlet {
                               .getResultList();
             req.setAttribute("categories", categories);
             
-            req.getRequestDispatcher("/views/product/products.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/product/list.jsp").forward(req, resp);
         } finally {
             em.close();
         }
