@@ -7,7 +7,8 @@
 
 <div class="col">
   <div class="card h-100">
-    <img class="card-img-top" src="${p.thumbnail}" alt="${p.product_name}"/>
+ <img class="card-img-top" src="${p.thumbnail}" alt="${p.product_name}" 
+     style="height: 200px; object-fit: cover; display: block;"/>
     <div class="card-body">
       <h6 class="card-title mb-1">${p.product_name}</h6>
       <div class="small text-muted">Giá: <strong>${p.price}</strong></div>

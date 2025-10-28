@@ -46,7 +46,7 @@ public class User {
   }
   
   @Transient
-  public String getFullName() {
+  public String getFullname() {
     return this.fullname;
   }
   

@@ -1,7 +1,9 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %> <%-- THÊM DÒNG NÀY --%>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="java.util.*" %>
 <%@ page import="model.CartItem" %>
+<fmt:setLocale value="vi_VN"/> <%-- THIẾT LẬP LOCALE --%>
 <%
   @SuppressWarnings("unchecked")
   List<CartItem> items = (List<CartItem>) session.getAttribute("CART");
@@ -11,18 +13,19 @@
 %>
 <h1 class="h5 mb-3">Thanh toán</h1>
 <c:if test="${empty sessionScope.CART}">
-  <div class="alert alert-warning">Không có sản phẩm. <a href="${pageContext.request.contextPath}/cart/view">Về giỏ hàng</a></div>
+  <div class="alert alert-warning">Không có sản phẩm.
+    <a href="${pageContext.request.contextPath}/cart/view" class="alert-link">Về giỏ hàng</a></div>
 </c:if>
 <c:if test="${not empty sessionScope.CART}">
   <div class="row g-4">
     <div class="col-md-7">
       <form method="post" action="${pageContext.request.contextPath}/checkout">
         <div class="mb-2"><label class="form-label">Họ tên</label>
-          <input class="form-control" name="fullname" required /></div>
+          <input class="form-control" name="fullname" required value="${sessionScope.currentUser.fullname}"/></div> <%-- Gán giá trị mặc định --%>
         <div class="mb-2"><label class="form-label">Điện thoại</label>
-          <input class="form-control" name="phone" required /></div>
+          <input class="form-control" name="phone" required value="${sessionScope.currentUser.phone}"/></div> <%-- Gán giá trị mặc định --%>
         <div class="mb-2"><label class="form-label">Địa chỉ</label>
-          <textarea class="form-control" name="address" required></textarea></div>
+          <textarea class="form-control" name="address" required>${sessionScope.currentUser.address}</textarea></div> <%-- Gán giá trị mặc định --%>
         <div class="mb-2"><label class="form-label">Ghi chú</label>
           <textarea class="form-control" name="note"></textarea></div>
 
@@ -31,10 +34,10 @@
 
         <div class="mb-3"><label class="form-label">Hình thức thanh toán</label>
           <select class="form-select" name="payment">
-            <option value="COD">COD</option>
-            <option value="Bank">Ngân hàng ảo</option>
-            <option value="MoMo">MoMo (ảo)</option>
-            <option value="VNPay">VNPay (ảo)</option>
+            <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+            <option value="Bank">Chuyển khoản Ngân hàng (ảo)</option>
+            <option value="MoMo">Ví điện tử MoMo (ảo)</option>
+            <option value="VNPay">Cổng VNPay (ảo)</option>
           </select>
         </div>
 
@@ -47,13 +50,16 @@
         <div class="card-header fw-semibold">Tóm tắt</div>
         <div class="card-body">
           <c:forEach var="ci" items="${sessionScope.CART}">
-            <div class="d-flex justify-content-between">
-              <div>${ci.productName} <span class="text-muted small">x${ci.quantity}</span></div>
-              <div>${ci.lineTotal}</div>
+            <div class="d-flex justify-content-between mb-1">
+              <div class="small">${ci.productName} <span class="text-muted">x${ci.quantity}</span></div>
+              <div class="small"><fmt:formatNumber value="${ci.lineTotal}" pattern="#,##0₫"/></div> <%-- THÊM FORMAT TIỀN TỆ --%>
             </div>
           </c:forEach>
           <hr/>
-          <div class="d-flex justify-content-between"><div>Tạm tính</div><div><%= total %></div></div>
+          <div class="d-flex justify-content-between fw-bold"><div>Tạm tính</div><div><fmt:formatNumber value="<%= total %>" pattern="#,##0₫"/></div></div> <%-- THÊM FORMAT TIỀN TỆ --%>
+          <div class="d-flex justify-content-between text-danger small"><div>Giảm giá (chưa hỗ trợ)</div><div>0₫</div></div>
+          <hr/>
+          <div class="d-flex justify-content-between text-success fw-bold"><div>Tổng cộng</div><div><fmt:formatNumber value="<%= total %>" pattern="#,##0₫"/></div></div>
         </div>
       </div>
     </div>

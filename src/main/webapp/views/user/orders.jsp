@@ -2,7 +2,14 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
-<h2 class="h4 mb-4">Đơn hàng của tôi</h2>
+<div class="row g-4">
+    <div class="col-md-3">
+        <%-- Include sidebar --%>
+        <jsp:include page="/views/user/_sidebar.jsp"/>
+    </div>
+    
+    <div class="col-md-9">
+        <h2 class="h4 mb-4">Đơn hàng của tôi</h2>
 
 <c:choose>
   <c:when test="${empty orders}">

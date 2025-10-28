@@ -37,76 +37,98 @@ public class CheckoutController extends HttpServlet {
     }
   }
 
-  @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-    String path = req.getPathInfo();
-    if (path == null || "/".equals(path)){
-      // Đặt hàng: áp voucher -> lưu Orders/OrderDetail
+  @Override
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+      String path = req.getPathInfo();
+      if (path != null && !"/".equals(path)) {
+          resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+          return;
+      }
+
+      HttpSession session = req.getSession();
+      User currentUser = (User) session.getAttribute("currentUser");
+
+      // 1. Kiểm tra đăng nhập trước khi làm bất cứ điều gì
+      if (currentUser == null) {
+          session.setAttribute("redirectAfterLogin", req.getContextPath() + "/checkout");
+          resp.sendRedirect(req.getContextPath() + "/login");
+          return;
+      }
+
+      var items = cart(session);
+      if (items.isEmpty()) {
+          resp.sendRedirect(req.getContextPath() + "/cart/view");
+          return;
+      }
+
+      // Lấy thông tin từ form
       String fullname = req.getParameter("fullname");
       String phone    = req.getParameter("phone");
       String address  = req.getParameter("address");
       String note     = req.getParameter("note");
-      String voucher  = req.getParameter("voucher");
-      String payment  = Optional.ofNullable(req.getParameter("payment")).orElse("COD"); // COD/Bank/MoMo/VNPay (ảo)
-      var items = cart(req.getSession());
-      if (items.isEmpty()){ resp.sendRedirect(req.getContextPath()+"/cart/view"); return; }
-
-      BigDecimal total = BigDecimal.ZERO;
-      for (CartItem ci : items){
-        total = total.add(ci.getLineTotal());
-      }
+      String voucherCode = req.getParameter("voucher");
+      String payment  = Optional.ofNullable(req.getParameter("payment")).orElse("COD");
 
       EntityManager em = JpaUtil.em();
       try {
-        BigDecimal discountAmount = BigDecimal.ZERO;
-        if (voucher != null && !voucher.isBlank()){
-          var vopt = new VoucherRepository(em).findActiveByCode(voucher.trim());
-          if (vopt.isPresent()){
-            Voucher v = vopt.get();
-            // Min order check
-            if (v.getMin_order_value()==null || total.compareTo(v.getMin_order_value()) >= 0){
-              if ("Percent".equalsIgnoreCase(v.getDiscount_type())){
-                discountAmount = total.multiply(v.getDiscount_value().divide(BigDecimal.valueOf(100)));
-              } else {
-                discountAmount = v.getDiscount_value();
+          // 2. Bắt đầu một giao dịch duy nhất cho toàn bộ quá trình
+          em.getTransaction().begin();
+
+          BigDecimal total = items.stream()
+                                  .map(CartItem::getLineTotal)
+                                  .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+          // Xử lý voucher (nếu có)
+          BigDecimal discountAmount = BigDecimal.ZERO;
+          if (voucherCode != null && !voucherCode.isBlank()) {
+              var vopt = new VoucherRepository(em).findActiveByCode(voucherCode.trim());
+              if (vopt.isPresent()) {
+                  Voucher v = vopt.get();
+                  if (v.getMin_order_value() == null || total.compareTo(v.getMin_order_value()) >= 0) {
+                      if ("Percent".equalsIgnoreCase(v.getDiscount_type())) {
+                          discountAmount = total.multiply(v.getDiscount_value().divide(BigDecimal.valueOf(100)));
+                      } else {
+                          discountAmount = v.getDiscount_value();
+                      }
+                      if (v.getMax_discount() != null && discountAmount.compareTo(v.getMax_discount()) > 0) {
+                          discountAmount = v.getMax_discount();
+                      }
+                      v.setUsed_count((v.getUsed_count() == null ? 0 : v.getUsed_count()) + 1);
+                      em.merge(v); // Thay đổi sẽ được commit cùng với đơn hàng
+                  }
               }
-              if (v.getMax_discount()!=null && discountAmount.compareTo(v.getMax_discount()) > 0){
-                discountAmount = v.getMax_discount();
-              }
-              // Update used_count (đơn giản)
-              em.getTransaction().begin();
-              v.setUsed_count( (v.getUsed_count()==null?0:v.getUsed_count()) + 1 );
-              em.merge(v);
-              em.getTransaction().commit();
-            }
           }
-        }
-        if (discountAmount.compareTo(BigDecimal.ZERO) < 0) discountAmount = BigDecimal.ZERO;
-        BigDecimal grand = total.subtract(discountAmount);
-        if (grand.compareTo(BigDecimal.ZERO) < 0) grand = BigDecimal.ZERO;
+          
+          BigDecimal grandTotal = total.subtract(discountAmount);
+          grandTotal = grandTotal.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : grandTotal;
 
-        User current = (User) req.getSession().getAttribute("currentUser");
-        if (current == null){
-          // Nếu chưa đăng nhập, chuyển hướng về trang login
-          req.getSession().setAttribute("redirectAfterLogin", req.getContextPath() + "/checkout");
-          resp.sendRedirect(req.getContextPath() + "/login");
-          em.close(); // Đảm bảo EntityManager được đóng trước khi return
-          return;
-        }
-        
-        // Cần refresh lại entity User nếu muốn dùng nó để persist Order
-        current = em.find(User.class, current.getId());
+          // Lấy lại entity User đang được quản lý bởi EntityManager
+          User managedUser = em.find(User.class, currentUser.getId());
 
-        var repo = new OrderRepository(em);
-        Orders order = repo.createOrder(current, fullname, phone, address, note,
-                          grand, payment, "Chưa thanh toán", "Chờ xác nhận", items);
+          // Tạo đơn hàng (bên trong cùng transaction)
+          OrderRepository repo = new OrderRepository(em);
+          Orders order = repo.createOrder(managedUser, fullname, phone, address, note,
+                            grandTotal, payment, "Chưa thanh toán", "Chờ xác nhận", items);
 
-        // Lưu xong -> clear cart và chuyển sang "ngân hàng ảo"
-        req.getSession().removeAttribute("CART");
-        resp.sendRedirect(req.getContextPath() + "/checkout/pay?oid=" + order.getOrder_id());
-      } finally { em.close(); }
+          // 3. Commit giao dịch sau khi mọi thứ thành công
+          em.getTransaction().commit();
 
-    } else {
-      resp.sendError(404);
-    }
+          // Xóa giỏ hàng và chuyển hướng
+          session.removeAttribute("CART");
+          resp.sendRedirect(req.getContextPath() + "/checkout/pay?oid=" + order.getOrder_id());
+
+      } catch (Exception e) {
+          // 4. Nếu có lỗi, rollback toàn bộ giao dịch
+          if (em.getTransaction().isActive()) {
+              em.getTransaction().rollback();
+          }
+          // Có thể ghi log lỗi ở đây và chuyển hướng đến trang lỗi
+          e.printStackTrace(); // In lỗi ra console server
+          resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi khi tạo đơn hàng.");
+      } finally {
+          if (em.isOpen()) {
+              em.close();
+          }
+      }
   }
 }

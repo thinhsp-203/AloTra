@@ -11,7 +11,7 @@ public class OrderRepository {
   public Orders createOrder(User user, String fullname, String phone, String address, String note,
                             BigDecimal totalAmount, String paymentMethod, String paymentStatus, String orderStatus,
                             List<CartItem> items){
-    var tx = em.getTransaction(); tx.begin();
+    // BỎ DÒNG: var tx = em.getTransaction(); tx.begin();
     try {
       Orders o = new Orders();
       o.setUser(user);
@@ -35,8 +35,7 @@ public class OrderRepository {
         d.setProduct_name(ci.getProductName());
         d.setSize_name(ci.getSizeName());
         d.setQuantity(ci.getQuantity());
-        // linePrice mỗi item (đã gồm size + topping) *KHÔNG nhân quantity ở đây*
-        // vì OrderDetail.price là giá 1 đơn vị theo schema bạn đã định
+        
         var unit = (ci.getUnitPrice()==null? BigDecimal.ZERO : ci.getUnitPrice())
                  .add(ci.getSizeAdj()==null? BigDecimal.ZERO : ci.getSizeAdj())
                  .add(ci.getToppingsCost()==null? BigDecimal.ZERO : ci.getToppingsCost());
@@ -44,17 +43,18 @@ public class OrderRepository {
         d.setToppings(ci.getToppingsCsv());
         em.persist(d);
 
-        // trừ tồn kho đơn giản (nếu cần)
-        if (p.getStock()!=null){
+        // Cập nhật tồn kho
+        if (p != null && p.getStock() != null){
           p.setStock(Math.max(0, p.getStock() - ci.getQuantity()));
+          em.merge(p); // Thêm merge để đảm bảo thay đổi được lưu
         }
       }
 
-      tx.commit();
+      // BỎ DÒNG: tx.commit();
       return o;
     } catch (Exception ex){
-      if (tx.isActive()) tx.rollback();
-      throw ex;
+      // BỎ KHỐI: if (tx.isActive()) tx.rollback();
+      throw ex; // Ném exception để Controller xử lý rollback
     }
   }
 }

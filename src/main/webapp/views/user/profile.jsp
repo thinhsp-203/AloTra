@@ -1,25 +1,32 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-
-<h2 class="h4 mb-4">Thông tin cá nhân</h2>
-
-<c:if test="${not empty success}">
-  <div class="alert alert-success alert-dismissible fade show" role="alert">
-    ${success}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-</c:if>
-
-<c:if test="${not empty error}">
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    ${error}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-</c:if>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
 <div class="row g-4">
-  <!-- Cập nhật thông tin -->
-  <div class="col-md-6">
+    <div class="col-md-3">
+        <%-- Include sidebar --%>
+        <jsp:include page="/views/user/_sidebar.jsp"/>
+    </div>
+    
+    <div class="col-md-9">
+        <h2 class="h4 mb-4">Thông tin cá nhân</h2>
+
+        <c:if test="${not empty success}">
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            ${success}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        </c:if>
+
+        <c:if test="${not empty error}">
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            ${error}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        </c:if>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
     <div class="card">
       <div class="card-header bg-light">
         <h5 class="card-title mb-0">Cập nhật thông tin</h5>

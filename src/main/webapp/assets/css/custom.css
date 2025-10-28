@@ -1,0 +1,21 @@
+/* Ví dụ: Đổi màu primary sang màu cam giống Shopee */
+:root {
+    --bs-primary: #EE4D2D;
+    --bs-primary-rgb: 238, 77, 45;
+    --bs-link-color: #EE4D2D;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-bg: #d73a1a;
+    --bs-btn-hover-border-color: #d73a1a;
+    --bs-btn-active-bg: #c93416;
+    --bs-btn-active-border-color: #c93416;
+}
+
+.text-primary {
+    color: var(--bs-primary) !important;
+}
+
+/* Tùy chỉnh thêm... */
