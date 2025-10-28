@@ -37,61 +37,71 @@ public class CartController extends HttpServlet {
   }
 
   private void add(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    int pid = Integer.parseInt(req.getParameter("productId"));
-    String size = trim(req.getParameter("size"));
-    String toppingsCsv = trim(req.getParameter("toppings")); // "1,3,5"
-    int qty = parseInt(req.getParameter("qty"), 1);
+	    try {
+	      int pid = Integer.parseInt(req.getParameter("productId"));
+	      String size = trim(req.getParameter("size"));
+	      String toppingsCsv = trim(req.getParameter("toppings")); // "1,3,5"
+	      int qty = parseInt(req.getParameter("qty"), 1);
 
-    EntityManager em = JpaUtil.em();
-    try {
-      Product p = em.find(Product.class, pid);
-      if (p == null){ resp.sendError(400, "Sản phẩm không tồn tại"); return; }
+	      EntityManager em = JpaUtil.em();
+	      try {
+	        Product p = em.find(Product.class, pid);
+	        if (p == null){ 
+	          resp.setContentType("application/json; charset=UTF-8");
+	          resp.getWriter().print("{\"ok\":false,\"message\":\"Sản phẩm không tồn tại\"}"); 
+	          return; 
+	        }
 
-      BigDecimal unit = p.getPrice()!=null? p.getPrice() : BigDecimal.ZERO;
+	        BigDecimal unit = p.getPrice()!=null? p.getPrice() : BigDecimal.ZERO;
 
-      BigDecimal sizeAdj = BigDecimal.ZERO;
-      if (size != null && !size.isBlank()){
-        var sizes = em.createQuery("select s from ProductSize s where s.product.product_id=:id and s.size_name=:name", ProductSize.class)
-                      .setParameter("id", pid).setParameter("name", size).setMaxResults(1).getResultList();
-        if(!sizes.isEmpty() && sizes.get(0).getPrice_adjustment()!=null) sizeAdj = sizes.get(0).getPrice_adjustment();
-      }
+	        BigDecimal sizeAdj = BigDecimal.ZERO;
+	        if (size != null && !size.isBlank()){
+	          var sizes = em.createQuery("select s from ProductSize s where s.product.product_id=:id and s.size_name=:name", ProductSize.class)
+	                        .setParameter("id", pid).setParameter("name", size).setMaxResults(1).getResultList();
+	          if(!sizes.isEmpty() && sizes.get(0).getPrice_adjustment()!=null) sizeAdj = sizes.get(0).getPrice_adjustment();
+	        }
 
-      BigDecimal topCost = BigDecimal.ZERO;
-      if (toppingsCsv != null && !toppingsCsv.isBlank()){
-        for (String tidStr : toppingsCsv.split(",")){
-          try{
-            int tid = Integer.parseInt(tidStr.trim());
-            Topping t = em.find(Topping.class, tid);
-            if (t != null && t.getIsAvailable()!=null && t.getIsAvailable() && t.getPrice()!=null){
-              topCost = topCost.add(t.getPrice());
-            }
-          }catch(Exception ignore){}
-        }
-      }
+	        BigDecimal topCost = BigDecimal.ZERO;
+	        if (toppingsCsv != null && !toppingsCsv.isBlank()){
+	          for (String tidStr : toppingsCsv.split(",")){
+	            try{
+	              int tid = Integer.parseInt(tidStr.trim());
+	              Topping t = em.find(Topping.class, tid);
+	              if (t != null && t.getIsAvailable()!=null && t.getIsAvailable() && t.getPrice()!=null){
+	                topCost = topCost.add(t.getPrice());
+	              }
+	            }catch(Exception ignore){}
+	          }
+	        }
 
-      CartItem ci = new CartItem();
-      ci.setProductId(pid);
-      ci.setProductName(p.getProduct_name());
-      ci.setSizeName(size);
-      ci.setToppingsCsv(toppingsCsv);
-      ci.setQuantity(qty);
-      ci.setUnitPrice(unit);
-      ci.setSizeAdj(sizeAdj);
-      ci.setToppingsCost(topCost);
+	        CartItem ci = new CartItem();
+	        ci.setProductId(pid);
+	        ci.setProductName(p.getProduct_name());
+	        ci.setSizeName(size);
+	        ci.setToppingsCsv(toppingsCsv);
+	        ci.setQuantity(qty);
+	        ci.setUnitPrice(unit);
+	        ci.setSizeAdj(sizeAdj);
+	        ci.setToppingsCost(topCost);
 
-      var list = cart(req.getSession());
-      int idx = list.indexOf(ci);
-      if (idx >= 0){
-        // cùng key (productId+size+toppings) → cộng dồn
-        list.get(idx).setQuantity(list.get(idx).getQuantity() + qty);
-      } else {
-        list.add(ci);
-      }
+	        var list = cart(req.getSession());
+	        int idx = list.indexOf(ci);
+	        if (idx >= 0){
+	          // cùng key (productId+size+toppings) → cộng dồn
+	          list.get(idx).setQuantity(list.get(idx).getQuantity() + qty);
+	        } else {
+	          list.add(ci);
+	        }
 
-      resp.setContentType("application/json; charset=UTF-8");
-      resp.getWriter().print("{\"ok\":true}");
-    } finally { em.close(); }
-  }
+	        resp.setContentType("application/json; charset=UTF-8");
+	        resp.getWriter().print("{\"ok\":true,\"cartSize\":" + list.size() + "}");
+	      } finally { em.close(); }
+	    } catch (Exception e) {
+	      e.printStackTrace();
+	      resp.setContentType("application/json; charset=UTF-8");
+	      resp.getWriter().print("{\"ok\":false,\"message\":\"Có lỗi xảy ra: " + e.getMessage() + "\"}");
+	    }
+	  }
 
   private void update(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     int pid = Integer.parseInt(req.getParameter("productId"));

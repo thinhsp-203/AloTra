@@ -91,29 +91,47 @@
     }
 
 	// Cập nhật hàm loadMore()
-	window.loadMore = function() {
-	      if (isLoading || !hasMore) return;
-	      isLoading = true;
-	      
-	      var xhr = new XMLHttpRequest();
-	      var url = contextPath + '/products/page?page=' + page;
-	      xhr.open('GET', url, true);
-	      xhr.onreadystatechange = function() {
-	          if (xhr.readyState === 4) { // Yêu cầu đã hoàn tất
-	              if (xhr.status === 200) { // và thành công
-	                  var data = JSON.parse(xhr.responseText);
-	                  if (data.items && data.items.length > 0) {
-	                      renderProducts(data.items);
-	                      page++;
-	                  }
-	                  hasMore = data.hasMore;
-	              } else {
-	                  // THÊM PHẦN NÀY: Ghi log lỗi ra console
-	                  console.error("Lỗi khi tải sản phẩm. Status: " + xhr.status);
-	              }
-	              isLoading = false; // Luôn đặt lại cờ isLoading
-	          }
-	      };
-	      xhr.send();
-	};
+		window.loadMore = function() {
+		      if (isLoading || !hasMore) return;
+		      isLoading = true;
+		      
+		      // Hiện loading spinner
+		      var loadingEl = document.getElementById('loading');
+		      var btnLoadMore = document.getElementById('btnLoadMore');
+		      if (loadingEl) loadingEl.style.display = 'block';
+		      if (btnLoadMore) btnLoadMore.style.display = 'none';
+		      
+		      var xhr = new XMLHttpRequest();
+		      var url = contextPath + '/products/page?page=' + page;
+		      
+		      // Thêm từ khóa tìm kiếm nếu có
+		      if (typeof searchKeyword !== 'undefined' && searchKeyword) {
+		        url += '&q=' + encodeURIComponent(searchKeyword);
+		      }
+		      
+		      xhr.open('GET', url, true);
+		      xhr.onreadystatechange = function() {
+		          if (xhr.readyState === 4) {
+		              if (loadingEl) loadingEl.style.display = 'none';
+		              
+		              if (xhr.status === 200) {
+		                  var data = JSON.parse(xhr.responseText);
+		                  if (data.items && data.items.length > 0) {
+		                      renderProducts(data.items);
+		                      page++;
+		                  }
+		                  hasMore = data.hasMore;
+		                  
+		                  // Hiện nút "Xem thêm" nếu còn sản phẩm
+		                  if (btnLoadMore && hasMore) {
+		                      btnLoadMore.style.display = 'inline-block';
+		                  }
+		              } else {
+		                  console.error("Lỗi khi tải sản phẩm. Status: " + xhr.status);
+		              }
+		              isLoading = false;
+		          }
+		      };
+		      xhr.send();
+		};
 })();

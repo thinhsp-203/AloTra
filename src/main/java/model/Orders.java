@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="Orders")
@@ -15,7 +17,7 @@ public class Orders {
   @GeneratedValue(strategy=GenerationType.IDENTITY)
   private Integer order_id;
 
-  @ManyToOne
+  @ManyToOne(fetch=FetchType.LAZY)
   @JoinColumn(name="user_id", nullable=false)
   private User user;
 
@@ -39,4 +41,14 @@ public class Orders {
 
   private LocalDateTime createdDate;
   private LocalDateTime updatedDate;
+  
+  // Quan hệ One-to-Many với OrderDetail
+  @OneToMany(mappedBy="order", fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+  private List<OrderDetail> orderDetails = new ArrayList<>();
+  
+  // Helper method để add OrderDetail
+  public void addOrderDetail(OrderDetail detail) {
+    orderDetails.add(detail);
+    detail.setOrder(this);
+  }
 }

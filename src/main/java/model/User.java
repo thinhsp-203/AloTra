@@ -39,17 +39,8 @@ public class User {
 
   private String resetToken;
   private LocalDateTime tokenExpiry;
-  // ⬇️ THÊM TRANSIENT METHODS
-  @Transient
-  public String getUsername() {
-    return this.username;
-  }
   
-  @Transient
-  public String getFullname() {
-    return this.fullname;
-  }
-  
+  // ⬇️ TRANSIENT METHODS (không lưu DB, chỉ dùng trong JSP)
   @Transient
   public String getRoleName() {
     return Roles.resolve(this.roleid != null ? this.roleid : 0);
@@ -62,4 +53,7 @@ public class User {
         .atZone(java.time.ZoneId.systemDefault())
         .toInstant());
   }
+  
+  // XÓA CÁC TRANSIENT METHOD DUPLICATE: getUsername(), getFullname()
+  // VÌ LOMBOK ĐÃ TẠO SẴN @Getter cho các field này
 }

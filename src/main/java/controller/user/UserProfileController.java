@@ -8,9 +8,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.User;
+import model.Orders;
+import model.OrderDetail;
 import utils.PasswordUtil;
 
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet(urlPatterns = {"/user/profile", "/user/orders"})
 public class UserProfileController extends HttpServlet {
@@ -35,16 +38,23 @@ public class UserProfileController extends HttpServlet {
                 req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
                 
             } else if (uri.endsWith("/orders")) {
-                // Danh sách đơn hàng của user
-                var orders = em.createQuery(
-                    "SELECT o FROM Orders o WHERE o.user.id = :uid ORDER BY o.createdDate DESC",
-                    model.Orders.class)
+                // Danh sách đơn hàng của user với EAGER loading cho orderDetails
+                List<Orders> orders = em.createQuery(
+                    "SELECT DISTINCT o FROM Orders o " +
+                    "LEFT JOIN FETCH o.orderDetails " +
+                    "WHERE o.user.id = :uid " +
+                    "ORDER BY o.createdDate DESC",
+                    Orders.class)
                     .setParameter("uid", currentUser.getId())
                     .getResultList();
                 
                 req.setAttribute("orders", orders);
                 req.getRequestDispatcher("/views/user/orders.jsp").forward(req, resp);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            req.setAttribute("error", "Có lỗi xảy ra khi tải dữ liệu: " + e.getMessage());
+            req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
         } finally {
             em.close();
         }

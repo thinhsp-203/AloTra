@@ -11,15 +11,18 @@ import java.io.IOException;
 
 @WebServlet(urlPatterns = "/products")
 public class ProductsListController extends HttpServlet {
-    @Override
+	@Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         var em = JpaUtil.em();
         try {
-            // Load categories cho filter sidebar
-        	var categories = em.createQuery("SELECT c FROM Category c ORDER BY c.id", model.Category.class)
+            var categories = em.createQuery("SELECT c FROM Category c ORDER BY c.id", model.Category.class)
                               .getResultList();
             req.setAttribute("categories", categories);
+            String keyword = req.getParameter("q");
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                req.setAttribute("searchKeyword", keyword.trim());
+            }
             
             req.getRequestDispatcher("/views/product/list.jsp").forward(req, resp);
         } finally {

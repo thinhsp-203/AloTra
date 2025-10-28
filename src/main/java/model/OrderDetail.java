@@ -14,11 +14,11 @@ public class OrderDetail {
   @GeneratedValue(strategy=GenerationType.IDENTITY)
   private Integer detail_id;
 
-  @ManyToOne
+  @ManyToOne(fetch=FetchType.LAZY)
   @JoinColumn(name="order_id", nullable=false)
   private Orders order;
 
-  @ManyToOne
+  @ManyToOne(fetch=FetchType.LAZY)
   @JoinColumn(name="product_id", nullable=false)
   private Product product;
 
@@ -36,4 +36,13 @@ public class OrderDetail {
 
   @Column(length=500)
   private String toppings; // JSON/txt
+  
+  // Helper method để tính tổng tiền
+  @Transient
+  public BigDecimal getLineTotal() {
+    if (price == null || quantity == null) {
+      return BigDecimal.ZERO;
+    }
+    return price.multiply(BigDecimal.valueOf(quantity));
+  }
 }
