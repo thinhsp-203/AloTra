@@ -5,7 +5,6 @@
 
 <h1 class="h5 mb-4">Thanh toán</h1>
 
-<%-- Hiển thị lỗi nếu có (ví dụ: voucher không hợp lệ) --%>
 <c:if test="${not empty sessionScope.checkoutError}">
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
     ${sessionScope.checkoutError}
@@ -14,26 +13,20 @@
   <c:remove var="checkoutError" scope="session"/>
 </c:if>
 
-<%-- Kiểm tra nếu giỏ hàng trống --%>
 <c:if test="${empty sessionScope.CART}">
   <div class="alert alert-info">Giỏ hàng của bạn đang trống. <a href="${pageContext.request.contextPath}/products" class="alert-link">Bắt đầu mua sắm</a></div>
 </c:if>
 
-<%-- Chỉ hiển thị nội dung nếu giỏ hàng có sản phẩm --%>
 <c:if test="${not empty sessionScope.CART}">
-    <%-- Tính tổng tiền bằng JSTL --%>
     <c:set var="total" value="${0}" />
     <c:forEach var="item" items="${sessionScope.CART}">
         <c:set var="total" value="${total + item.lineTotal}" />
     </c:forEach>
 
     <div class="row g-4">
-        <%-- Cột thông tin giao hàng --%>
         <div class="col-md-7">
             <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Thông tin giao hàng</h5>
-                </div>
+                <div class="card-header"><h5 class="card-title mb-0">Thông tin giao hàng</h5></div>
                 <div class="card-body">
                     <form method="post" action="${pageContext.request.contextPath}/checkout">
                         <div class="mb-3"><label class="form-label">Họ tên</label>
@@ -62,7 +55,6 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Mã giảm giá</label>
-                                <%-- Đã xóa nút "Áp dụng" --%>
                                 <input class="form-control" name="voucher" id="voucher-code" placeholder="Nhập mã để tự động áp dụng"/>
                             </div>
                         </div>
@@ -76,21 +68,16 @@
             </div>
         </div>
 
-        <%-- Cột tóm tắt đơn hàng --%>
         <div class="col-md-5">
             <div class="card position-sticky" style="top: 20px;">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Tóm tắt đơn hàng</h5>
-                </div>
+                <div class="card-header"><h5 class="card-title mb-0">Tóm tắt đơn hàng</h5></div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         <c:forEach var="ci" items="${sessionScope.CART}">
                             <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                                 <div>
                                     <div>${ci.productName} <span class="text-muted">x${ci.quantity}</span></div>
-                                    <c:if test="${not empty ci.toppingsCsv}">
-                                        <small class="text-muted">Topping: ${ci.toppingsCsv}</small>
-                                    </c:if>
+                                    <c:if test="${not empty ci.toppingsCsv}"><small class="text-muted">Topping: ${ci.toppingsCsv}</small></c:if>
                                 </div>
                                 <span class="fw-bold"><fmt:formatNumber value="${ci.lineTotal}" pattern="#,##0₫"/></span>
                             </li>
@@ -114,9 +101,7 @@
                 </div>
             </div>
              <div class="mt-3 d-grid">
-                <a href="${pageContext.request.contextPath}/cart/view" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Quay lại giỏ hàng
-                </a>
+                <a href="${pageContext.request.contextPath}/cart/view" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Quay lại giỏ hàng</a>
             </div>
         </div>
     </div>

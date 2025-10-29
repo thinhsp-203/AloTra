@@ -2,6 +2,7 @@ package controller.user;
 
 import config.JpaUtil;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -36,18 +37,30 @@ public class UserProfileController extends HttpServlet {
                 req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
                 
             } else if (uri.endsWith("/orders")) {
-                // SỬA LỖI Ở ĐÂY: Sửa lại câu truy vấn JPQL
-                List<Orders> orders = em.createQuery(
-                    "SELECT DISTINCT o FROM Orders o " +
-                    "LEFT JOIN FETCH o.orderDetails od " + // Join và đặt alias `od`
-                    "LEFT JOIN FETCH od.product " +          // Join từ alias `od` đến thuộc tính `product`
-                    "WHERE o.user.id = :uid " +
-                    "ORDER BY o.createdDate DESC",
-                    Orders.class)
-                    .setParameter("uid", currentUser.getId())
-                    .getResultList();
+                String status = req.getParameter("status");
+                
+                String jpql = "SELECT DISTINCT o FROM Orders o " +
+                              "LEFT JOIN FETCH o.orderDetails od " +
+                              "LEFT JOIN FETCH od.product " +
+                              "WHERE o.user.id = :uid ";
+
+                if (status != null && !status.isEmpty() && !status.equals("Tất cả")) {
+                    jpql += "AND o.order_status = :status ";
+                }
+                
+                jpql += "ORDER BY o.createdDate DESC";
+
+                TypedQuery<Orders> query = em.createQuery(jpql, Orders.class)
+                                             .setParameter("uid", currentUser.getId());
+
+                if (status != null && !status.isEmpty() && !status.equals("Tất cả")) {
+                    query.setParameter("status", status);
+                }
+                
+                List<Orders> orders = query.getResultList();
                 
                 req.setAttribute("orders", orders);
+                req.setAttribute("currentStatus", status);
                 req.getRequestDispatcher("/views/user/orders.jsp").forward(req, resp);
             }
         } catch (Exception e) {
@@ -61,7 +74,6 @@ public class UserProfileController extends HttpServlet {
         }
     }
     
-    // Phương thức doPost không thay đổi...
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
@@ -77,23 +89,33 @@ public class UserProfileController extends HttpServlet {
         
         try {
             tx.begin();
-            User user = em.find(User.class, currentUser.getId());
             
+            if ("cancelOrder".equals(action)) {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                Orders order = em.find(Orders.class, orderId);
+
+                if (order != null && order.getUser().getId().equals(currentUser.getId()) && "Chờ xác nhận".equals(order.getOrder_status())) {
+                    order.setOrder_status("Đã hủy");
+                    order.setUpdatedDate(java.time.LocalDateTime.now());
+                    em.merge(order);
+                    req.getSession().setAttribute("orderSuccess", "Đã hủy đơn hàng #" + orderId + " thành công.");
+                } else {
+                    req.getSession().setAttribute("orderError", "Không thể hủy đơn hàng #" + orderId + ".");
+                }
+                tx.commit();
+                resp.sendRedirect(req.getContextPath() + "/user/orders");
+                return;
+            }
+            
+            User user = em.find(User.class, currentUser.getId());
             if ("updateProfile".equals(action)) {
-                String fullname = req.getParameter("fullname");
-                String phone = req.getParameter("phone");
-                String address = req.getParameter("address");
-                
-                user.setFullname(fullname);
-                user.setPhone(phone);
-                user.setAddress(address);
-                
+                user.setFullname(req.getParameter("fullname"));
+                user.setPhone(req.getParameter("phone"));
+                user.setAddress(req.getParameter("address"));
                 em.merge(user);
                 tx.commit();
-                
                 req.getSession().setAttribute("currentUser", user);
                 req.setAttribute("success", "Cập nhật thông tin thành công!");
-                
             } else if ("changePassword".equals(action)) {
                 String oldPassword = req.getParameter("oldPassword");
                 String newPassword = req.getParameter("newPassword");
@@ -111,9 +133,8 @@ public class UserProfileController extends HttpServlet {
                     tx.commit();
                     req.setAttribute("success", "Đổi mật khẩu thành công!");
                 }
-            }
+}
             
-            // Tải lại dữ liệu sau khi cập nhật để hiển thị
             req.setAttribute("user", em.find(User.class, currentUser.getId()));
             req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
             
@@ -121,7 +142,7 @@ public class UserProfileController extends HttpServlet {
             if (tx.isActive()) tx.rollback();
             e.printStackTrace();
             req.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
-            req.setAttribute("user", em.find(User.class, currentUser.getId())); // Tải lại dữ liệu khi có lỗi
+            req.setAttribute("user", em.find(User.class, currentUser.getId()));
             req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
         } finally {
             if (em != null && em.isOpen()) {

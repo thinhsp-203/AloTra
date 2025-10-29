@@ -3,6 +3,11 @@
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <fmt:setLocale value="vi_VN"/>
 
+<style>
+    .order-filter-nav .nav-link { color: #666; border-bottom: 2px solid transparent; border-radius: 0; }
+    .order-filter-nav .nav-link.active { color: var(--bs-primary); border-bottom-color: var(--bs-primary); background-color: transparent; }
+</style>
+
 <div class="row g-4">
     <div class="col-md-3">
         <jsp:include page="/views/user/_sidebar.jsp"/>
@@ -10,154 +15,54 @@
     
     <div class="col-md-9">
         <h2 class="h4 mb-4">Đơn hàng của tôi</h2>
-		<%-- THÊM KHỐI NÀY ĐỂ HIỂN THỊ THÔNG BÁO --%>
-        <c:if test="${not empty sessionScope.orderSuccess}">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                ${sessionScope.orderSuccess}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <c:remove var="orderSuccess" scope="session"/>
-        </c:if>
+
+        <ul class="nav nav-tabs order-filter-nav mb-4">
+            <c:set var="cs" value="${empty currentStatus ? 'Tất cả' : currentStatus}" />
+            <li class="nav-item"><a class="nav-link ${cs eq 'Tất cả' ? 'active' : ''}" href="${pageContext.request.contextPath}/user/orders">Tất cả</a></li>
+            <li class="nav-item"><a class="nav-link ${cs eq 'Chờ xác nhận' ? 'active' : ''}" href="${pageContext.request.contextPath}/user/orders?status=Chờ xác nhận">Chờ xác nhận</a></li>
+            <li class="nav-item"><a class="nav-link ${cs eq 'Đang giao' ? 'active' : ''}" href="${pageContext.request.contextPath}/user/orders?status=Đang giao">Đang giao</a></li>
+            <li class="nav-item"><a class="nav-link ${cs eq 'Hoàn thành' ? 'active' : ''}" href="${pageContext.request.contextPath}/user/orders?status=Hoàn thành">Hoàn thành</a></li>
+            <li class="nav-item"><a class="nav-link ${cs eq 'Đã hủy' ? 'active' : ''}" href="${pageContext.request.contextPath}/user/orders?status=Đã hủy">Đã hủy</a></li>
+        </ul>
+
+        <c:if test="${not empty sessionScope.orderSuccess}"><div class="alert alert-success alert-dismissible fade show">${sessionScope.orderSuccess}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div><c:remove var="orderSuccess" scope="session"/></c:if>
+        <c:if test="${not empty sessionScope.orderError}"><div class="alert alert-danger alert-dismissible fade show">${sessionScope.orderError}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div><c:remove var="orderError" scope="session"/></c:if>
+
         <c:choose>
             <c:when test="${empty orders}">
-                <div class="alert alert-info">
-                    <i class="bi bi-inbox"></i> Bạn chưa có đơn hàng nào.
-                    <a href="${pageContext.request.contextPath}/products" class="alert-link">Đặt hàng ngay</a>
-                </div>
+                <div class="alert alert-info"><i class="bi bi-inbox"></i> Không có đơn hàng nào trong mục này.</div>
             </c:when>
             <c:otherwise>
-                <div class="row g-3">
-                    <c:forEach var="order" items="${orders}">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-2">
-                                            <h6 class="mb-1">Đơn hàng #${order.order_id}</h6>
-                                            <small class="text-muted">
-                                                <fmt:formatDate value="${order.createdDate}" pattern="dd/MM/yyyy HH:mm"/>
-                                            </small>
-                                        </div>
-                                        
-                                        <div class="col-md-3">
-                                            <div class="small text-muted">Khách hàng</div>
-                                            <div>${order.fullname}</div>
-                                            <div class="small">${order.phone}</div>
-                                        </div>
-                                        
-                                       <div class="col-md-2">
-                                            <div class="small text-muted">Tổng tiền</div>
-                                            <div class="fw-bold text-primary">
-                                               <fmt:formatNumber value="${order.total_amount}" pattern="#,##0₫"/>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-2">
-                                            <div class="small text-muted">Thanh toán</div>
-                                            <span class="badge bg-${order.payment_status eq 'Đã thanh toán' ? 'success' : 'warning'}">
-                                                ${order.payment_status}
-                                            </span>
-                                        </div>
-                                        
-                                        <div class="col-md-2">
-                                            <div class="small text-muted">Trạng thái</div>
-                                            <c:choose>
-                                                <c:when test="${order.order_status eq 'Chờ xác nhận'}">
-                                                    <span class="badge bg-secondary">${order.order_status}</span>
-                                                </c:when>
-                                                <c:when test="${order.order_status eq 'Đang chuẩn bị'}">
-                                                    <span class="badge bg-info">${order.order_status}</span>
-                                                </c:when>
-                                                <c:when test="${order.order_status eq 'Đang giao'}">
-                                                    <span class="badge bg-primary">${order.order_status}</span>
-                                                </c:when>
-                                                <c:when test="${order.order_status eq 'Hoàn thành'}">
-                                                    <span class="badge bg-success">${order.order_status}</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="badge bg-danger">${order.order_status}</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </div>
-                                        
-                                        <div class="col-md-1 text-end">
-                                            <button class="btn btn-sm btn-outline-secondary" 
-                                                    type="button" 
-                                                    data-bs-toggle="collapse" 
-                                                    data-bs-target="#order-${order.order_id}"
-                                                    aria-expanded="false">
-                                                <i class="bi bi-chevron-down"></i>
-                                            </button>
-                                        </div>
+                <div class="accordion" id="orderAccordion">
+                    <c:forEach var="order" items="${orders}" varStatus="loop">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading-${order.order_id}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${order.order_id}">
+                                    <div class="w-100 d-flex justify-content-between align-items-center pe-3">
+                                        <span>Đơn hàng #${order.order_id} - <fmt:formatDate value="${order.createdDate}" pattern="dd/MM/yyyy"/></span>
+                                        <span class="badge bg-primary"><fmt:formatNumber value="${order.total_amount}" pattern="#,##0₫"/></span>
+                                        <span class="badge bg-info">${order.order_status}</span>
                                     </div>
-                                    
-                                    <!-- Chi tiết đơn hàng (collapse) -->
-                                    <div class="collapse mt-3" id="order-${order.order_id}">
-                                        <hr>
-                                        
-                                        <!-- Danh sách sản phẩm -->
-                                        <c:if test="${not empty order.orderDetails}">
-                                            <h6 class="small text-muted mb-2">Chi tiết sản phẩm</h6>
-                                            <div class="table-responsive mb-3">
-                                                <table class="table table-sm table-borderless">
-                                                    <thead class="table-light">
-                                                        <tr>
-                                                            <th>Sản phẩm</th>
-                                                            <th>Size</th>
-                                                            <th>Topping</th>
-                                                            <th class="text-center">SL</th>
-                                                            <th class="text-end">Đơn giá</th>
-                                                            <th class="text-end">Thành tiền</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <c:forEach var="detail" items="${order.orderDetails}">
-                                                            <tr>
-                                                                <td>${detail.product_name}</td>
-                                                                <td>${empty detail.size_name ? '-' : detail.size_name}</td>
-                                                                <td class="small">${empty detail.toppings ? '-' : detail.toppings}</td>
-                                                                <td class="text-center">${detail.quantity}</td>
-                                                                <td class="text-end">
-                                                                    <fmt:formatNumber value="${detail.price}" pattern="#,##0₫"/>
-                                                                </td>
-                                                                <td class="text-end fw-bold">
-                                                                    <c:set var="lineTotal" value="${detail.price.multiply(detail.quantity)}" />
-                                                                    <fmt:formatNumber value="${lineTotal}" pattern="#,##0₫"/>
-                                                                </td>
-                                                            </tr>
-                                                        </c:forEach>
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                </button>
+                            </h2>
+                            <div id="collapse-${order.order_id}" class="accordion-collapse collapse" data-bs-parent="#orderAccordion">
+                                <div class="accordion-body">
+                                    <%-- Nội dung chi tiết đơn hàng --%>
+                                    <ul class="list-group list-group-flush mb-3">
+                                        <c:forEach var="detail" items="${order.orderDetails}">
+                                            <li class="list-group-item">${detail.product_name} x ${detail.quantity}</li>
+                                        </c:forEach>
+                                    </ul>
+                                    <div class="text-end">
+                                        <c:if test="${order.order_status eq 'Chờ xác nhận'}">
+                                            <form method="post" action="${pageContext.request.contextPath}/user/profile" style="display: inline;">
+                                                <input type="hidden" name="action" value="cancelOrder"/><input type="hidden" name="orderId" value="${order.order_id}"/>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')">Huỷ đơn</button>
+                                            </form>
                                         </c:if>
-                                        
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <h6 class="small text-muted">Địa chỉ giao hàng</h6>
-                                                <p class="mb-2">${order.address}</p>
-                                                <c:if test="${not empty order.note}">
-                                                    <h6 class="small text-muted mt-3">Ghi chú</h6>
-                                                    <p class="mb-0"><em>${order.note}</em></p>
-                                                </c:if>
-                                            </div>
-                                            
-                                            <div class="col-md-6">
-                                                <h6 class="small text-muted">Phương thức thanh toán</h6>
-                                                <p class="mb-2">${order.payment_method}</p>
-                                                
-                                                <h6 class="small text-muted mt-3">Thời gian</h6>
-                                                <div class="small">
-                                                    <div><strong>Ngày đặt:</strong> 
-                                                        <fmt:formatDate value="${order.createdDate}" pattern="dd/MM/yyyy HH:mm"/>
-                                                    </div>
-                                                    <c:if test="${not empty order.updatedDate}">
-                                                        <div><strong>Cập nhật:</strong> 
-                                                            <fmt:formatDate value="${order.updatedDate}" pattern="dd/MM/yyyy HH:mm"/>
-                                                        </div>
-                                                    </c:if>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <c:if test="${order.order_status eq 'Hoàn thành'}">
+                                            <a href="${pageContext.request.contextPath}/user/reorder?orderId=${order.order_id}" class="btn btn-sm btn-primary">Mua lại</a>
+                                        </c:if>
                                     </div>
                                 </div>
                             </div>
@@ -166,25 +71,5 @@
                 </div>
             </c:otherwise>
         </c:choose>
-
-        <div class="mt-4">
-            <a href="${pageContext.request.contextPath}/user/profile" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Quay lại trang cá nhân
-            </a>
-        </div>
     </div>
 </div>
-
-<style>
-.badge { 
-    font-size: 0.85rem; 
-    padding: 0.35rem 0.65rem; 
-}
-.table-responsive {
-    max-height: 400px;
-    overflow-y: auto;
-}
-.collapse {
-    transition: height 0.3s ease;
-}
-</style>
