@@ -1,21 +1,26 @@
-/* Ví dụ: Đổi màu primary sang màu cam giống Shopee */
 :root {
-    --bs-primary: #EE4D2D;
-    --bs-primary-rgb: 238, 77, 45;
-    --bs-link-color: #EE4D2D;
+    --bs-primary: #006633; 
+    --bs-primary-rgb: 0, 102, 51;
+    --bs-body-font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .btn-primary {
     --bs-btn-bg: var(--bs-primary);
     --bs-btn-border-color: var(--bs-primary);
-    --bs-btn-hover-bg: #d73a1a;
-    --bs-btn-hover-border-color: #d73a1a;
-    --bs-btn-active-bg: #c93416;
-    --bs-btn-active-border-color: #c93416;
+    --bs-btn-hover-bg: #004d26;
+    --bs-btn-hover-border-color: #004d26;
 }
 
-.text-primary {
-    color: var(--bs-primary) !important;
+/* Style cho thẻ sản phẩm */
+.card {
+    border: 1px solid #eee;
+    box-shadow: none;
+    transition: box-shadow 0.2s ease-in-out;
 }
-
-/* Tùy chỉnh thêm... */
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
+.card-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
