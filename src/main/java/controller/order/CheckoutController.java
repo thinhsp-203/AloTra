@@ -22,11 +22,26 @@ public class CheckoutController extends HttpServlet {
   }
 
   @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    String path = req.getPathInfo(); // /, /pay, /result
+    HttpSession session = req.getSession();
+    User currentUser = (User) session.getAttribute("currentUser");
+
+    // 1. Bắt buộc người dùng phải đăng nhập
+    if (currentUser == null) {
+        session.setAttribute("redirectAfterLogin", req.getContextPath() + "/checkout");
+        resp.sendRedirect(req.getContextPath() + "/login");
+        return;
+    }
+
+    // 2. Bắt buộc giỏ hàng phải có sản phẩm
+    if (cart(session).isEmpty()) {
+        resp.sendRedirect(req.getContextPath() + "/cart/view");
+        return;
+    }
+
+    String path = req.getPathInfo();
     if (path == null || "/".equals(path)){
       req.getRequestDispatcher("/views/order/checkout.jsp").forward(req, resp);
     } else if ("/pay".equals(path)){
-      // Giả lập chuyển hướng sang "ngân hàng" -> quay lại /checkout/result?status=success
       resp.sendRedirect(req.getContextPath() + "/checkout/result?status=success");
     } else if ("/result".equals(path)){
       String status = req.getParameter("status");
@@ -35,8 +50,9 @@ public class CheckoutController extends HttpServlet {
     } else {
       resp.sendError(404);
     }
-  }
+  } // <-- Dấu ngoặc kết thúc của doGet ở đây
 
+  // doPost được di chuyển ra ngoài doGet
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
       String path = req.getPathInfo();
@@ -71,14 +87,12 @@ public class CheckoutController extends HttpServlet {
 
       EntityManager em = JpaUtil.em();
       try {
-          // 2. Bắt đầu một giao dịch duy nhất cho toàn bộ quá trình
           em.getTransaction().begin();
 
           BigDecimal total = items.stream()
                                   .map(CartItem::getLineTotal)
                                   .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-          // Xử lý voucher (nếu có)
           BigDecimal discountAmount = BigDecimal.ZERO;
           if (voucherCode != null && !voucherCode.isBlank()) {
               var vopt = new VoucherRepository(em).findActiveByCode(voucherCode.trim());
@@ -96,6 +110,14 @@ public class CheckoutController extends HttpServlet {
                       v.setUsed_count((v.getUsed_count() == null ? 0 : v.getUsed_count()) + 1);
                       em.merge(v); // Thay đổi sẽ được commit cùng với đơn hàng
                   }
+              } else {
+                  // === START MODIFICATION ===
+                  // Nếu voucher không hợp lệ, báo lỗi và quay lại
+                  req.getSession().setAttribute("checkoutError", "Mã giảm giá không hợp lệ hoặc đã hết hạn!");
+                  em.getTransaction().rollback(); // Hủy transaction
+                  resp.sendRedirect(req.getContextPath() + "/checkout");
+                  return; // Dừng xử lý
+                  // === END MODIFICATION ===
               }
           }
           
@@ -113,18 +135,18 @@ public class CheckoutController extends HttpServlet {
           // 3. Commit giao dịch sau khi mọi thứ thành công
           em.getTransaction().commit();
 
-          // Xóa giỏ hàng và chuyển hướng
           session.removeAttribute("CART");
-          resp.sendRedirect(req.getContextPath() + "/checkout/pay?oid=" + order.getOrder_id());
+          session.setAttribute("orderSuccess", "Đơn hàng của bạn #" + order.getOrder_id() + " đã được đặt thành công!");
+          resp.sendRedirect(req.getContextPath() + "/user/orders");
 
       } catch (Exception e) {
-          // 4. Nếu có lỗi, rollback toàn bộ giao dịch
           if (em.getTransaction().isActive()) {
               em.getTransaction().rollback();
           }
-          // Có thể ghi log lỗi ở đây và chuyển hướng đến trang lỗi
-          e.printStackTrace(); // In lỗi ra console server
-          resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi khi tạo đơn hàng.");
+          e.printStackTrace(); // Log the full error to the server console
+          // MODIFIED: Set error message in session and redirect back to checkout page
+          req.getSession().setAttribute("checkoutError", "Lỗi khi tạo đơn hàng. Vui lòng thử lại.");
+          resp.sendRedirect(req.getContextPath() + "/checkout");
       } finally {
           if (em.isOpen()) {
               em.close();

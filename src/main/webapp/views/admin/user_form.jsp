@@ -137,5 +137,3 @@
         </div>
     </c:if>
 </div>
-
-<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>

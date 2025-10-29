@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date; // Import Date
 import java.util.List;
 
 @Entity
@@ -42,13 +43,24 @@ public class Orders {
   private LocalDateTime createdDate;
   private LocalDateTime updatedDate;
   
-  // Quan hệ One-to-Many với OrderDetail
   @OneToMany(mappedBy="order", fetch=FetchType.LAZY, cascade=CascadeType.ALL)
   private List<OrderDetail> orderDetails = new ArrayList<>();
   
-  // Helper method để add OrderDetail
   public void addOrderDetail(OrderDetail detail) {
     orderDetails.add(detail);
     detail.setOrder(this);
+  }
+
+  // ADDED: Methods to convert LocalDateTime to Date for JSP compatibility
+  @Transient
+  public Date getCreatedDate() {
+    if (this.createdDate == null) return null;
+    return Date.from(this.createdDate.atZone(java.time.ZoneId.systemDefault()).toInstant());
+  }
+  
+  @Transient
+  public Date getUpdatedDate() {
+    if (this.updatedDate == null) return null;
+    return Date.from(this.updatedDate.atZone(java.time.ZoneId.systemDefault()).toInstant());
   }
 }

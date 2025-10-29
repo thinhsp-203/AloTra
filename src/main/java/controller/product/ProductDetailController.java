@@ -9,6 +9,7 @@ import java.util.List;
 import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import model.Product;
+import model.Topping;
 
 @WebServlet(urlPatterns = "/p")
 public class ProductDetailController extends HttpServlet {
@@ -31,7 +32,7 @@ public class ProductDetailController extends HttpServlet {
                 return;
             }
             req.setAttribute("p", p);
-
+            
             List<Product> sameCate = Collections.emptyList();
             if (p.getCategory() != null) {
                 sameCate = em.createQuery(
@@ -41,7 +42,14 @@ public class ProductDetailController extends HttpServlet {
                     .setMaxResults(8)
                     .getResultList();
             }
-
+         // === START MODIFICATION ===
+            // Lấy danh sách topping đang có sẵn
+            List<Topping> toppings = em.createQuery(
+                "SELECT t FROM Topping t WHERE t.isAvailable = true ORDER BY t.topping_name", Topping.class)
+                .getResultList();
+            req.setAttribute("toppings", toppings);
+            // === END MODIFICATION ===
+            
             // Chỉ tìm kiếm nếu sản phẩm có nhà cung cấp
             List<Product> sameSup = Collections.emptyList();
             if (p.getSupplier() != null) {

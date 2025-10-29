@@ -60,40 +60,46 @@
             <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Tìm</button>
         </form>
 
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-            <li class="nav-item dropdown cart-dropdown">
-                <a class="nav-link" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-cart-fill fs-5"></i>
-                    <span class="badge rounded-pill bg-danger" id="cart-item-count">${not empty sessionScope.CART ? fn:length(sessionScope.CART) : 0}</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="cartDropdown">
-                    <li class="cart-dropdown-header">Sản Phẩm Mới Thêm</li>
-                    <li><hr class="dropdown-divider my-0"></li>
-                    <c:choose>
-                        <c:when test="${not empty sessionScope.CART}">
-                            <c:forEach var="item" items="${sessionScope.CART}" begin="0" end="4">
-                                <li>
-                                    <a class="dropdown-item cart-dropdown-item" href="${pageContext.request.contextPath}/p?id=${item.productId}">
-                                        <img src="${item.thumbnail}" alt="${item.productName}">
-                                        <div class="cart-dropdown-item-info">
-                                            <span class="cart-dropdown-item-name">${item.productName}</span>
-                                            <strong class="text-primary"><fmt:formatNumber value="${item.lineTotal}" pattern="#,##0₫"/></strong>
-                                        </div>
-                                    </a>
-                                </li>
-                            </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                            <li class="p-3 text-center text-muted">Chưa có sản phẩm</li>
-                        </c:otherwise>
-                    </c:choose>
-                    <li><hr class="dropdown-divider my-0"></li>
-                    <li class="cart-dropdown-footer">
-                        <span class="small">${fn:length(sessionScope.CART)} Thêm Hàng Vào Giỏ</span>
-                        <a href="${pageContext.request.contextPath}/cart/view" class="btn btn-primary btn-sm">Xem Giỏ Hàng</a>
-                    </li>
-                </ul>
+<ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+    <li class="nav-item dropdown cart-dropdown">
+        <a class="nav-link" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-cart-fill fs-5"></i>
+            <span class="badge rounded-pill bg-danger" id="cart-item-count">${not empty sessionScope.CART ? fn:length(sessionScope.CART) : 0}</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="cartDropdown">
+            <li class="cart-dropdown-header">Sản Phẩm Mới Thêm</li>
+            <li><hr class="dropdown-divider my-0"></li>
+            
+            <%-- WRAP CART ITEMS IN A CONTAINER FOR JS --%>
+            <div id="cart-item-list">
+                <c:choose>
+                    <c:when test="${not empty sessionScope.CART}">
+                        <c:forEach var="item" items="${sessionScope.CART}" begin="0" end="4">
+                            <li>
+                                <a class="dropdown-item cart-dropdown-item" href="${pageContext.request.contextPath}/p?id=${item.productId}">
+                                    <img src="${item.thumbnail}" alt="${item.productName}">
+                                    <div class="cart-dropdown-item-info">
+                                        <span class="cart-dropdown-item-name">${item.productName}</span>
+                                        <strong class="text-primary"><fmt:formatNumber value="${item.lineTotal}" pattern="#,##0₫"/></strong>
+                                    </div>
+                                </a>
+                            </li>
+                        </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+                        <%-- ADDED CLASS for easier selection --%>
+                        <li class="p-3 text-center text-muted empty-cart-message">Chưa có sản phẩm</li>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            
+            <li><hr class="dropdown-divider my-0"></li>
+            <li class="cart-dropdown-footer">
+                <span class="small">${not empty sessionScope.CART ? fn:length(sessionScope.CART) : 0} Thêm Hàng Vào Giỏ</span>
+                <a href="${pageContext.request.contextPath}/cart/view" class="btn btn-primary btn-sm">Xem Giỏ Hàng</a>
             </li>
+        </ul>
+    </li>
 
             <c:choose>
                 <c:when test="${empty sessionScope.currentUser}">

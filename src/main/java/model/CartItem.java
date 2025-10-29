@@ -25,12 +25,13 @@ public class CartItem {
   }
 
   @Override public boolean equals(Object o){
-    if(this==o) return true;
-    if(!(o instanceof CartItem)) return false;
-    CartItem that=(CartItem)o;
-    return Objects.equals(productId,that.productId) &&
-           Objects.equals(sizeName,that.sizeName) &&
-           Objects.equals(toppingsCsv,that.toppingsCsv);
-  }
-  @Override public int hashCode(){ return Objects.hash(productId,sizeName,toppingsCsv); }
-}
+	    if(this==o) return true;
+	    if(!(o instanceof CartItem)) return false;
+	    CartItem that=(CartItem)o;
+	    // So sánh cả productId và chuỗi topping
+	    return Objects.equals(productId,that.productId) &&
+	           Objects.equals(sizeName,that.sizeName) &&
+	           Objects.equals(toppingsCsv,that.toppingsCsv);
+	  }
+	  @Override public int hashCode(){ return Objects.hash(productId,sizeName,toppingsCsv); }
+	}

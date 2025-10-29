@@ -31,17 +31,22 @@ public class LoginController extends HttpServlet {
         String username = safe(req.getParameter("username"));
         String password = safe(req.getParameter("password"));
 
-        // Service tự xử lý: tìm user + BCrypt.checkpw + isActive
         User user = userService.login(username, password);
 
         if (user != null) {
-            // Rotate session để chống session fixation
             HttpSession old = req.getSession(false);
             if (old != null) old.invalidate();
             HttpSession session = req.getSession(true);
             session.setAttribute("currentUser", user);
-            // tuỳ chọn: session.setMaxInactiveInterval(30*60); // 30 phút
-            resp.sendRedirect(req.getContextPath() + "/home");
+
+            // KIỂM TRA VÀ CHUYỂN HƯỚNG SAU KHI ĐĂNG NHẬP
+            String redirectUrl = (String) session.getAttribute("redirectAfterLogin");
+            if (redirectUrl != null && !redirectUrl.isEmpty()) {
+                session.removeAttribute("redirectAfterLogin");
+                resp.sendRedirect(redirectUrl);
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/home");
+            }
         } else {
             req.setAttribute("alert", "Sai tài khoản hoặc mật khẩu");
             req.getRequestDispatcher("views/login.jsp").forward(req, resp);

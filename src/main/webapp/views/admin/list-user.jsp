@@ -4,211 +4,148 @@
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <fmt:setLocale value="vi_VN"/>
 
-<style>
-  .user-filter-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 16px;
-    align-items: center;
-  }
-  .user-filter-form input[type="text"],
-  .user-filter-form select {
-    padding: 6px 10px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    min-width: 180px;
-  }
-  .user-filter-form button {
-    padding: 7px 16px;
-    border: none;
-    border-radius: 4px;
-    background-color: #0d6efd;
-    color: #fff;
-    cursor: pointer;
-  }
-  .user-filter-form button:hover {
-    background-color: #0b5ed7;
-  }
-  .user-filter-form .btn-reset {
-    background-color: #6c757d;
-    color: #fff;
-    text-decoration: none;
-    display: inline-block;
-    padding: 7px 16px;
-    border-radius: 4px;
-  }
-  .user-filter-form .btn-reset:hover {
-    background-color: #5c636a;
-  }
-  table.user-table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  table.user-table th, table.user-table td {
-    border: 1px solid #dee2e6;
-    padding: 8px 10px;
-    text-align: left;
-  }
-  table.user-table th {
-    background-color: #f8f9fa;
-    font-weight: 600;
-  }
-  .pagination {
-    display: flex;
-    list-style: none;
-    gap: 6px;
-    padding: 0;
-    margin-top: 16px;
-  }
-  .pagination li a {
-    display: block;
-    padding: 6px 12px;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #0d6efd;
-  }
-  .pagination li a:hover {
-    background-color: #e9ecef;
-  }
-  .pagination li.active a {
-    background-color: #0d6efd;
-    color: #fff;
-    border-color: #0d6efd;
-  }
-  .pagination li.disabled a {
-    color: #adb5bd;
-    pointer-events: none;
-    background-color: #f8f9fa;
-  }
-  .alert {
-    padding: 12px 16px;
-    border-radius: 4px;
-    border: 1px solid #b6d4fe;
-    background-color: #e7f1ff;
-    color: #084298;
-  }
-  .alert.alert-info {
-    border-color: #b6effb;
-    background-color: #e0f5ff;
-    color: #055160;
-  }
-</style>
-	<div class="d-flex justify-content-between align-items-center mb-4">
-	  <h2>Quản lý người dùng</h2>
-	  <a href="${pageContext.request.contextPath}/admin/users/create" class="btn btn-primary">
-	    <i class="bi bi-plus-circle"></i> Tạo người dùng mới
-	  </a>
-	</div>
-	
-	<c:if test="${not empty sessionScope.success}">
-	  <div class="alert alert-success alert-dismissible fade show">
-	    ${sessionScope.success}
-	    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-	  </div>
-	  <c:remove var="success" scope="session"/>
-	</c:if>
-	
-	<c:if test="${not empty sessionScope.error}">
-	  <div class="alert alert-danger alert-dismissible fade show">
-	    ${sessionScope.error}
-	    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-	  </div>
-	  <c:remove var="error" scope="session"/>
-	</c:if>
-	<form method="get" action="${pageContext.request.contextPath}/admin/users" class="user-filter-form">
-  <input type="text" name="keyword" placeholder="Tìm tên, email, SĐT" value="${fn:escapeXml(keyword)}"/>
-  <select name="roleId">
-    <option value="">Tất cả vai trò</option>
-    <c:forEach var="entry" items="${roles}">
-      <option value="${entry.key}" <c:if test="${selectedRoleId != null && selectedRoleId eq entry.key}">selected</c:if>>${entry.value}</option>
-    </c:forEach>
-  </select>
-  <select name="size">
-    <c:forEach var="option" items="${pageSizes}">
-      <option value="${option}" <c:if test="${option == pageSize}">selected</c:if>>${option} / trang</option>
-    </c:forEach>
-  </select>
-  <button type="submit">Lọc</button>
-  <a class="btn-reset" href="${pageContext.request.contextPath}/admin/users">Bỏ lọc</a>
-</form>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Quản lý người dùng</h2>
+  <a href="${pageContext.request.contextPath}/admin/users/create" class="btn btn-primary">
+    <i class="bi bi-plus-circle"></i> Tạo người dùng mới
+  </a>
+</div>
 
-<p><strong>${totalUsers}</strong> người dùng được tìm thấy.</p>
+<c:if test="${not empty sessionScope.success}">
+  <div class="alert alert-success alert-dismissible fade show">
+    ${sessionScope.success}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  <c:remove var="success" scope="session"/>
+</c:if>
 
-<c:choose>
-  <c:when test="${empty users}">
-    <div class="alert alert-info">Không có dữ liệu phù hợp.</div>
-  </c:when>
-  <c:otherwise>
-    <table class="user-table">
-      <thead>
-      <tr>
-        <th>#</th>
-        <th>Tên đăng nhập</th>
-        <th>Họ tên</th>
-        <th>Email</th>
-        <th>Số điện thoại</th>
-        <th>Vai trò</th>
-        <th>Ngày tạo</th>
-      </tr>
-      </thead>
-      <tbody>
-      <c:forEach var="user" items="${users}" varStatus="st">
+<c:if test="${not empty sessionScope.error}">
+  <div class="alert alert-danger alert-dismissible fade show">
+    ${sessionScope.error}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  <c:remove var="error" scope="session"/>
+</c:if>
+
+<div class="card">
+  <div class="card-body">
+    <form method="get" action="${pageContext.request.contextPath}/admin/users" class="row g-3 mb-4">
+      <div class="col-md-5">
+        <input type="text" class="form-control" name="keyword" placeholder="Tìm tên, email, SĐT" value="${fn:escapeXml(keyword)}"/>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" name="roleId">
+          <option value="">Tất cả vai trò</option>
+          <c:forEach var="entry" items="${roles}">
+            <option value="${entry.key}" <c:if test="${selectedRoleId != null && selectedRoleId eq entry.key}">selected</c:if>>${entry.value}</option>
+          </c:forEach>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select class="form-select" name="size">
+          <c:forEach var="option" items="${pageSizes}">
+            <option value="${option}" <c:if test="${option == pageSize}">selected</c:if>>${option} / trang</option>
+          </c:forEach>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex">
+        <button type="submit" class="btn btn-primary flex-grow-1 me-2">Lọc</button>
+        <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/users" title="Bỏ lọc"><i class="bi bi-arrow-repeat"></i></a>
+      </div>
+    </form>
+
+    <p class="text-muted small">Hiển thị ${fromRecord} - ${toRecord} trên tổng số ${totalUsers} người dùng.</p>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
         <tr>
-          <td>${fromRecord + st.index}</td>
-          <td>${user.username}</td>
-          <td>${empty user.fullname ? '-' : user.fullname}</td>
-          <td>${user.email}</td>
-          <td>${empty user.phone ? '-' : user.phone}</td>
-          <td>${user.roleName}</td>
-          <td>
-            <c:choose>
-              <c:when test="${not empty user.createdDate}">
-                <fmt:formatDate value="${user.createdDate}" pattern="dd/MM/yyyy"/>
-              </c:when>
-              <c:otherwise>-</c:otherwise>
-            </c:choose>
-          </td>
+          <th>#</th>
+          <th>Tên đăng nhập</th>
+          <th>Họ tên</th>
+          <th>Email</th>
+          <th>Vai trò</th>
+          <th class="text-center">Trạng thái</th>
+          <th class="text-center">Thao tác</th>
         </tr>
+        </thead>
+        <tbody>
+        <c:choose>
+          <c:when test="${empty users}">
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">Không có dữ liệu phù hợp.</td>
+            </tr>
+          </c:when>
+          <c:otherwise>
+            <c:forEach var="user" items="${users}" varStatus="st">
+              <tr>
+                <td>${fromRecord + st.index}</td>
+                <td><strong>${user.username}</strong></td>
+                <td>${empty user.fullname ? '-' : user.fullname}</td>
+                <td>${user.email}</td>
+                <td>${user.roleName}</td>
+                <td class="text-center">
+                  <span class="badge bg-${user.isActive ? 'success' : 'secondary'}">
+                      ${user.isActive ? 'Kích hoạt' : 'Vô hiệu hóa'}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm">
+                    <a href="${pageContext.request.contextPath}/admin/users/edit?id=${user.id}" class="btn btn-outline-primary" title="Chỉnh sửa">
+                      <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/admin/users/toggle-status?id=${user.id}" class="btn btn-outline-secondary" title="Đổi trạng thái">
+                      <i class="bi bi-toggles"></i>
+                    </a>
+                    <c:if test="${sessionScope.currentUser.id != user.id}">
+                      <a href="${pageContext.request.contextPath}/admin/users/delete?id=${user.id}" class="btn btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng \'${fn:escapeXml(user.username)}\' không?')">
+                        <i class="bi bi-trash"></i>
+                      </a>
+                    </c:if>
+                  </div>
+                </td>
+              </tr>
+            </c:forEach>
+          </c:otherwise>
+        </c:choose>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<c:if test="${totalPages > 1}">
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      <c:set var="prevPage" value="${page > 1 ? page - 1 : 1}"/>
+      <c:url var="prevUrl" value="/admin/users">
+        <c:param name="page" value="${prevPage}"/>
+        <c:param name="size" value="${pageSize}"/>
+        <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+        <c:if test="${not empty roleIdParam}"><c:param name="roleId" value="${roleIdParam}"/></c:if>
+      </c:url>
+      <li class="page-item ${page <= 1 ? 'disabled' : ''}"><a class="page-link" href="${prevUrl}">«</a></li>
+
+      <c:forEach begin="1" end="${totalPages}" var="p">
+        <c:if test="${p == 1 || p == totalPages || (p >= page - 2 && p <= page + 2)}">
+          <c:url var="pageUrl" value="/admin/users">
+            <c:param name="page" value="${p}"/>
+            <c:param name="size" value="${pageSize}"/>
+            <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+            <c:if test="${not empty roleIdParam}"><c:param name="roleId" value="${roleIdParam}"/></c:if>
+          </c:url>
+          <li class="page-item ${p == page ? 'active' : ''}"><a class="page-link" href="${pageUrl}">${p}</a></li>
+        </c:if>
       </c:forEach>
-      </tbody>
-    </table>
 
-    <p>Hiển thị ${fromRecord} - ${toRecord} / ${totalUsers}</p>
-
-    <c:if test="${totalPages > 1}">
-      <ul class="pagination">
-        <c:set var="prevPage" value="${page > 1 ? page - 1 : 1}"/>
-        <c:url var="prevUrl" value="/admin/users">
-          <c:param name="page" value="${prevPage}"/>
-          <c:param name="size" value="${pageSize}"/>
-          <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
-          <c:if test="${not empty roleIdParam}"><c:param name="roleId" value="${roleIdParam}"/></c:if>
-        </c:url>
-        <li class="${page <= 1 ? 'disabled' : ''}"><a href="${pageContext.request.contextPath}${prevUrl}">«</a></li>
-
-        <c:forEach begin="1" end="${totalPages}" var="p">
-          <c:if test="${p == 1 || p == totalPages || (p >= page - 2 && p <= page + 2)}">
-            <c:url var="pageUrl" value="/admin/users">
-              <c:param name="page" value="${p}"/>
-              <c:param name="size" value="${pageSize}"/>
-              <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
-              <c:if test="${not empty roleIdParam}"><c:param name="roleId" value="${roleIdParam}"/></c:if>
-            </c:url>
-            <li class="${p == page ? 'active' : ''}"><a href="${pageContext.request.contextPath}${pageUrl}">${p}</a></li>
-          </c:if>
-        </c:forEach>
-
-        <c:set var="nextPage" value="${page < totalPages ? page + 1 : totalPages}"/>
-        <c:url var="nextUrl" value="/admin/users">
-          <c:param name="page" value="${nextPage}"/>
-          <c:param name="size" value="${pageSize}"/>
-          <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
-          <c:if test="${not empty roleIdParam}"><c:param name="roleId" value="${roleIdParam}"/></c:if>
-        </c:url>
-        <li class="${page >= totalPages ? 'disabled' : ''}"><a href="${pageContext.request.contextPath}${nextUrl}">»</a></li>
-      </ul>
-    </c:if>
-  </c:otherwise>
-</c:choose>
+      <c:set var="nextPage" value="${page < totalPages ? page + 1 : totalPages}"/>
+      <c:url var="nextUrl" value="/admin/users">
+        <c:param name="page" value="${nextPage}"/>
+        <c:param name="size" value="${pageSize}"/>
+        <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+        <c:if test="${not empty roleIdParam}"><c:param name="roleId" value="${roleIdParam}"/></c:if>
+      </c:url>
+      <li class="page-item ${page >= totalPages ? 'disabled' : ''}"><a class="page-link" href="${nextUrl}">»</a></li>
+    </ul>
+  </nav>
+</c:if>

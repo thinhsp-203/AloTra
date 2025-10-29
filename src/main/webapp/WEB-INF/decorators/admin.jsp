@@ -7,30 +7,42 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title><c:out value="${pageTitle != null ? pageTitle : 'Admin - AloTra'}"/></title>
+  <%-- Sử dụng các file CSS đã có --%>
   <link href="${pageContext.request.contextPath}/assets/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="${pageContext.request.contextPath}/assets/css/admin-style.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .top-navbar {
+      flex-shrink: 0; /* Ngăn navbar co lại */
+    }
+    .main-wrapper {
+      display: flex;
+      flex-grow: 1; /* Phần thân sẽ chiếm hết không gian còn lại */
+      overflow: hidden; /* Ngăn cuộn ở cấp độ này */
+    }
     .admin-sidebar {
-      min-height: calc(100vh - 56px);
-      background-color: #f8f9fa;
-      border-right: 1px solid #dee2e6;
+      flex-shrink: 0;
+      width: 250px; /* Độ rộng cố định cho sidebar */
+      overflow-y: auto; /* Cho phép cuộn nếu nội dung sidebar dài */
+      height: calc(100vh - 56px); /* Chiều cao bằng viewport trừ đi navbar */
+      position: sticky;
+      top: 56px; /* Dính vào dưới navbar */
     }
-    .admin-nav .nav-link {
-      color: #495057;
-      border-radius: 0.25rem;
-      margin-bottom: 0.25rem;
-    }
-    .admin-nav .nav-link:hover,
-    .admin-nav .nav-link.active {
-      background-color: #e9ecef;
-      color: #0d6efd;
+    .main-content {
+      flex-grow: 1;
+      overflow-y: auto; /* Chỉ vùng nội dung này được cuộn */
+      padding: 2rem;
+      height: calc(100vh - 56px);
     }
   </style>
 </head>
 <body data-context-path="${pageContext.request.contextPath}">
-  <!-- Top Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top top-navbar">
     <div class="container-fluid">
       <a class="navbar-brand" href="${pageContext.request.contextPath}/admin/dashboard">
         <i class="bi bi-shield-lock"></i> AloTra Admin
@@ -56,10 +68,8 @@
     </div>
   </nav>
 
-  <div class="container-fluid">
-    <div class="row">
-<!-- Sidebar -->
-      <nav class="col-md-2 d-md-block admin-sidebar p-3">
+  <div class="main-wrapper">
+    <nav class="admin-sidebar p-3">
         <div class="admin-nav nav flex-column">
           <a class="nav-link ${pageContext.request.requestURI.contains('/admin/dashboard') ? 'active' : ''}" 
              href="${pageContext.request.contextPath}/admin/dashboard">
@@ -88,11 +98,9 @@
         </div>
       </nav>
 
-      <!-- Main Content -->
-      <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+      <main class="main-content">
         <sitemesh:write property='body'/>
       </main>
-    </div>
   </div>
 
   <script src="${pageContext.request.contextPath}/assets/js/bootstrap.bundle.min.js"></script>

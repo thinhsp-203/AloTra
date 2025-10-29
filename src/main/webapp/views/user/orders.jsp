@@ -10,7 +10,14 @@
     
     <div class="col-md-9">
         <h2 class="h4 mb-4">Đơn hàng của tôi</h2>
-
+		<%-- THÊM KHỐI NÀY ĐỂ HIỂN THỊ THÔNG BÁO --%>
+        <c:if test="${not empty sessionScope.orderSuccess}">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                ${sessionScope.orderSuccess}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <c:remove var="orderSuccess" scope="session"/>
+        </c:if>
         <c:choose>
             <c:when test="${empty orders}">
                 <div class="alert alert-info">
