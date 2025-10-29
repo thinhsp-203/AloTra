@@ -37,7 +37,7 @@ public class ProductModalApiController extends HttpServlet {
                 List<ProductSize> sizes = em.createQuery("SELECT ps FROM ProductSize ps WHERE ps.product.product_id = :pid ORDER BY ps.size_name", ProductSize.class)
                                             .setParameter("pid", productId)
                                             .getResultList();
-                // Nếu không có size nào, tạo một size mặc định "Mặc định" để logic không bị lỗi
+                // Nếu không có size nào, tạo một size mặc định để logic không bị lỗi
                 if (sizes.isEmpty()) {
                     ProductSize defaultSize = new ProductSize();
                     defaultSize.setSize_name("Mặc định");

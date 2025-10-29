@@ -6,8 +6,9 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date; // Import Date
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -51,16 +52,16 @@ public class Orders {
     detail.setOrder(this);
   }
 
-  // ADDED: Methods to convert LocalDateTime to Date for JSP compatibility
+  // Methods to convert LocalDateTime to Date for JSP compatibility
   @Transient
-  public Date getCreatedDate() {
+  public Date getCreatedDateAsDate() {
     if (this.createdDate == null) return null;
-    return Date.from(this.createdDate.atZone(java.time.ZoneId.systemDefault()).toInstant());
+    return Date.from(this.createdDate.atZone(ZoneId.systemDefault()).toInstant());
   }
   
   @Transient
-  public Date getUpdatedDate() {
+  public Date getUpdatedDateAsDate() {
     if (this.updatedDate == null) return null;
-    return Date.from(this.updatedDate.atZone(java.time.ZoneId.systemDefault()).toInstant());
+    return Date.from(this.updatedDate.atZone(ZoneId.systemDefault()).toInstant());
   }
 }

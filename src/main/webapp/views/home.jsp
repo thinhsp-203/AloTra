@@ -5,7 +5,7 @@
     .hero-section {
         position: relative;
         padding: 5rem 1rem;
-        background-image: url('https://static.phuclong.com.vn/storage/5/2022/10/20/richtea-damvi-2_1666236962.jpg'); /* Thay bằng ảnh banner của bạn */
+        background-image: url('https://static.phuclong.com.vn/storage/5/2022/10/20/richtea-damvi-2_1666236962.jpg');
         background-size: cover;
         background-position: center;
         border-radius: 0.5rem;
@@ -13,25 +13,18 @@
         overflow: hidden;
     }
     .hero-overlay {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
         background-color: rgba(0, 0, 0, 0.4);
     }
     .hero-content {
-        position: relative;
-        z-index: 2;
+        position: relative; z-index: 2;
     }
     .hero-search-form {
-        max-width: 700px;
-        margin: 1.5rem auto 0;
-        background: white;
-        border-radius: 99px;
-        padding: 0.5rem;
+        max-width: 700px; margin: 1.5rem auto 0;
+        background: white; border-radius: 99px; padding: 0.5rem;
     }
     .hero-search-form .form-control {
-        border: none;
-        box-shadow: none;
-        font-size: 1.1rem;
+        border: none; box-shadow: none; font-size: 1.1rem;
     }
     .hero-search-form .btn {
         border-radius: 99px;
@@ -51,7 +44,7 @@
 </div>
 
 <c:if test="${not empty featured}">
-    <h2 class="h4 mb-3">BEST SELLERS - TRÀ THƠM CHẤT LƯỢNG</h2>
+    <h2 class="h4 mb-3">BEST SELLERS - SẢN PHẨM NỔI BẬT</h2>
     <div class="row row-cols-2 row-cols-md-5 g-3 mb-5">
       <c:forEach var="product" items="${featured}">
         <c:set var="p" value="${product}" scope="request" />

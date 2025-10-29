@@ -58,6 +58,8 @@
     // --- PRODUCT MODAL LOGIC ---
     const productModal = document.getElementById('productModal');
     if (productModal) {
+        let modalData = null; // Lưu dữ liệu sản phẩm
+        
         productModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const productId = button.dataset.productId;
@@ -75,11 +77,13 @@
                     return;
                 }
                 
+                modalData = data; // Lưu data để dùng sau
+                
                 // Build modal HTML
                 let sizesHtml = data.sizes.map((s, index) => `
                     <div class="col">
-                        <input type="radio" class="btn-check" name="size" id="size-${s.name}" value="${s.name}" data-price-adj="${s.priceAdjustment}" ${index === 0 ? 'checked' : ''}>
-                        <label class="btn btn-outline-primary w-100" for="size-${s.name}">${s.name}</label>
+                        <input type="radio" class="btn-check" name="size" id="size-${index}" value="${escapeHtml(s.name)}" data-price-adj="${s.priceAdjustment}" ${index === 0 ? 'checked' : ''}>
+                        <label class="btn btn-outline-primary w-100" for="size-${index}">${escapeHtml(s.name)}</label>
                     </div>
                 `).join('');
 
@@ -87,7 +91,7 @@
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="topping" value="${t.id}" id="topping-${t.id}" data-price="${t.price}">
                         <label class="form-check-label d-flex justify-content-between" for="topping-${t.id}">
-                            <span>${t.name}</span>
+                            <span>${escapeHtml(t.name)}</span>
                             <span>+${currencyFormatter.format(t.price)}</span>
                         </label>
                     </div>
@@ -95,20 +99,22 @@
 
                 modalContent.innerHTML = `
                     <div class="col-md-5">
-                        <img src="${data.product.thumbnail}" class="img-fluid rounded">
+                        <img src="${escapeHtml(data.product.thumbnail)}" class="img-fluid rounded" alt="${escapeHtml(data.product.name)}">
                     </div>
                     <div class="col-md-7">
-                        <h4 id="modalProductName">${data.product.name}</h4>
+                        <h4 id="modalProductName">${escapeHtml(data.product.name)}</h4>
                         <p class="h5 text-primary fw-bold" id="modalBasePrice" data-price="${data.product.basePrice}">${currencyFormatter.format(data.product.basePrice)}</p>
                         <hr>
+                        ${data.sizes.length > 1 ? `
                         <div class="mb-3">
                             <h6>Kích cỡ</h6>
                             <div class="row row-cols-3 g-2">${sizesHtml}</div>
-                        </div>
-                         <div class="mb-3">
+                        </div>` : ''}
+                        ${toppingsHtml ? `
+                        <div class="mb-3">
                             <h6>Topping</h6>
                             <div id="modalToppingsList">${toppingsHtml}</div>
-                        </div>
+                        </div>` : ''}
                         <div class="d-flex align-items-center">
                            <h6>Số lượng</h6>
                            <div class="input-group ms-auto" style="width: 120px;">
@@ -131,12 +137,12 @@
                     updateModalPrice();
                 });
                 
-                 document.getElementById('modal-quantity-minus').addEventListener('click', () => {
+                document.getElementById('modal-quantity-minus').addEventListener('click', () => {
                     const qtyInput = document.getElementById('modal-quantity');
                     let currentQty = parseInt(qtyInput.value);
                     if (currentQty > 1) {
-                         qtyInput.value = currentQty - 1;
-                         updateModalPrice();
+                        qtyInput.value = currentQty - 1;
+                        updateModalPrice();
                     }
                 });
 
@@ -148,12 +154,21 @@
                 addToCartBtn.onclick = function() {
                     const params = new URLSearchParams({
                         productId: productId,
-                        quantity: document.getElementById('modal-quantity').value,
-                        size: modalContent.querySelector('input[name="size"]:checked').value,
-                        ...Object.fromEntries(Array.from(modalContent.querySelectorAll('input[name="topping"]:checked')).map(cb => ['topping', cb.value]))
-                    }).toString();
+                        quantity: document.getElementById('modal-quantity').value
+                    });
                     
-                    handleAddToCartRequest(params);
+                    // Thêm size (nếu có nhiều hơn 1 size)
+                    const sizeInput = modalContent.querySelector('input[name="size"]:checked');
+                    if (sizeInput) {
+                        params.append('size', sizeInput.value);
+                    }
+                    
+                    // Thêm toppings
+                    modalContent.querySelectorAll('input[name="topping"]:checked').forEach(cb => {
+                        params.append('topping', cb.value);
+                    });
+                    
+                    handleAddToCartRequest(params.toString());
                     const modalInstance = bootstrap.Modal.getInstance(productModal);
                     modalInstance.hide();
                 };
@@ -161,15 +176,20 @@
         });
 
         function updateModalPrice() {
+            if (!modalData) return;
+            
             const basePrice = parseFloat(document.getElementById('modalBasePrice').dataset.price) || 0;
-            const sizeAdj = parseFloat(modalContent.querySelector('input[name="size"]:checked')?.dataset.priceAdj) || 0;
+            const sizeInput = document.querySelector('input[name="size"]:checked');
+            const sizeAdj = sizeInput ? parseFloat(sizeInput.dataset.priceAdj) || 0 : 0;
+            
             let toppingsPrice = 0;
-            modalContent.querySelectorAll('input[name="topping"]:checked').forEach(cb => {
+            document.querySelectorAll('input[name="topping"]:checked').forEach(cb => {
                 toppingsPrice += parseFloat(cb.dataset.price) || 0;
             });
-            const quantity = parseInt(document.getElementById('modal-quantity').value) || 1;
             
+            const quantity = parseInt(document.getElementById('modal-quantity').value) || 1;
             const finalPrice = (basePrice + sizeAdj + toppingsPrice) * quantity;
+            
             document.getElementById('modalAddToCartBtn').textContent = `Thêm vào giỏ - ${currencyFormatter.format(finalPrice)}`;
         }
     }
@@ -177,15 +197,95 @@
     // --- CART LOGIC ---
     function handleAddToCartRequest(params) {
         post(contextPath + '/cart/add', params, (err, data) => {
-            if (err) { showToast('Đã có lỗi xảy ra.', true); console.error(err); return; }
-            if (data && data.redirect) { window.location.href = data.redirect; return; }
+            if (err) { 
+                showToast('Đã có lỗi xảy ra.', true); 
+                console.error(err); 
+                return; 
+            }
+            if (data && data.redirect) { 
+                window.location.href = data.redirect; 
+                return; 
+            }
             if (data && data.ok) {
                 showToast('Đã thêm sản phẩm vào giỏ!');
-                document.getElementById('cart-item-count').textContent = data.cartSize;
+                const cartCountEl = document.getElementById('cart-item-count');
+                if (cartCountEl) {
+                    cartCountEl.textContent = data.cartSize;
+                }
             } else {
                 showToast((data && data.message) || 'Thêm giỏ hàng thất bại', true);
             }
         });
+    }
+
+    // --- PRODUCT LIST INFINITE SCROLL ---
+    window.loadMore = function() {
+        if (window.isLoading || !window.hasMore) return;
+        
+        window.isLoading = true;
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('btnLoadMore').style.display = 'none';
+        
+        const params = new URLSearchParams({
+            page: window.page,
+            size: 12
+        });
+        
+        if (window.searchKeyword) params.append('q', window.searchKeyword);
+        if (window.selectedCate) params.append('cate', window.selectedCate);
+        if (window.selectedSupplier) params.append('supplier', window.selectedSupplier);
+        
+        get(`${contextPath}/products/page?${params}`, (err, data) => {
+            document.getElementById('loading').style.display = 'none';
+            window.isLoading = false;
+            
+            if (err || !data) {
+                showToast('Không thể tải sản phẩm', true);
+                return;
+            }
+            
+            const grid = document.getElementById('grid');
+            data.items.forEach(item => {
+                const card = `
+                    <div class="col">
+                        <div class="card h-100 text-center">
+                            <a href="${contextPath}/p?id=${item.id}">
+                                <img class="card-img-top p-3" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.name)}" style="height: 200px; object-fit: contain;">
+                            </a>
+                            <div class="card-body">
+                                <h6 class="card-title">${escapeHtml(item.name)}</h6>
+                                <p class="card-text text-muted">${currencyFormatter.format(item.price)}</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pb-3">
+                                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#productModal" data-product-id="${item.id}">
+                                    Đặt mua
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', card);
+            });
+            
+            window.hasMore = data.hasMore;
+            window.page++;
+            
+            if (window.hasMore) {
+                document.getElementById('btnLoadMore').style.display = 'block';
+            }
+        });
+    };
+    
+    // Helper function
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
     }
 
 })();

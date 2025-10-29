@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!doctype html>
 <html lang="vi">
 <head>
@@ -71,27 +71,27 @@
   <div class="main-wrapper">
     <nav class="admin-sidebar p-3">
         <div class="admin-nav nav flex-column">
-          <a class="nav-link ${pageContext.request.requestURI.contains('/admin/dashboard') ? 'active' : ''}" 
+		  <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/admin/dashboard') ? 'active' : ''}" 
              href="${pageContext.request.contextPath}/admin/dashboard">
             <i class="bi bi-speedometer2"></i> Dashboard
           </a>
-          <a class="nav-link ${pageContext.request.requestURI.contains('/products') ? 'active' : ''}" 
+          <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/products') ? 'active' : ''}" 
              href="${pageContext.request.contextPath}/admin/products">
             <i class="bi bi-box-seam"></i> Sản phẩm
           </a>
-          <a class="nav-link ${pageContext.request.requestURI.contains('/category') ? 'active' : ''}" 
+          <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/category') ? 'active' : ''}" 
              href="${pageContext.request.contextPath}/admin/category/list">
             <i class="bi bi-tags"></i> Danh mục
           </a>
-          <a class="nav-link ${pageContext.request.requestURI.contains('/orders') ? 'active' : ''}" 
+          <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/orders') ? 'active' : ''}" 
              href="${pageContext.request.contextPath}/admin/orders">
             <i class="bi bi-cart-check"></i> Đơn hàng
           </a>
-          <a class="nav-link ${pageContext.request.requestURI.contains('/users') ? 'active' : ''}" 
+          <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/users') ? 'active' : ''}" 
              href="${pageContext.request.contextPath}/admin/users">
             <i class="bi bi-people"></i> Người dùng
           </a>
-          <a class="nav-link ${pageContext.request.requestURI.contains('/reports') ? 'active' : ''}" 
+          <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/reports') ? 'active' : ''}" 
              href="${pageContext.request.contextPath}/admin/reports">
             <i class="bi bi-graph-up"></i> Báo cáo
           </a>
