@@ -9,7 +9,6 @@ import java.util.List;
 import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import model.Product;
-import model.Topping;
 
 @WebServlet(urlPatterns = "/p")
 public class ProductDetailController extends HttpServlet {
@@ -33,36 +32,19 @@ public class ProductDetailController extends HttpServlet {
             }
             req.setAttribute("p", p);
             
-            List<Product> sameCate = Collections.emptyList();
+            // Lấy danh sách sản phẩm gợi ý (cùng danh mục)
+            List<Product> suggestedProducts = Collections.emptyList();
             if (p.getCategory() != null) {
-                sameCate = em.createQuery(
-                    "select x from Product x where x.category.id=:c and x.product_id<>:id order by x.createdDate desc", Product.class)
+                suggestedProducts = em.createQuery(
+                    "select x from Product x where x.category.id = :c and x.product_id <> :id and x.isActive = true order by x.createdDate desc", Product.class)
                     .setParameter("c", p.getCategory().getId())
                     .setParameter("id", id)
-                    .setMaxResults(8)
+                    .setMaxResults(10) // Lấy 10 sản phẩm để trượt
                     .getResultList();
             }
-         // === START MODIFICATION ===
-            // Lấy danh sách topping đang có sẵn
-            List<Topping> toppings = em.createQuery(
-                "SELECT t FROM Topping t WHERE t.isAvailable = true ORDER BY t.topping_name", Topping.class)
-                .getResultList();
-            req.setAttribute("toppings", toppings);
-            // === END MODIFICATION ===
             
-            // Chỉ tìm kiếm nếu sản phẩm có nhà cung cấp
-            List<Product> sameSup = Collections.emptyList();
-            if (p.getSupplier() != null) {
-                sameSup = em.createQuery(
-                    "select x from Product x where x.supplier.supplier_id=:s and x.product_id<>:id order by x.createdDate desc", Product.class)
-                    .setParameter("s", p.getSupplier().getSupplier_id())
-                    .setParameter("id", p.getProduct_id())
-                    .setMaxResults(8)
-                    .getResultList();
-            }
-
-            req.setAttribute("sameCate", sameCate);
-            req.setAttribute("sameSup", sameSup);
+            req.setAttribute("suggestedProducts", suggestedProducts);
+            
             trackViewed(req, resp, id);
             req.getRequestDispatcher("/views/product/detail.jsp").forward(req, resp);
         } finally {

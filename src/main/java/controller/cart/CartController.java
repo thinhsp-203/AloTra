@@ -56,8 +56,9 @@ public class CartController extends HttpServlet {
 
         try {
             int pid = Integer.parseInt(req.getParameter("productId"));
-            int qty = 1;
-            String[] toppingIdsParam = req.getParameterValues("topping");
+            int qty = 1; // Số lượng sản phẩm chính luôn là 1 khi thêm từ modal
+            String sizeName = req.getParameter("size"); // Lấy tên size, ví dụ: "L"
+            String toppingParam = req.getParameter("topping"); // VD: "5:1,8:2"
 
             EntityManager em = JpaUtil.em();
             try {
@@ -68,20 +69,64 @@ public class CartController extends HttpServlet {
                     return;
                 }
 
+                // Xử lý Size
+                BigDecimal sizeAdjustment = BigDecimal.ZERO;
+                if (sizeName != null && !sizeName.isBlank()) {
+                    try {
+                        ProductSize productSize = em.createQuery(
+                            "SELECT ps FROM ProductSize ps WHERE ps.product.product_id = :pid AND ps.size_name = :sname", ProductSize.class)
+                            .setParameter("pid", pid)
+                            .setParameter("sname", sizeName)
+                            .getSingleResult();
+                        sizeAdjustment = productSize.getPrice_adjustment();
+                    } catch (Exception e) {
+                        // Nếu không tìm thấy size trong DB (ví dụ sản phẩm chỉ có 1 size mặc định), gán tên và giữ giá gốc
+                        sizeName = "Mặc định";
+                    }
+                } else {
+                    sizeName = "Mặc định";
+                }
+
+                // Xử lý Topping
                 BigDecimal toppingsCost = BigDecimal.ZERO;
                 String toppingsCsv = "";
-                if (toppingIdsParam != null && toppingIdsParam.length > 0) {
-                    List<Integer> ids = Arrays.stream(toppingIdsParam)
-                                              .map(Integer::parseInt)
-                                              .sorted()
-                                              .collect(Collectors.toList());
-                    
-                    List<Topping> selectedToppings = em.createQuery("SELECT t FROM Topping t WHERE t.topping_id IN :ids", Topping.class)
-                                                       .setParameter("ids", ids)
-                                                       .getResultList();
+                Map<Integer, Integer> toppingQuantities = new LinkedHashMap<>();
 
-                    toppingsCost = selectedToppings.stream().map(Topping::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
-                    toppingsCsv = selectedToppings.stream().map(Topping::getTopping_name).collect(Collectors.joining(", "));
+                if (toppingParam != null && !toppingParam.isBlank()) {
+                    // Phân tích chuỗi topping: "id1:qty1,id2:qty2"
+                    for (String entry : toppingParam.split(",")) {
+                        String[] parts = entry.split(":");
+                        if (parts.length == 2) {
+                            try {
+                                toppingQuantities.put(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+                            } catch (NumberFormatException e) {
+                                // Bỏ qua nếu entry không hợp lệ
+                            }
+                        }
+                    }
+
+                    if (!toppingQuantities.isEmpty()) {
+                        List<Topping> selectedToppings = em.createQuery("SELECT t FROM Topping t WHERE t.topping_id IN :ids", Topping.class)
+                                                           .setParameter("ids", toppingQuantities.keySet())
+                                                           .getResultList();
+                        
+                        // Tính tổng chi phí và tạo chuỗi mô tả
+                        StringBuilder csvBuilder = new StringBuilder();
+                        for (Topping t : selectedToppings) {
+                            int toppingQty = toppingQuantities.getOrDefault(t.getTopping_id(), 0);
+                            if (toppingQty > 0) {
+                                toppingsCost = toppingsCost.add(t.getPrice().multiply(BigDecimal.valueOf(toppingQty)));
+                                if (csvBuilder.length() > 0) {
+                                    csvBuilder.append(", ");
+                                }
+                                csvBuilder.append(t.getTopping_name());
+                                if (toppingQty > 1) {
+                                    csvBuilder.append(" x").append(toppingQty);
+                                }
+                            }
+                        }
+                        toppingsCsv = csvBuilder.toString();
+                    }
                 }
 
                 CartItem ci = new CartItem();
@@ -90,7 +135,8 @@ public class CartController extends HttpServlet {
                 ci.setThumbnail(p.getThumbnail());
                 ci.setQuantity(qty);
                 ci.setUnitPrice(p.getPrice());
-                ci.setSizeAdj(BigDecimal.ZERO);
+                ci.setSizeName(sizeName);
+                ci.setSizeAdj(sizeAdjustment);
                 ci.setToppingsCost(toppingsCost);
                 ci.setToppingsCsv(toppingsCsv);
 

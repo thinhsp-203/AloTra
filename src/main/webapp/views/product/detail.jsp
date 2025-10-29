@@ -3,72 +3,62 @@
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <fmt:setLocale value="vi_VN"/>
 
-<div class="row g-4">
-  <div class="col-md-5">
-    <img class="img-fluid rounded border shadow-sm" src="${p.thumbnail}" alt="${p.product_name}"/>
-  </div>
-  <div class="col-md-7">
-    <h1 class="h3 mb-3">${p.product_name}</h1>
-    
-    <div class="mb-3 p-3 bg-light rounded">
-        <span class="h4 text-primary fw-bold">
-            <fmt:formatNumber value="${p.price}" pattern="#,##0₫"/>
-        </span>
-        <%-- Optional: Hiển thị giá cũ nếu có giảm giá --%>
-        <c:if test="${p.discount > 0}">
-            <span class="ms-2 text-muted small text-decoration-line-through">
-                <fmt:formatNumber value="${p.price / (1 - p.discount/100)}" pattern="#,##0₫"/>
-            </span>
-            <span class="ms-2 badge bg-danger">${p.discount}% OFF</span>
-        </c:if>
-    </div>
-    
-    <%-- Đã xóa dòng mô tả bị lặp --%>
-    <div class.mb-4"><c:out value="${p.description}" escapeXml="false"/></div>
-
-    <%-- Chỉ giữ lại một form duy nhất để thêm sản phẩm và topping --%>
-    <form id="addToCartForm">
-        <input type="hidden" name="productId" value="${p.product_id}"/>
-
-        <%-- Phần chọn Topping --%>
-        <c:if test="${not empty toppings}">
-            <div class="mb-3">
-                <h6 class="h6">Chọn topping (tùy chọn)</h6>
-                <c:forEach var="top" items="${toppings}">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="topping" value="${top.topping_id}" id="top-${top.topping_id}">
-                        <label class="form-check-label" for="top-${top.topping_id}">
-                            ${top.topping_name}
-                            <span class="text-muted small">+<fmt:formatNumber value="${top.price}" pattern="#,##0₫"/></span>
-                        </label>
-                    </div>
-                </c:forEach>
+<div class="container">
+    <div id="product-detail-container" data-product-id="${p.product_id}">
+        <div class="row g-4">
+            <div class="col-md-5 text-center">
+                <img class="img-fluid rounded shadow-sm" src="${p.thumbnail}" alt="${p.product_name}" id="product-image"/>
             </div>
-        </c:if>
 
-        <button type="submit" class="btn btn-primary btn-lg">
-            <i class="bi bi-cart-plus-fill me-2"></i> Thêm vào giỏ
-        </button>
-    </form>
-    <%-- Đã xóa form thừa ở đây --%>
-  </div>
+            <div class="col-md-7">
+                <h1 class="h3 fw-bold" id="product-name">${p.product_name}</h1>
+                <p class="h4 text-primary fw-bold mb-4" id="product-base-price" data-price="${p.price}">
+                    <fmt:formatNumber value="${p.price}" pattern="#,##0"/> đ
+                </p>
+                <div id="product-options">
+                    <div class="text-center my-5"><div class="spinner-border text-primary"></div></div>
+                </div>
+                <hr>
+                <div class="product-description mb-4">
+                    <c:out value="${p.description}" escapeXml="false"/>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<%-- Phần sản phẩm liên quan --%>
-<h2 class="h6 mt-5">Cùng loại</h2>
-<div class="row row-cols-2 row-cols-md-4 g-3">
-  <c:forEach var="x" items="${sameCate}">
-    <c:set var="p" value="${x}" scope="request" />
-    <jsp:include page="/views/_partials/product_card.jsp" />
-  </c:forEach>
+<div class="sticky-bottom bg-white p-3 shadow-top">
+    <div class="container">
+        <div class="row justify-content-end">
+            <div class="col-md-7">
+                <button type="button" class="btn btn-primary btn-lg w-100" id="detailAddToCartBtn" disabled>
+                    Thêm vào giỏ hàng
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<h2 class="h6 mt-4">Cùng nhà cung cấp</h2>
-<div class="row row-cols-2 row-cols-md-4 g-3">
-  <c:forEach var="x" items="${sameSup}">
-    <c:set var="p" value="${x}" scope="request" />
-    <jsp:include page="/views/_partials/product_card.jsp" />
-  </c:forEach>
-</div>
 
-<jsp:include page="/views/_partials/recently_viewed.jsp"/>
+<div class="container mt-5">
+    <c:if test="${not empty suggestedProducts}">
+        <div class="suggestion-section">
+            <h2 class="h5 mb-3">Sản phẩm gợi ý</h2>
+            <div class="suggestion-slider-container">
+                <button class="slider-btn prev-btn" style="display: none;">‹</button>
+                <div class="suggestion-slider">
+                    <div class="slider-track">
+                        <c:forEach var="x" items="${suggestedProducts}">
+                            <div class="slider-item">
+                                <c:set var="p" value="${x}" scope="request" />
+                                <jsp:include page="/views/_partials/product_card.jsp" />
+                            </div>
+                        </c:forEach>
+                    </div>
+                </div>
+                <button class="slider-btn next-btn">›</button>
+            </div>
+        </div>
+    </c:if>
+    <jsp:include page="/views/_partials/recently_viewed.jsp"/>
+</div>

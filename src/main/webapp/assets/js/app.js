@@ -49,16 +49,22 @@
         const toastHeader = toastEl.querySelector('.toast-header strong');
         toastBody.textContent = message;
         toastHeader.className = isError ? 'me-auto text-danger' : 'me-auto text-success';
+        toastHeader.innerHTML = isError ? '<i class="bi bi-exclamation-triangle-fill"></i> Lỗi' : '<i class="bi bi-check-circle-fill"></i> Thành công';
         const toast = new bootstrap.Toast(toastEl);
         toast.show();
     }
 
     const currencyFormatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
+    function escapeHtml(text) {
+        const map = {'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#039;'};
+        return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+    }
+
     // --- PRODUCT MODAL LOGIC ---
     const productModal = document.getElementById('productModal');
     if (productModal) {
-        let modalData = null; // Lưu dữ liệu sản phẩm
+        let modalData = null; 
         
         productModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
@@ -66,36 +72,56 @@
             const modalContent = document.getElementById('productModalContent');
             const addToCartBtn = document.getElementById('modalAddToCartBtn');
 
-            // Set loading state
-            modalContent.innerHTML = '<div class="col-12 text-center"><div class="spinner-border"></div></div>';
+            modalContent.innerHTML = '<div class="col-12 text-center my-5"><div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div><p class="mt-2">Đang tải...</p></div>';
             addToCartBtn.disabled = true;
 
-            // Fetch product data
             get(`${contextPath}/api/product-details?id=${productId}`, (err, data) => {
                 if (err || !data || !data.ok) {
                     modalContent.innerHTML = '<p class="text-danger">Không thể tải thông tin sản phẩm.</p>';
                     return;
                 }
                 
-                modalData = data; // Lưu data để dùng sau
+                modalData = data; 
                 
-                // Build modal HTML
                 let sizesHtml = data.sizes.map((s, index) => `
                     <div class="col">
-                        <input type="radio" class="btn-check" name="size" id="size-${index}" value="${escapeHtml(s.name)}" data-price-adj="${s.priceAdjustment}" ${index === 0 ? 'checked' : ''}>
-                        <label class="btn btn-outline-primary w-100" for="size-${index}">${escapeHtml(s.name)}</label>
+                        <input type="radio" class="btn-check" name="size" id="modal-size-${index}" value="${escapeHtml(s.name)}" data-price-adj="${s.priceAdjustment}" ${index === 0 ? 'checked' : ''}>
+                        <label class="btn btn-outline-primary w-100" for="modal-size-${index}">
+                            ${escapeHtml(s.name)}
+                            ${s.priceAdjustment !== 0 ? `<div class="small">${s.priceAdjustment > 0 ? '+' : ''}${currencyFormatter.format(s.priceAdjustment)}</div>` : ''}
+                        </label>
                     </div>
                 `).join('');
 
                 let toppingsHtml = data.toppings.map(t => `
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="topping" value="${t.id}" id="topping-${t.id}" data-price="${t.price}">
-                        <label class="form-check-label d-flex justify-content-between" for="topping-${t.id}">
-                            <span>${escapeHtml(t.name)}</span>
-                            <span>+${currencyFormatter.format(t.price)}</span>
-                        </label>
+                     <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>${escapeHtml(t.name)} <small class="text-muted">(+${currencyFormatter.format(t.price)})</small></div>
+                        <div class="input-group" style="width: 100px;">
+                           <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateModalToppingQty(${t.id}, -1)">-</button>
+                           <input type="text" class="form-control form-control-sm text-center" value="0" readonly id="modal-topping-qty-${t.id}" data-topping-id="${t.id}" data-price="${t.price}">
+                           <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateModalToppingQty(${t.id}, 1)">+</button>
+                        </div>
                     </div>
                 `).join('');
+                
+                const createOptionGroup = (title, name, options) => `
+                    <div class="mb-3">
+                        <h6>${title}</h6>
+                        <div class="row row-cols-3 g-2">
+                            ${options.map((opt, index) => `
+                                <div class="col">
+                                    <input type="radio" class="btn-check" name="${name}" id="modal-${name}-${index}" value="${opt}" ${index === 1 ? 'checked' : ''}>
+                                    <label class="btn btn-outline-primary w-100" for="modal-${name}-${index}">${opt}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                let teaOptionsHtml = '';
+                if (data.product.categoryName && data.product.categoryName.toLowerCase().includes('trà')) {
+                    teaOptionsHtml = createOptionGroup('Mức trà', 'tea', ['Ít', 'Bình thường', 'Nhiều']);
+                }
 
                 modalContent.innerHTML = `
                     <div class="col-md-5">
@@ -105,91 +131,53 @@
                         <h4 id="modalProductName">${escapeHtml(data.product.name)}</h4>
                         <p class="h5 text-primary fw-bold" id="modalBasePrice" data-price="${data.product.basePrice}">${currencyFormatter.format(data.product.basePrice)}</p>
                         <hr>
-                        ${data.sizes.length > 1 ? `
-                        <div class="mb-3">
-                            <h6>Kích cỡ</h6>
-                            <div class="row row-cols-3 g-2">${sizesHtml}</div>
-                        </div>` : ''}
-                        ${toppingsHtml ? `
-                        <div class="mb-3">
-                            <h6>Topping</h6>
-                            <div id="modalToppingsList">${toppingsHtml}</div>
-                        </div>` : ''}
-                        <div class="d-flex align-items-center">
-                           <h6>Số lượng</h6>
-                           <div class="input-group ms-auto" style="width: 120px;">
-                               <button class="btn btn-outline-secondary" type="button" id="modal-quantity-minus">-</button>
-                               <input type="text" class="form-control text-center" id="modal-quantity" value="1" readonly>
-                               <button class="btn btn-outline-secondary" type="button" id="modal-quantity-plus">+</button>
-                           </div>
-                        </div>
+                        ${data.sizes.length > 1 ? `<div class="mb-3"><h6>Chọn kích cỡ</h6><div class="row row-cols-3 g-2">${sizesHtml}</div></div>` : ''}
+                        ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều'])}
+                        ${teaOptionsHtml}
+                        ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
+                        ${toppingsHtml ? `<div class="mb-3"><h6>Chọn Topping</h6><div id="modalToppingsList">${toppingsHtml}</div></div>` : ''}
                     </div>
                 `;
 
-                // Add event listeners for dynamic price update
-                modalContent.querySelectorAll('input').forEach(input => {
-                    input.addEventListener('change', updateModalPrice);
-                });
-                
-                document.getElementById('modal-quantity-plus').addEventListener('click', () => {
-                    const qtyInput = document.getElementById('modal-quantity');
-                    qtyInput.value = parseInt(qtyInput.value) + 1;
-                    updateModalPrice();
-                });
-                
-                document.getElementById('modal-quantity-minus').addEventListener('click', () => {
-                    const qtyInput = document.getElementById('modal-quantity');
-                    let currentQty = parseInt(qtyInput.value);
-                    if (currentQty > 1) {
-                        qtyInput.value = currentQty - 1;
+                modalContent.querySelectorAll('input[type="radio"]').forEach(input => input.addEventListener('change', updateModalPrice));
+                window.updateModalToppingQty = (id, change) => {
+                    const qtyInput = document.getElementById(`modal-topping-qty-${id}`);
+                    let currentQty = parseInt(qtyInput.value) + change;
+                    if (currentQty >= 0) {
+                        qtyInput.value = currentQty;
                         updateModalPrice();
                     }
-                });
-
-                // Initial price calculation
+                };
+                
                 updateModalPrice();
                 addToCartBtn.disabled = false;
                 
-                // Update "Add to Cart" button action
                 addToCartBtn.onclick = function() {
-                    const params = new URLSearchParams({
-                        productId: productId,
-                        quantity: document.getElementById('modal-quantity').value
-                    });
-                    
-                    // Thêm size (nếu có nhiều hơn 1 size)
+                    const params = new URLSearchParams({ productId: productId, quantity: 1 });
                     const sizeInput = modalContent.querySelector('input[name="size"]:checked');
-                    if (sizeInput) {
-                        params.append('size', sizeInput.value);
-                    }
-                    
-                    // Thêm toppings
-                    modalContent.querySelectorAll('input[name="topping"]:checked').forEach(cb => {
-                        params.append('topping', cb.value);
+                    if (sizeInput) params.append('size', sizeInput.value);
+                    const toppings = [];
+                    modalContent.querySelectorAll('input[data-topping-id]').forEach(input => {
+                        const qty = parseInt(input.value);
+                        if(qty > 0) toppings.push(`${input.dataset.toppingId}:${qty}`);
                     });
-                    
+                    if (toppings.length > 0) params.append('topping', toppings.join(','));
                     handleAddToCartRequest(params.toString());
-                    const modalInstance = bootstrap.Modal.getInstance(productModal);
-                    modalInstance.hide();
+                    bootstrap.Modal.getInstance(productModal).hide();
                 };
             });
         });
 
         function updateModalPrice() {
             if (!modalData) return;
-            
             const basePrice = parseFloat(document.getElementById('modalBasePrice').dataset.price) || 0;
             const sizeInput = document.querySelector('input[name="size"]:checked');
-            const sizeAdj = sizeInput ? parseFloat(sizeInput.dataset.priceAdj) || 0 : 0;
-            
+            const sizeAdj = sizeInput ? (parseFloat(sizeInput.dataset.priceAdj) || 0) : 0;
             let toppingsPrice = 0;
-            document.querySelectorAll('input[name="topping"]:checked').forEach(cb => {
-                toppingsPrice += parseFloat(cb.dataset.price) || 0;
+            document.querySelectorAll('#modalToppingsList input[data-topping-id]').forEach(input => {
+                toppingsPrice += (parseFloat(input.dataset.price) || 0) * (parseInt(input.value) || 0);
             });
-            
-            const quantity = parseInt(document.getElementById('modal-quantity').value) || 1;
-            const finalPrice = (basePrice + sizeAdj + toppingsPrice) * quantity;
-            
+            const finalPrice = basePrice + sizeAdj + toppingsPrice;
             document.getElementById('modalAddToCartBtn').textContent = `Thêm vào giỏ - ${currencyFormatter.format(finalPrice)}`;
         }
     }
@@ -199,7 +187,6 @@
         post(contextPath + '/cart/add', params, (err, data) => {
             if (err) { 
                 showToast('Đã có lỗi xảy ra.', true); 
-                console.error(err); 
                 return; 
             }
             if (data && data.redirect) { 
@@ -207,7 +194,7 @@
                 return; 
             }
             if (data && data.ok) {
-                showToast('Đã thêm sản phẩm vào giỏ!');
+                showToast(`Đã thêm "${data.newItem.productName}" vào giỏ!`);
                 const cartCountEl = document.getElementById('cart-item-count');
                 if (cartCountEl) {
                     cartCountEl.textContent = data.cartSize;
@@ -218,74 +205,192 @@
         });
     }
 
-    // --- PRODUCT LIST INFINITE SCROLL ---
-    window.loadMore = function() {
-        if (window.isLoading || !window.hasMore) return;
-        
-        window.isLoading = true;
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('btnLoadMore').style.display = 'none';
-        
-        const params = new URLSearchParams({
-            page: window.page,
-            size: 12
-        });
-        
-        if (window.searchKeyword) params.append('q', window.searchKeyword);
-        if (window.selectedCate) params.append('cate', window.selectedCate);
-        if (window.selectedSupplier) params.append('supplier', window.selectedSupplier);
-        
-        get(`${contextPath}/products/page?${params}`, (err, data) => {
-            document.getElementById('loading').style.display = 'none';
-            window.isLoading = false;
-            
-            if (err || !data) {
-                showToast('Không thể tải sản phẩm', true);
+    // --- PRODUCT DETAIL PAGE LOGIC ---
+    function initializeProductDetailPage() {
+        const container = document.getElementById('product-detail-container');
+        if (!container) return; 
+
+        const productId = container.dataset.productId;
+        const optionsContainer = document.getElementById('product-options');
+        const addToCartBtn = document.getElementById('detailAddToCartBtn');
+
+        get(`${contextPath}/api/product-details?id=${productId}`, (err, data) => {
+            if (err || !data || !data.ok) {
+                optionsContainer.innerHTML = '<p class="text-danger">Không thể tải thông tin sản phẩm.</p>';
                 return;
             }
-            
-            const grid = document.getElementById('grid');
-            data.items.forEach(item => {
-                const card = `
-                    <div class="col">
-                        <div class="card h-100 text-center">
-                            <a href="${contextPath}/p?id=${item.id}">
-                                <img class="card-img-top p-3" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.name)}" style="height: 200px; object-fit: contain;">
-                            </a>
-                            <div class="card-body">
-                                <h6 class="card-title">${escapeHtml(item.name)}</h6>
-                                <p class="card-text text-muted">${currencyFormatter.format(item.price)}</p>
-                            </div>
-                            <div class="card-footer bg-transparent border-0 pb-3">
-                                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#productModal" data-product-id="${item.id}">
-                                    Đặt mua
-                                </button>
-                            </div>
-                        </div>
+
+            let sizesHtml = data.sizes.map((s, index) => `
+                <div class="col-auto">
+                    <input type="radio" class="btn-check" name="size" id="detail-size-${index}" value="${escapeHtml(s.name)}" data-price-adj="${s.priceAdjustment}" ${index === 0 ? 'checked' : ''}>
+                    <label class="btn btn-outline-primary btn-size" for="detail-size-${index}">
+                        ${escapeHtml(s.name)}
+                        <div class="small fw-normal">${s.priceAdjustment >= 0 ? '+' : ''}${currencyFormatter.format(s.priceAdjustment)}</div>
+                    </label>
+                </div>
+            `).join('');
+
+            let toppingsHtml = data.toppings.map(t => `
+                 <div class="d-flex justify-content-between align-items-center mb-3 option-item">
+                    <div>${escapeHtml(t.name)} <br> <small class="text-primary fw-bold">+${currencyFormatter.format(t.price)}</small></div>
+                    <div class="input-group" style="width: 120px;">
+                       <button class="btn btn-outline-secondary" type="button" onclick="updateDetailToppingQty(${t.id}, -1)">-</button>
+                       <input type="text" class="form-control text-center" value="0" readonly id="detail-topping-qty-${t.id}" data-topping-id="${t.id}" data-price="${t.price}">
+                       <button class="btn btn-outline-secondary" type="button" onclick="updateDetailToppingQty(${t.id}, 1)">+</button>
                     </div>
-                `;
-                grid.insertAdjacentHTML('beforeend', card);
+                </div>
+            `).join('');
+            
+            const createOptionGroup = (title, name, options) => `
+                <div class="mb-4 option-group">
+                    <h6>${title}</h6>
+                    <div class="d-flex gap-2">
+                        ${options.map((opt, index) => `
+                            <div>
+                                <input type="radio" class="btn-check" name="${name}" id="detail-${name}-${index}" value="${opt}" ${index === 1 ? 'checked' : ''}>
+                                <label class="btn btn-outline-primary" for="detail-${name}-${index}">${opt}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            let teaOptionsHtml = '';
+            if (data.product.categoryName && data.product.categoryName.toLowerCase().includes('trà')) {
+                teaOptionsHtml = createOptionGroup('Mức trà', 'tea', ['Ít', 'Bình thường', 'Nhiều']);
+            }
+
+            optionsContainer.innerHTML = `
+                ${data.sizes.length > 1 ? `<div class="mb-4 option-group"><h6>Chọn kích cỡ</h6><div class="row g-2">${sizesHtml}</div></div>` : ''}
+                ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
+                ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều', 'Không'])}
+                ${teaOptionsHtml}
+                ${toppingsHtml ? `<div class="mb-4 option-group"><h6>Chọn Topping</h6>${toppingsHtml}</div>` : ''}
+            `;
+
+            optionsContainer.querySelectorAll('input, button').forEach(el => {
+                el.addEventListener('change', updateDetailPagePrice);
+                el.addEventListener('click', updateDetailPagePrice);
             });
             
-            window.hasMore = data.hasMore;
-            window.page++;
+            window.updateDetailToppingQty = (id, change) => {
+                const qtyInput = document.getElementById(`detail-topping-qty-${id}`);
+                let currentQty = parseInt(qtyInput.value) + change;
+                if (currentQty >= 0) {
+                    qtyInput.value = currentQty;
+                    updateDetailPagePrice();
+                }
+            };
             
-            if (window.hasMore) {
-                document.getElementById('btnLoadMore').style.display = 'block';
+            updateDetailPagePrice();
+            addToCartBtn.disabled = false;
+            
+            addToCartBtn.onclick = function() {
+                const params = new URLSearchParams({ productId: productId, quantity: 1 });
+                const sizeInput = optionsContainer.querySelector('input[name="size"]:checked');
+                if (sizeInput) params.append('size', sizeInput.value);
+                const toppings = [];
+                optionsContainer.querySelectorAll('input[data-topping-id]').forEach(input => {
+                    const qty = parseInt(input.value);
+                    if(qty > 0) toppings.push(`${input.dataset.toppingId}:${qty}`);
+                });
+                if (toppings.length > 0) params.append('topping', toppings.join(','));
+                handleAddToCartRequest(params.toString());
+            };
+        });
+    }
+
+    function updateDetailPagePrice() {
+        const basePrice = parseFloat(document.getElementById('product-base-price').dataset.price) || 0;
+        const sizeInput = document.querySelector('#product-options input[name="size"]:checked');
+        const sizeAdj = sizeInput ? (parseFloat(sizeInput.dataset.priceAdj) || 0) : 0;
+        let toppingsPrice = 0;
+        document.querySelectorAll('#product-options input[data-topping-id]').forEach(input => {
+            toppingsPrice += (parseFloat(input.dataset.price) || 0) * (parseInt(input.value) || 0);
+        });
+        const finalPrice = basePrice + sizeAdj + toppingsPrice;
+        document.getElementById('detailAddToCartBtn').textContent = `Thêm vào giỏ hàng : ${currencyFormatter.format(finalPrice)}`;
+    }
+
+    // --- SUGGESTION SLIDER ---
+    function initializeSuggestionSlider() {
+        const slider = document.querySelector('.suggestion-slider');
+        if (!slider) return;
+        const track = slider.querySelector('.slider-track');
+        const prevBtn = slider.parentElement.querySelector('.prev-btn');
+        const nextBtn = slider.parentElement.querySelector('.next-btn');
+        const items = track.querySelectorAll('.slider-item');
+        if (items.length <= getItemsToShow()) {
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            return;
+        }
+        let currentIndex = 0;
+        
+        function getItemsToShow() {
+            if (window.innerWidth < 768) return 2;
+            if (window.innerWidth < 992) return 3;
+            return 5;
+        }
+        
+        function updateSlider() {
+            const itemsToShow = getItemsToShow();
+            const maxIndex = Math.max(0, items.length - itemsToShow);
+            currentIndex = Math.min(currentIndex, maxIndex);
+            track.style.transform = `translateX(-${currentIndex * (100 / itemsToShow)}%)`;
+            items.forEach(item => item.style.flex = `0 0 ${100 / itemsToShow}%`);
+            prevBtn.style.display = currentIndex === 0 ? 'none' : 'block';
+            nextBtn.style.display = currentIndex >= maxIndex ? 'none' : 'block';
+        }
+
+        nextBtn.addEventListener('click', () => {
+            const maxIndex = Math.max(0, items.length - getItemsToShow());
+            if (currentIndex < maxIndex) {
+                currentIndex++;
+                updateSlider();
             }
         });
-    };
-    
-    // Helper function
-    function escapeHtml(text) {
-        const map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateSlider();
+            }
+        });
+
+        window.addEventListener('resize', updateSlider);
+        updateSlider();
     }
+
+    // --- OTHER LOGIC ---
+    window.showMoreHomepage = function(type, button) {
+        const container = button.previousElementSibling;
+        const items = container.querySelectorAll(`.hidden-${type}-item`);
+        items.forEach(item => {
+            item.style.display = 'block';
+            item.classList.add('animate__animated', 'animate__fadeIn');
+        });
+        button.style.display = 'none';
+    }
+
+    // --- INITIALIZATION ---
+    document.addEventListener("DOMContentLoaded", function(){
+        // Menu dropdown hover
+        const dropdowns = document.querySelectorAll('.main-nav .dropdown');
+        dropdowns.forEach(function(dropdown) {
+            dropdown.addEventListener('mouseenter', function () {
+                let dropdownInstance = new bootstrap.Dropdown(this.querySelector('.dropdown-toggle'));
+                dropdownInstance.show();
+            });
+            dropdown.addEventListener('mouseleave', function () {
+                let dropdownInstance = new bootstrap.Dropdown(this.querySelector('.dropdown-toggle'));
+                dropdownInstance.hide();
+            });
+        });
+        
+        // Initializers for specific pages
+        initializeProductDetailPage();
+        initializeSuggestionSlider();
+    });
 
 })();
