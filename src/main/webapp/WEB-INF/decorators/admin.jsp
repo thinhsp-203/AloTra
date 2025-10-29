@@ -58,25 +58,31 @@
 
   <div class="container-fluid">
     <div class="row">
-      <!-- Sidebar -->
+<!-- Sidebar -->
       <nav class="col-md-2 d-md-block admin-sidebar p-3">
         <div class="admin-nav nav flex-column">
-          <a class="nav-link" href="${pageContext.request.contextPath}/admin/dashboard">
+          <a class="nav-link ${pageContext.request.requestURI.contains('/admin/dashboard') ? 'active' : ''}" 
+             href="${pageContext.request.contextPath}/admin/dashboard">
             <i class="bi bi-speedometer2"></i> Dashboard
           </a>
-          <a class="nav-link" href="${pageContext.request.contextPath}/admin/products">
+          <a class="nav-link ${pageContext.request.requestURI.contains('/products') ? 'active' : ''}" 
+             href="${pageContext.request.contextPath}/admin/products">
             <i class="bi bi-box-seam"></i> Sản phẩm
           </a>
-          <a class="nav-link" href="${pageContext.request.contextPath}/admin/category/list">
+          <a class="nav-link ${pageContext.request.requestURI.contains('/category') ? 'active' : ''}" 
+             href="${pageContext.request.contextPath}/admin/category/list">
             <i class="bi bi-tags"></i> Danh mục
           </a>
-          <a class="nav-link" href="${pageContext.request.contextPath}/admin/orders">
+          <a class="nav-link ${pageContext.request.requestURI.contains('/orders') ? 'active' : ''}" 
+             href="${pageContext.request.contextPath}/admin/orders">
             <i class="bi bi-cart-check"></i> Đơn hàng
           </a>
-          <a class="nav-link" href="${pageContext.request.contextPath}/admin/users">
+          <a class="nav-link ${pageContext.request.requestURI.contains('/users') ? 'active' : ''}" 
+             href="${pageContext.request.contextPath}/admin/users">
             <i class="bi bi-people"></i> Người dùng
           </a>
-          <a class="nav-link" href="${pageContext.request.contextPath}/admin/reports">
+          <a class="nav-link ${pageContext.request.requestURI.contains('/reports') ? 'active' : ''}" 
+             href="${pageContext.request.contextPath}/admin/reports">
             <i class="bi bi-graph-up"></i> Báo cáo
           </a>
         </div>

@@ -83,21 +83,29 @@
   }
 
   window.loadMore = function() {
-    if (isLoading || !hasMore) return;
-    isLoading = true;
-    
-    var loadingEl = document.getElementById('loading');
-    var btnLoadMore = document.getElementById('btnLoadMore');
-    if (loadingEl) loadingEl.style.display = 'block';
-    if (btnLoadMore) btnLoadMore.style.display = 'none';
-    
-    var xhr = new XMLHttpRequest();
-    var url = contextPath + '/products/page?page=' + page;
-    
-    if (typeof searchKeyword !== 'undefined' && searchKeyword) {
-      url += '&q=' + encodeURIComponent(searchKeyword);
-    }
-    
+      if (isLoading || !hasMore) return;
+      isLoading = true;
+      
+      var loadingEl = document.getElementById('loading');
+      var btnLoadMore = document.getElementById('btnLoadMore');
+      if (loadingEl) loadingEl.style.display = 'block';
+      if (btnLoadMore) btnLoadMore.style.display = 'none';
+      
+      var xhr = new XMLHttpRequest();
+      var url = contextPath + '/products/page?page=' + page;
+      
+      if (typeof searchKeyword !== 'undefined' && searchKeyword) {
+        url += '&q=' + encodeURIComponent(searchKeyword);
+      }
+      
+      if (typeof selectedCate !== 'undefined' && selectedCate) {
+        url += '&cate=' + encodeURIComponent(selectedCate);
+      }
+      
+      if (typeof selectedSupplier !== 'undefined' && selectedSupplier) {
+        url += '&supplier=' + encodeURIComponent(selectedSupplier);
+      }
+      
     xhr.open('GET', url, true);
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {

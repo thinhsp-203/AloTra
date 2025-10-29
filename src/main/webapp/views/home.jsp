@@ -60,11 +60,23 @@
 
 <c:if test="${not empty categories}">
     <div class="category-section mb-5">
-        <h2 class="h5 mb-3 text-uppercase text-muted">Danh Mục</h2>
+        <h2 class="h5 mb-3 text-uppercase text-muted">
+            <i class="bi bi-grid-3x3-gap-fill me-2"></i>Danh Mục
+        </h2>
         <div class="category-grid">
             <c:forEach var="cat" items="${categories}">
                 <a href="${pageContext.request.contextPath}/products?cate=${cat.id}" class="category-item">
-                    <img src="${pageContext.request.contextPath}/${cat.icon}" class="category-icon" alt="${cat.name}">
+                    <c:choose>
+                        <c:when test="${not empty cat.icon}">
+                            <img src="${pageContext.request.contextPath}/${cat.icon}" 
+                                 class="category-icon" alt="${cat.name}">
+                        </c:when>
+                        <c:otherwise>
+                            <div class="category-icon d-flex align-items-center justify-content-center bg-primary text-white">
+                                <i class="bi bi-cup-hot fs-4"></i>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
                     <span class="category-name">${cat.name}</span>
                 </a>
             </c:forEach>

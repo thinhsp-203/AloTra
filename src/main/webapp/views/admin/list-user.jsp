@@ -95,10 +95,29 @@
     color: #055160;
   }
 </style>
-
-<h2>Quản lý người dùng</h2>
-
-<form method="get" action="${pageContext.request.contextPath}/admin/users" class="user-filter-form">
+	<div class="d-flex justify-content-between align-items-center mb-4">
+	  <h2>Quản lý người dùng</h2>
+	  <a href="${pageContext.request.contextPath}/admin/users/create" class="btn btn-primary">
+	    <i class="bi bi-plus-circle"></i> Tạo người dùng mới
+	  </a>
+	</div>
+	
+	<c:if test="${not empty sessionScope.success}">
+	  <div class="alert alert-success alert-dismissible fade show">
+	    ${sessionScope.success}
+	    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+	  </div>
+	  <c:remove var="success" scope="session"/>
+	</c:if>
+	
+	<c:if test="${not empty sessionScope.error}">
+	  <div class="alert alert-danger alert-dismissible fade show">
+	    ${sessionScope.error}
+	    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+	  </div>
+	  <c:remove var="error" scope="session"/>
+	</c:if>
+	<form method="get" action="${pageContext.request.contextPath}/admin/users" class="user-filter-form">
   <input type="text" name="keyword" placeholder="Tìm tên, email, SĐT" value="${fn:escapeXml(keyword)}"/>
   <select name="roleId">
     <option value="">Tất cả vai trò</option>
