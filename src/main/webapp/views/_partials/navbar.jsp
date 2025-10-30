@@ -82,17 +82,16 @@
                                 <div class="container">
                                     <div class="row">
                                         <div class="col-lg-3 col-md-4">
-                                            <h6 class="dropdown-header">Thức uống</h6>
-                                            <c:forEach var="cat" items="${navbarCategories}">
-                                                <a class="dropdown-item" href="${pageContext.request.contextPath}/products?cate=${cat.id}">${cat.name}</a>
-                                            </c:forEach>
-                                        </div>
-                                        <div class="col-lg-3 col-md-4">
-                                            <h6 class="dropdown-header">Bánh & Đồ ăn vặt</h6>
-                                            <a class="dropdown-item" href="#">Bánh lạnh</a>
-                                            <a class="dropdown-item" href="#">Bánh cookies</a>
-                                            <a class="dropdown-item" href="#">Snack</a>
-                                        </div>
+											    <h6 class="dropdown-header">Thức uống</h6>
+											    <c:forEach var="cat" items="${navbarCategories}">
+											        <a class="dropdown-item" href="${pageContext.request.contextPath}/products?cate=${cat.id}">${cat.name}</a>
+											    </c:forEach>
+											</div>
+											<div class="col-lg-3 col-md-4">
+											    <h6 class="dropdown-header">Bánh Ngọt</h6>
+											    <a class="dropdown-item" href="#">Bánh lạnh</a>
+											    <a class="dropdown-item" href="#">Bánh cookies</a>
+											</div>
                                         <div class="col-lg-6 col-md-4">
                                              <div class="p-3">
                                                 <img src="https://static.phuclong.com.vn/storage/5/2024/5/2/663305417df89_bsttraxanhtraicayvuongtronvinangluong.jpg" class="img-fluid rounded" alt="Promo">

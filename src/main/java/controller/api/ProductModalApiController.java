@@ -34,7 +34,6 @@ public class ProductModalApiController extends HttpServlet {
                     return;
                 }
 
-                // Lấy danh mục sản phẩm
                 String categoryName = (product.getCategory() != null) ? product.getCategory().getName() : "";
 
                 List<ProductSize> sizes = em.createQuery("SELECT ps FROM ProductSize ps WHERE ps.product.product_id = :pid ORDER BY ps.size_name", ProductSize.class)
@@ -48,10 +47,14 @@ public class ProductModalApiController extends HttpServlet {
                     sizes = Collections.singletonList(defaultSize);
                 }
 
-                List<Topping> toppings = em.createQuery("SELECT t FROM Topping t WHERE t.isAvailable = true ORDER BY t.topping_name", Topping.class)
-                                           .getResultList();
+                // === START FIX: Conditionally load toppings ===
+                List<Topping> toppings = Collections.emptyList();
+                if (categoryName != null && categoryName.toLowerCase().contains("trà")) {
+                    toppings = em.createQuery("SELECT t FROM Topping t WHERE t.isAvailable = true ORDER BY t.topping_name", Topping.class)
+                                               .getResultList();
+                }
+                // === END FIX ===
 
-                // Thêm categoryName vào JSON
                 String productJson = String.format(
                     "{\"id\":%d, \"name\":\"%s\", \"basePrice\":%s, \"thumbnail\":\"%s\", \"categoryName\":\"%s\"}",
                     product.getProduct_id(), escapeJson(product.getProduct_name()), product.getPrice(), escapeJson(product.getThumbnail()), escapeJson(categoryName)

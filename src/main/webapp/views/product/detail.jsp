@@ -2,7 +2,12 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <fmt:setLocale value="vi_VN"/>
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+<style>
+    .suggestion-swiper {
+        padding-bottom: 40px; /* Thêm không gian cho pagination */
+    }
+</style>
 <div class="container">
     <div id="product-detail-container" data-product-id="${p.product_id}">
         <div class="row g-4">
@@ -44,21 +49,20 @@
     <c:if test="${not empty suggestedProducts}">
         <div class="suggestion-section">
             <h2 class="h5 mb-3">Sản phẩm gợi ý</h2>
-            <div class="suggestion-slider-container">
-                <button class="slider-btn prev-btn" style="display: none;">‹</button>
-                <div class="suggestion-slider">
-                    <div class="slider-track">
-                        <c:forEach var="x" items="${suggestedProducts}">
-                            <div class="slider-item">
-                                <c:set var="p" value="${x}" scope="request" />
-                                <jsp:include page="/views/_partials/product_card.jsp" />
-                            </div>
-                        </c:forEach>
-                    </div>
+            <div class="swiper suggestion-swiper">
+                <div class="swiper-wrapper">
+                    <c:forEach var="x" items="${suggestedProducts}">
+                        <div class="swiper-slide">
+                            <c:set var="p" value="${x}" scope="request" />
+                            <jsp:include page="/views/_partials/product_card.jsp" />
+                        </div>
+                    </c:forEach>
                 </div>
-                <button class="slider-btn next-btn">›</button>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
             </div>
         </div>
     </c:if>
-    <jsp:include page="/views/_partials/recently_viewed.jsp"/>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
