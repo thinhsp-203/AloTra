@@ -11,7 +11,7 @@ import jakarta.persistence.EntityManager;
 import dao.jpa.OrderRepository; 
 import dao.jpa.VoucherRepository;
 import model.*;
-
+import service.impl.VNPayService;
 @WebServlet(urlPatterns = {"/checkout", "/checkout/*"})
 public class CheckoutController extends HttpServlet {
 
@@ -21,7 +21,9 @@ public class CheckoutController extends HttpServlet {
     return list != null ? list : new ArrayList<>();
   }
 
-  @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  @Override 
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+          throws ServletException, IOException {
     HttpSession session = req.getSession();
     User currentUser = (User) session.getAttribute("currentUser");
 
@@ -32,7 +34,7 @@ public class CheckoutController extends HttpServlet {
     }
 
     if (cart(session).isEmpty()) {
-        resp.sendRedirect(req.getContextPath() + "/cart/view");
+        resp.sendRedirect(req.getContextPath() + "/products");
         return;
     }
 
@@ -40,7 +42,8 @@ public class CheckoutController extends HttpServlet {
   }
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+          throws IOException, ServletException {
       HttpSession session = req.getSession();
       User currentUser = (User) session.getAttribute("currentUser");
 
@@ -52,7 +55,7 @@ public class CheckoutController extends HttpServlet {
 
       var items = cart(session);
       if (items.isEmpty()) {
-          resp.sendRedirect(req.getContextPath() + "/cart/view");
+          resp.sendRedirect(req.getContextPath() + "/products");
           return;
       }
 
@@ -89,8 +92,8 @@ public class CheckoutController extends HttpServlet {
                       em.merge(v);
                   }
               } else {
-                  req.getSession().setAttribute("checkoutError", "Mã giảm giá không hợp lệ hoặc đã hết hạn!");
                   em.getTransaction().rollback();
+                  req.getSession().setAttribute("checkoutError", "Mã giảm giá không hợp lệ hoặc đã hết hạn!");
                   resp.sendRedirect(req.getContextPath() + "/checkout");
                   return;
               }
@@ -101,13 +104,68 @@ public class CheckoutController extends HttpServlet {
 
           User managedUser = em.find(User.class, currentUser.getId());
           OrderRepository repo = new OrderRepository(em);
+          
+          // Set payment and order status based on payment method
+          String paymentStatus = "COD".equals(payment) ? "Chưa thanh toán" : "Chờ thanh toán";
+          String orderStatus = "Chờ xác nhận";
+          
           Orders order = repo.createOrder(managedUser, fullname, phone, address, note,
-                            grandTotal, payment, "Chưa thanh toán", "Chờ xác nhận", items);
+                            grandTotal, payment, paymentStatus, orderStatus, items);
 
           em.getTransaction().commit();
 
+          // Handle payment method
+          if (!"COD".equals(payment)) {
+              // Build return URL
+              String returnUrl = buildReturnUrl(req);
+              String paymentUrl = null;
+              
+              switch (payment) {
+                  case "VNPAY":
+                      VNPayService vnpayService = new VNPayService();
+                      paymentUrl = vnpayService.createPaymentUrl(order, payment, returnUrl);
+                      break;
+                   
+                  default:
+                      System.err.println("Unsupported payment method: " + payment);
+              }
+              
+              if (paymentUrl != null) {
+                  // Clear cart before redirecting to payment gateway
+                  session.removeAttribute("CART");
+                  resp.sendRedirect(paymentUrl);
+                  return;
+              } else {
+                  // Rollback if payment URL creation failed
+                  EntityManager rollbackEm = JpaUtil.em();
+                  try {
+                      rollbackEm.getTransaction().begin();
+                      Orders rollbackOrder = rollbackEm.find(Orders.class, order.getOrder_id());
+                      if (rollbackOrder != null) {
+                          rollbackOrder.setOrder_status("Đã hủy");
+                          rollbackOrder.setPayment_status("Thất bại");
+                          rollbackEm.merge(rollbackOrder);
+                      }
+                      rollbackEm.getTransaction().commit();
+                  } catch (Exception e) {
+                      if (rollbackEm.getTransaction().isActive()) {
+                          rollbackEm.getTransaction().rollback();
+                      }
+                  } finally {
+                      rollbackEm.close();
+                  }
+                  
+                  req.getSession().setAttribute("checkoutError", 
+                      "Không thể tạo link thanh toán " + payment + ". Vui lòng thử phương thức khác hoặc liên hệ hỗ trợ.");
+                  resp.sendRedirect(req.getContextPath() + "/checkout");
+                  return;
+              }
+          }
+
+          // COD payment - success
           session.removeAttribute("CART");
-          session.setAttribute("orderSuccess", "Đơn hàng của bạn #" + order.getOrder_id() + " đã được đặt thành công!");
+          session.setAttribute("orderSuccess", 
+              "Đơn hàng #" + order.getOrder_id() + " đã được đặt thành công! Bạn sẽ thanh toán khi nhận hàng.");
           resp.sendRedirect(req.getContextPath() + "/user/orders");
 
       } catch (Exception e) {
@@ -115,12 +173,36 @@ public class CheckoutController extends HttpServlet {
               em.getTransaction().rollback();
           }
           e.printStackTrace();
-          req.getSession().setAttribute("checkoutError", "Lỗi khi tạo đơn hàng. Vui lòng thử lại.");
+          req.getSession().setAttribute("checkoutError", 
+              "Lỗi khi tạo đơn hàng. Vui lòng thử lại hoặc liên hệ hỗ trợ.");
           resp.sendRedirect(req.getContextPath() + "/checkout");
       } finally {
           if (em.isOpen()) {
               em.close();
           }
       }
+  }
+  
+  /**
+   * Build return URL for payment gateways
+   */
+  private String buildReturnUrl(HttpServletRequest req) {
+      String scheme = req.getScheme();
+      String serverName = req.getServerName();
+      int serverPort = req.getServerPort();
+      String contextPath = req.getContextPath();
+      
+      StringBuilder returnUrl = new StringBuilder();
+      returnUrl.append(scheme).append("://").append(serverName);
+      
+      // Add port if not standard
+      if ((scheme.equals("http") && serverPort != 80) || 
+          (scheme.equals("https") && serverPort != 443)) {
+          returnUrl.append(":").append(serverPort);
+      }
+      
+      returnUrl.append(contextPath).append("/payment/vnpay-return");
+      
+      return returnUrl.toString();
   }
 }

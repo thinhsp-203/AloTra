@@ -5,6 +5,7 @@
     <class>model.Supplier</class>
     <class>model.Product</class>
     <class>model.ProductSize</class>
+    <class>model.PaymentConfig</class>
     <class>model.Topping</class>
     <class>model.Voucher</class>
     <class>model.Orders</class>
