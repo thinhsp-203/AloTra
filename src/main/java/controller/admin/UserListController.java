@@ -25,8 +25,8 @@ public class UserListController extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
-        if (currentUser == null || currentUser.getRoleid() != 1) {
-            resp.sendRedirect(req.getContextPath() + "/login"); // ĐÃ SỬA
+        if (currentUser == null || (currentUser.getRoleid() != 1 && currentUser.getRoleid() != 2)) {
+            resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
