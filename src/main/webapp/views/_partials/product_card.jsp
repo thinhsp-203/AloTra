@@ -8,16 +8,18 @@
             <img class="card-img-top" src="${p.thumbnail}" alt="${p.product_name}">
         </div>
         <div class="card-body d-flex flex-column text-center">
-            <h6 class="card-title flex-grow-1">${p.product_name}</h6>
-            <p class="card-text fw-bold text-primary"><fmt:formatNumber value="${p.price}" pattern="#,##0"/> đ</p>
+            <h6 class="card-title">${p.product_name}</h6>
+            <p class="card-text fw-bold text-primary mt-auto">
+                <fmt:formatNumber value="${p.price}" pattern="#,##0"/> đ
+            </p>
         </div>
     </a>
     <div class="card-footer bg-transparent border-0 pb-3">
-      <button class="btn btn-primary w-100" 
-              data-bs-toggle="modal" 
-              data-bs-target="#productModal" 
-              data-product-id="${p.product_id}">
-          Đặt mua
-      </button>
+        <button class="btn btn-primary w-100" 
+                data-bs-toggle="modal" 
+                data-bs-target="#productModal" 
+                data-product-id="${p.product_id}">
+            Đặt mua
+        </button>
     </div>
 </div>

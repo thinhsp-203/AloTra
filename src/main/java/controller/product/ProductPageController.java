@@ -23,6 +23,7 @@ public class ProductPageController extends HttpServlet {
         BigDecimal max = pd(req.getParameter("max"));
         String q = req.getParameter("q");
         
+        // Xử lý keyword tìm kiếm
         if (q != null) {
             q = q.trim();
             if (q.isEmpty()) q = null;
@@ -67,7 +68,7 @@ public class ProductPageController extends HttpServlet {
     }
     
     private static String esc(String s) {
-        return s == null ? "" : s.replace("\\","\\\\").replace("\"","\\\"");
+        return s == null ? "" : s.replace("\\","\\\\").replace("\"","\\\"").replace("\n", " ").replace("\r", " ");
     }
     
     private static String json(List<Product> items, long total, boolean more) {

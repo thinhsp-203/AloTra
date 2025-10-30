@@ -16,23 +16,28 @@
 <c:if test="${not empty featured}">
     <div class="container text-center mb-5">
         <h2 class="h4 mb-4">BEST SELLERS - TRÀ THƠM CHẤT LƯỢNG</h2>
-        <div class="row row-cols-2 row-cols-md-5 g-3">
-          <%-- Hiển thị 5 sản phẩm đầu tiên --%>
-          <c:forEach var="product" items="${featured}" varStatus="status" begin="0" end="4">
-            <c:set var="p" value="${product}" scope="request" />
-            <jsp:include page="/views/_partials/product_card.jsp" />
-          </c:forEach>
-          <%-- Render các sản phẩm còn lại nhưng ẩn đi --%>
-          <c:forEach var="product" items="${featured}" begin="5">
-            <div class="col hidden-featured-item" style="display: none;">
-                <c:set var="p" value="${product}" scope="request" />
-                <jsp:include page="/views/_partials/product_card.jsp" />
+        <div class="product-grid-container">
+            <div class="row row-cols-2 row-cols-md-5 g-3">
+              <c:forEach var="product" items="${featured}" varStatus="status" begin="0" end="4">
+                <div class="col">
+                    <c:set var="p" value="${product}" scope="request" />
+                    <jsp:include page="/views/_partials/product_card.jsp" />
+                </div>
+              </c:forEach>
+              
+              <c:forEach var="product" items="${featured}" begin="5">
+                <div class="col hidden-featured-item" style="display: none;">
+                    <c:set var="p" value="${product}" scope="request" />
+                    <jsp:include page="/views/_partials/product_card.jsp" />
+                </div>
+              </c:forEach>
             </div>
-          </c:forEach>
         </div>
-        <%-- Nút "Xem thêm" --%>
+        
         <c:if test="${fn:length(featured) > 5}">
-            <button class="btn btn-outline-primary mt-4" onclick="showMoreHomepage('featured', this)">Xem thêm BEST SELLERS</button>
+            <button class="btn btn-outline-primary mt-4" onclick="showMoreHomepage('featured', this)">
+                Xem thêm BEST SELLERS
+            </button>
         </c:if>
     </div>
 </c:if>

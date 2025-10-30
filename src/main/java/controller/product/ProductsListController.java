@@ -16,7 +16,7 @@ public class ProductsListController extends HttpServlet {
         var em = JpaUtil.em();
         try {
             // Lấy danh sách categories để hiển thị filter
-            var categories = em.createQuery("SELECT c FROM Category c ORDER BY c.id", model.Category.class)
+            var categories = em.createQuery("SELECT c FROM Category c ORDER BY c.name", model.Category.class)
                               .getResultList();
             req.setAttribute("categories", categories);
             

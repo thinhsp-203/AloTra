@@ -129,21 +129,35 @@
 	                    teaOptionsHtml = createOptionGroup('Mức trà', 'tea', ['Ít', 'Bình thường', 'Nhiều']);
 	                }
 
-	                modalContent.innerHTML = `
-	                    <div class="col-md-5">
-	                        <img src="${escapeHtml(data.product.thumbnail)}" class="img-fluid rounded" alt="${escapeHtml(data.product.name)}">
-	                    </div>
-	                    <div class="col-md-7">
-	                        <h4 id="modalProductName">${escapeHtml(data.product.name)}</h4>
-	                        <p class="h5 text-primary fw-bold" id="modalBasePrice" data-price="${data.product.basePrice}">${currencyFormatter.format(data.product.basePrice)}</p>
-	                        <hr>
-	                        ${data.sizes.length > 1 ? `<div class="mb-3"><h6>Chọn kích cỡ</h6><div class="row g-2">${sizesHtml}</div></div>` : ''}
-	                        ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều'])}
-	                        ${teaOptionsHtml}
-	                        ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
-	                        ${toppingsHtml}
-	                    </div>
-	                `;
+					modalContent.innerHTML = `
+					    <div class="row g-4">
+					        <div class="col-md-5">
+					            <img src="${escapeHtml(data.product.thumbnail)}" 
+					                 class="img-fluid rounded" 
+					                 alt="${escapeHtml(data.product.name)}"
+					                 style="position: sticky; top: 0;">
+					        </div>
+					        <div class="col-md-7">
+					            <div style="max-height: calc(80vh - 250px); overflow-y: auto; padding-right: 10px;">
+					                <h4 id="modalProductName">${escapeHtml(data.product.name)}</h4>
+					                <p class="h5 text-primary fw-bold mb-4" id="modalBasePrice" data-price="${data.product.basePrice}">
+					                    ${currencyFormatter.format(data.product.basePrice)}
+					                </p>
+					                <hr>
+					                ${data.sizes.length > 1 ? `
+					                    <div class="mb-3 option-group">
+					                        <h6>Chọn kích cỡ</h6>
+					                        <div class="row g-2">${sizesHtml}</div>
+					                    </div>
+					                ` : ''}
+					                ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều'])}
+					                ${teaOptionsHtml}
+					                ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
+					                ${toppingsHtml}
+					            </div>
+					        </div>
+					    </div>
+					`;
 
                 modalContent.querySelectorAll('input[type="radio"]').forEach(input => input.addEventListener('change', updateModalPrice));
                 window.updateModalToppingQty = (id, change) => {
@@ -375,66 +389,121 @@
             });
         });
         
-        // Chạy logic cho trang danh sách sản phẩm
-        if (document.getElementById('grid')) {
-            var page = 0;
-            var isLoading = false;
-            var hasMore = true;
-            var searchKeyword = document.body.dataset.searchKeyword || "";
-            var selectedCate = document.body.dataset.selectedCate || "";
-            
-            window.loadMore = function() {
-                if (isLoading || !hasMore) return;
-                isLoading = true;
-                const loadingEl = document.getElementById('loading');
-                const btnLoadMoreEl = document.getElementById('btnLoadMore');
-                if(loadingEl) loadingEl.style.display = 'block';
-                if(btnLoadMoreEl) btnLoadMoreEl.style.display = 'none';
-                
-                const params = new URLSearchParams({ page: page, size: 12 });
-                if (searchKeyword) params.append('q', searchKeyword);
-                if (selectedCate) params.append('cate', selectedCate);
-                
-                get(`${contextPath}/products/page?${params}`, (err, data) => {
-                    isLoading = false;
-                    if(loadingEl) loadingEl.style.display = 'none';
-                    if (err || !data) {
-                        showToast('Không thể tải sản phẩm', true);
-                        return;
-                    }
-                    
-                    const grid = document.getElementById('grid');
-                    data.items.forEach(item => {
-                        const card = `<div class="col">
-                            <a href="${contextPath}/p?id=${item.id}" class="card-link">
-                                <div class="card h-100 product-card">
-                                    <div class="card-img-container">
-                                        <img class="card-img-top" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.name)}">
-                                    </div>
-                                    <div class="card-body d-flex flex-column">
-                                        <h6 class="card-title flex-grow-1">${escapeHtml(item.name)}</h6>
-                                        <p class="card-text fw-bold text-primary">${currencyFormatter.format(item.price)}</p>
-                                    </div>
-                                </div>
-                            </a>
-                            <div class="card-footer bg-transparent border-0">
-                                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#productModal" data-product-id="${item.id}">
-                                    Đặt mua
-                                </button>
-                            </div>
-                        </div>`;
-                        grid.insertAdjacentHTML('beforeend', card);
-                    });
-                    
-                    hasMore = data.hasMore;
-                    page++;
-                    if (hasMore && btnLoadMoreEl) {
-                        btnLoadMoreEl.style.display = 'block';
-                    }
-                });
-            };
-            loadMore(); // Tải lần đầu
-        }
+		// --- PRODUCT LIST PAGE LOGIC ---
+		if (document.getElementById('grid')) {
+		    var page = 0;
+		    var isLoading = false;
+		    var hasMore = true;
+		    var searchKeyword = "";
+		    var selectedCate = "";
+		    
+		    // Lấy giá trị từ biến JavaScript được set bởi JSP
+		    var scripts = document.getElementsByTagName('script');
+		    for (var i = 0; i < scripts.length; i++) {
+		        var scriptContent = scripts[i].textContent || scripts[i].innerText;
+		        if (scriptContent.indexOf('searchKeyword') > -1) {
+		            var match = scriptContent.match(/searchKeyword\s*=\s*"([^"]*)"/);
+		            if (match) searchKeyword = match[1];
+		            match = scriptContent.match(/selectedCate\s*=\s*"([^"]*)"/);
+		            if (match) selectedCate = match[1];
+		            break;
+		        }
+		    }
+		    
+		    console.log("Loaded - Search:", searchKeyword, "Category:", selectedCate);
+		    
+		    window.loadMore = function() {
+		        if (isLoading || !hasMore) return;
+		        isLoading = true;
+		        
+		        const loadingEl = document.getElementById('loading');
+		        const btnLoadMoreEl = document.getElementById('btnLoadMore');
+		        const noResultsEl = document.getElementById('no-results');
+		        const gridEl = document.getElementById('grid');
+		        
+		        if(loadingEl) loadingEl.style.display = 'block';
+		        if(btnLoadMoreEl) btnLoadMoreEl.style.display = 'none';
+		        if(noResultsEl) noResultsEl.style.display = 'none';
+		        
+		        const params = new URLSearchParams({ page: page, size: 12 });
+		        if (searchKeyword && searchKeyword.trim() !== "") {
+		            params.append('q', searchKeyword.trim());
+		        }
+		        if (selectedCate && selectedCate.trim() !== "") {
+		            params.append('cate', selectedCate.trim());
+		        }
+		        
+		        console.log("Request URL:", contextPath + '/products/page?' + params.toString());
+		        
+		        get(contextPath + '/products/page?' + params.toString(), (err, data) => {
+		            isLoading = false;
+		            if(loadingEl) loadingEl.style.display = 'none';
+		            
+		            if (err || !data) {
+		                console.error("Load error:", err);
+		                showToast('Không thể tải sản phẩm', true);
+		                return;
+		            }
+		            
+		            console.log("Loaded data:", data);
+		            
+		            // Update search result count
+		            const resultCountEl = document.getElementById('search-result-count');
+		            if (resultCountEl && page === 0) {
+		                resultCountEl.textContent = 'Tìm thấy ' + data.total + ' sản phẩm';
+		            }
+		            
+		            // Show no results message
+		            if (data.total === 0 && page === 0) {
+		                if(noResultsEl) {
+		                    const keywordEl = document.getElementById('no-results-keyword');
+		                    if (keywordEl && searchKeyword) {
+		                        keywordEl.textContent = searchKeyword;
+		                    }
+		                    noResultsEl.style.display = 'block';
+		                }
+		                return;
+		            }
+		            
+					// Render products
+					data.items.forEach(item => {
+					    const card = `
+					    <div class="col">
+					        <div class="card h-100 product-card">
+					            <a href="${contextPath}/p?id=${item.id}" class="card-link text-decoration-none text-dark">
+					                <div class="card-img-container">
+					                    <img class="card-img-top" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.name)}">
+					                </div>
+					                <div class="card-body d-flex flex-column text-center">
+					                    <h6 class="card-title">${escapeHtml(item.name)}</h6>
+					                    <p class="card-text fw-bold text-primary mt-auto">
+					                        ${currencyFormatter.format(item.price)}
+					                    </p>
+					                </div>
+					            </a>
+					            <div class="card-footer bg-transparent border-0 pb-3">
+					                <button class="btn btn-primary w-100" 
+					                        data-bs-toggle="modal" 
+					                        data-bs-target="#productModal" 
+					                        data-product-id="${item.id}">
+					                    Đặt mua
+					                </button>
+					            </div>
+					        </div>
+					    </div>`;
+					    gridEl.insertAdjacentHTML('beforeend', card);
+					});
+		            hasMore = data.hasMore;
+		            page++;
+		            
+		            if (hasMore && btnLoadMoreEl) {
+		                btnLoadMoreEl.style.display = 'block';
+		            }
+		        });
+		    };
+		    
+		    loadMore(); // Initial load
+		}
 
         // Chạy logic cho trang chi tiết sản phẩm
         if (document.getElementById('product-detail-container')) {
@@ -479,4 +548,113 @@
             });
         }
     });
+	// --- SEARCH AUTOCOMPLETE ---
+	(function() {
+	    const searchInput = document.getElementById('searchInput');
+	    const searchSuggestions = document.getElementById('searchSuggestions');
+	    const suggestionsList = document.getElementById('suggestionsList');
+	    
+	    if (!searchInput || !searchSuggestions) return;
+	    
+	    // Load search history from localStorage
+	    function getSearchHistory() {
+	        const history = localStorage.getItem('searchHistory');
+	        return history ? JSON.parse(history) : [];
+	    }
+	    
+	    // Save search to history
+	    function saveToHistory(query) {
+	        if (!query || query.trim() === '') return;
+	        
+	        let history = getSearchHistory();
+	        query = query.trim();
+	        
+	        // Remove if already exists
+	        history = history.filter(item => item !== query);
+	        
+	        // Add to beginning
+	        history.unshift(query);
+	        
+	        // Keep only last 10 searches
+	        history = history.slice(0, 10);
+	        
+	        localStorage.setItem('searchHistory', JSON.stringify(history));
+	    }
+	    
+	    // Clear search history
+	    window.clearSearchHistory = function() {
+	        localStorage.removeItem('searchHistory');
+	        renderSuggestions([]);
+	    };
+	    
+	    // Render suggestions
+	    function renderSuggestions(history) {
+	        if (history.length === 0) {
+	            suggestionsList.innerHTML = '<div class="suggestion-item text-muted"><i class="bi bi-info-circle"></i><span class="suggestion-text">Chưa có lịch sử tìm kiếm</span></div>';
+	            return;
+	        }
+	        
+	        suggestionsList.innerHTML = history.map(item => `
+	            <div class="suggestion-item" onclick="selectSuggestion('${item.replace(/'/g, "\\'")}')">
+	                <i class="bi bi-clock-history"></i>
+	                <span class="suggestion-text">${escapeHtml(item)}</span>
+	            </div>
+	        `).join('');
+	    }
+	    
+	    // Select suggestion
+	    window.selectSuggestion = function(query) {
+	        searchInput.value = query;
+	        searchSuggestions.classList.remove('show');
+	        searchInput.form.submit();
+	    };
+	    
+	    // Show suggestions on focus
+	    searchInput.addEventListener('focus', function() {
+	        const history = getSearchHistory();
+	        renderSuggestions(history);
+	        searchSuggestions.classList.add('show');
+	    });
+	    
+	    // Hide suggestions on blur (with delay for click events)
+	    searchInput.addEventListener('blur', function() {
+	        setTimeout(() => {
+	            searchSuggestions.classList.remove('show');
+	        }, 200);
+	    });
+	    
+	    // Filter suggestions as user types
+	    searchInput.addEventListener('input', function() {
+	        const query = this.value.toLowerCase();
+	        const history = getSearchHistory();
+	        
+	        if (query === '') {
+	            renderSuggestions(history);
+	        } else {
+	            const filtered = history.filter(item => item.toLowerCase().includes(query));
+	            renderSuggestions(filtered);
+	        }
+	    });
+	    
+	    // Save search on form submit
+	    searchInput.form.addEventListener('submit', function() {
+	        const query = searchInput.value.trim();
+	        if (query !== '') {
+	            saveToHistory(query);
+	        }
+	    });
+	    
+	    // Close suggestions when clicking outside
+	    document.addEventListener('click', function(e) {
+	        if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+	            searchSuggestions.classList.remove('show');
+	        }
+	    });
+	    
+	    // Helper function
+	    function escapeHtml(text) {
+	        const map = {'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#039;'};
+	        return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+	    }
+	})
 })();
