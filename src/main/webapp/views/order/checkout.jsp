@@ -238,22 +238,22 @@
                         
                         <label class="payment-option active">
                             <input type="radio" name="payment" value="COD" checked>
-                            <i class="bi bi-cash"></i> Thẻ ngân hàng/Thẻ tín dụng/Ví điện tử
+                            <i class="bi bi-cash"></i> Thanh toán tiền mặt (COD)
                         </label>
                         
                         <label class="payment-option">
                             <input type="radio" name="payment" value="VNPAY">
-                            <i class="bi bi-wallet2"></i> Ví MoMo
+                            <i class="bi bi-wallet2"></i> Ví VNPAY
                         </label>
                         
                         <label class="payment-option">
                             <input type="radio" name="payment" value="MOMO">
-                            <i class="bi bi-credit-card"></i> Ví ZaloPay
+                            <i class="bi bi-credit-card"></i> Ví MOMO
                         </label>
                         
                         <label class="payment-option">
-                            <input type="radio" name="payment" value="ZALOPAY">
-                            <i class="bi bi-phone"></i> Ví ShopeePay
+                            <input type="radio" name="payment" value="CARDVISA">
+                            <i class="bi bi-phone"></i> Thẻ ngân hàng/Thẻ tín dụng
                         </label>
                     </div>
 
