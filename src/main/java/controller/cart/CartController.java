@@ -65,7 +65,6 @@ public class CartController extends HttpServlet {
 
         try {
             int pid = Integer.parseInt(req.getParameter("productId"));
-            // Lấy số lượng từ request thay vì mặc định là 1
             int qty = Integer.parseInt(req.getParameter("quantity"));
             String sizeName = req.getParameter("size");
             String toppingParam = req.getParameter("topping");
@@ -74,6 +73,7 @@ public class CartController extends HttpServlet {
             try {
                 Product p = em.find(Product.class, pid);
                 if (p == null) {
+                    resp.setContentType("application/json; charset=UTF-8");
                     resp.getWriter().print("{\"ok\":false,\"message\":\"Sản phẩm không tồn tại\"}");
                     return;
                 }
@@ -81,8 +81,12 @@ public class CartController extends HttpServlet {
                 BigDecimal sizeAdjustment = BigDecimal.ZERO;
                 if (sizeName != null && !sizeName.isBlank() && !"Mặc định".equals(sizeName)) {
                     try {
-                        ProductSize productSize = em.createQuery("SELECT ps FROM ProductSize ps WHERE ps.product.product_id = :pid AND ps.size_name = :sname", ProductSize.class)
-                                .setParameter("pid", pid).setParameter("sname", sizeName).getSingleResult();
+                        ProductSize productSize = em.createQuery(
+                            "SELECT ps FROM ProductSize ps WHERE ps.product.product_id = :pid AND ps.size_name = :sname", 
+                            ProductSize.class)
+                            .setParameter("pid", pid)
+                            .setParameter("sname", sizeName)
+                            .getSingleResult();
                         sizeAdjustment = productSize.getPrice_adjustment();
                     } catch (Exception e) {
                         sizeName = "Mặc định";
@@ -97,11 +101,19 @@ public class CartController extends HttpServlet {
                     Map<Integer, Integer> toppingQuantities = new LinkedHashMap<>();
                     for (String entry : toppingParam.split(",")) {
                         String[] parts = entry.split(":");
-                        if (parts.length == 2) toppingQuantities.put(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+                        if (parts.length == 2) {
+                            try {
+                                toppingQuantities.put(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+                            } catch (NumberFormatException e) {
+                                // Skip invalid entries
+                            }
+                        }
                     }
                     if (!toppingQuantities.isEmpty()) {
-                        List<Topping> selectedToppings = em.createQuery("SELECT t FROM Topping t WHERE t.topping_id IN :ids", Topping.class)
-                                .setParameter("ids", toppingQuantities.keySet()).getResultList();
+                        List<Topping> selectedToppings = em.createQuery(
+                            "SELECT t FROM Topping t WHERE t.topping_id IN :ids", Topping.class)
+                            .setParameter("ids", toppingQuantities.keySet())
+                            .getResultList();
                         StringBuilder csvBuilder = new StringBuilder();
                         for (Topping t : selectedToppings) {
                             int toppingQty = toppingQuantities.getOrDefault(t.getTopping_id(), 0);
@@ -127,34 +139,40 @@ public class CartController extends HttpServlet {
                 newItem.setToppingsCost(toppingsCost);
                 newItem.setToppingsCsv(toppingsCsv);
 
-                var list = cart(session);
+                List<CartItem> cart = cart(session);
                 
-                // === PHẦN SỬA LỖI ===
-                // Thay vì gán lại biến ci, chúng ta dùng một biến mới (finalItem)
-                // để lưu trữ item cuối cùng sẽ được trả về trong JSON.
-                CartItem finalItem;
-                Optional<CartItem> existingItemOpt = list.stream().filter(item -> item.equals(newItem)).findFirst();
+                // FIX: Tìm item đã tồn tại và cộng dồn số lượng
+                CartItem existingItem = cart.stream()
+                    .filter(item -> item.equals(newItem))
+                    .findFirst()
+                    .orElse(null);
                 
-                if (existingItemOpt.isPresent()) {
-                    CartItem existingItem = existingItemOpt.get();
+                CartItem responseItem; // Item để trả về trong JSON
+                
+                if (existingItem != null) {
                     existingItem.setQuantity(existingItem.getQuantity() + qty);
-                    finalItem = existingItem; // Dùng item đã tồn tại
+                    responseItem = existingItem;
                 } else {
-                    list.add(newItem);
-                    finalItem = newItem; // Dùng item mới
+                    cart.add(newItem);
+                    responseItem = newItem;
                 }
-                // === KẾT THÚC PHẦN SỬA LỖI ===
 
                 resp.setContentType("application/json; charset=UTF-8");
-                String newItemJson = String.format("{\"productId\":%d,\"productName\":\"%s\",\"thumbnail\":\"%s\",\"lineTotal\":%s}",
-                        finalItem.getProductId(), escapeJson(finalItem.getProductName()), escapeJson(finalItem.getThumbnail()), finalItem.getLineTotal());
-                resp.getWriter().print("{\"ok\":true,\"cartSize\":" + list.size() + ",\"newItem\":" + newItemJson + "}");
+                String newItemJson = String.format(
+                    "{\"productId\":%d,\"productName\":\"%s\",\"thumbnail\":\"%s\",\"lineTotal\":%s}",
+                    responseItem.getProductId(), 
+                    escapeJson(responseItem.getProductName()), 
+                    escapeJson(responseItem.getThumbnail()), 
+                    responseItem.getLineTotal()
+                );
+                resp.getWriter().print("{\"ok\":true,\"cartSize\":" + cart.size() + ",\"newItem\":" + newItemJson + "}");
 
             } finally {
                 if (em.isOpen()) em.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
+            resp.setContentType("application/json; charset=UTF-8");
             resp.getWriter().print("{\"ok\":false,\"message\":\"Có lỗi xảy ra: " + escapeJson(e.getMessage()) + "\"}");
         }
     }

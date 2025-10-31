@@ -36,9 +36,16 @@ public class RegisterController extends HttpServlet {
         String username = safe(req.getParameter("username"));
         String fullname = safe(req.getParameter("fullname"));
         String password = safe(req.getParameter("password"));
+        String confirmPassword = safe(req.getParameter("confirmPassword")); // FIX: Thêm
         String phone    = safe(req.getParameter("phone"));
 
-        // Validate cơ bản phía server
+        // FIX: Validate password confirmation
+        if (!password.equals(confirmPassword)) {
+            req.setAttribute("alert", "Mật khẩu xác nhận không khớp!");
+            req.getRequestDispatcher("views/register.jsp").forward(req, resp);
+            return;
+        }
+
         String err = validate(email, username, password, phone);
         if (err != null) {
             req.setAttribute("alert", err);
@@ -46,10 +53,9 @@ public class RegisterController extends HttpServlet {
             return;
         }
 
-        // Gọi service -> hash + check trùng + lưu
         var ok = userService.register(username, password, email, fullname, phone);
         if (ok) {
-            // Đăng ký xong -> chuyển login
+            req.getSession().setAttribute("success", "Đăng ký thành công! Vui lòng đăng nhập.");
             resp.sendRedirect(req.getContextPath() + "/login");
         } else {
             req.setAttribute("alert", "Tài khoản/Email/SĐT đã tồn tại hoặc dữ liệu không hợp lệ!");

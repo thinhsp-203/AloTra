@@ -34,12 +34,18 @@ public class LoginController extends HttpServlet {
         User user = userService.login(username, password);
 
         if (user != null) {
+            // FIX: Kiểm tra tài khoản có bị vô hiệu hóa không
+            if (user.getIsActive() == null || !user.getIsActive()) {
+                req.setAttribute("alert", "Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
+                req.getRequestDispatcher("views/login.jsp").forward(req, resp);
+                return;
+            }
+            
             HttpSession old = req.getSession(false);
             if (old != null) old.invalidate();
             HttpSession session = req.getSession(true);
             session.setAttribute("currentUser", user);
 
-            // KIỂM TRA VÀ CHUYỂN HƯỚNG SAU KHI ĐĂNG NHẬP
             String redirectUrl = (String) session.getAttribute("redirectAfterLogin");
             if (redirectUrl != null && !redirectUrl.isEmpty()) {
                 session.removeAttribute("redirectAfterLogin");
