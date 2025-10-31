@@ -4,259 +4,370 @@
 <fmt:setLocale value="vi_VN"/>
 
 <style>
-.cart-item-card {
+.checkout-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-card {
+    background: white;
     border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    transition: box-shadow 0.3s ease;
+    border-radius: 8px;
+    padding: 1.5rem;
     margin-bottom: 1rem;
 }
-.cart-item-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+.section-header {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e9ecef;
 }
-.item-thumbnail {
-    width: 80px;
-    height: 80px;
+
+.cart-item-simple {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.cart-item-simple:last-child {
+    border-bottom: none;
+}
+
+.item-image {
+    width: 60px;
+    height: 60px;
     object-fit: cover;
     border-radius: 8px;
+    flex-shrink: 0;
 }
-.quantity-control {
+
+.item-details {
+    flex-grow: 1;
+}
+
+.item-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+.item-options {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quantity-mini {
     display: inline-flex;
     align-items: center;
+    gap: 0.25rem;
+}
+
+.quantity-mini button {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 6px;
     border: 1px solid #dee2e6;
-    border-radius: 8px;
-    overflow: hidden;
+    background: white;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-.quantity-control button {
-    border: none;
-    background: #f8f9fa;
-    padding: 0.5rem 0.75rem;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.quantity-control button:hover {
-    background: #e9ecef;
-}
-.quantity-control input {
-    border: none;
+
+.quantity-mini input {
+    width: 40px;
     text-align: center;
-    width: 50px;
-    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.25rem;
+    font-weight: 600;
 }
-.payment-method-card {
+
+.btn-icon {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.price-mini {
+    font-weight: 600;
+    color: var(--bs-primary);
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.payment-option {
     border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 1rem;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s;
 }
-.payment-method-card:hover {
+
+.payment-option:hover {
+    border-color: var(--bs-primary);
+}
+
+.payment-option.active {
     border-color: var(--bs-primary);
     background: rgba(0, 102, 51, 0.05);
 }
-.payment-method-card.active {
-    border-color: var(--bs-primary);
-    background: rgba(0, 102, 51, 0.1);
+
+.payment-option input[type="radio"] {
+    margin-right: 0.5rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.summary-row.total {
+    border-top: 2px solid #e9ecef;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.form-control-sm {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.sticky-sidebar {
+    position: sticky;
+    top: 20px;
+}
+.voucher-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.voucher-input-group input {
+    flex: 1;
+}
+
+.voucher-message {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
 }
 </style>
 
-<h1 class="h4 mb-4">
-    <i class="bi bi-cart-check text-primary"></i> Thanh toán
-</h1>
+<div class="checkout-container">
+    <h1 class="h4 mb-4">Thanh toán</h1>
 
-<c:if test="${not empty sessionScope.checkoutError}">
-  <div class="alert alert-danger alert-dismissible fade show">
-    <i class="bi bi-exclamation-triangle-fill"></i> ${sessionScope.checkoutError}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-  <c:remove var="checkoutError" scope="session"/>
-</c:if>
+    <c:if test="${not empty sessionScope.checkoutError}">
+      <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle-fill"></i> ${sessionScope.checkoutError}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <c:remove var="checkoutError" scope="session"/>
+    </c:if>
 
-<c:if test="${empty sessionScope.CART}">
-  <div class="alert alert-info text-center py-5">
-    <i class="bi bi-cart-x display-4 d-block mb-3"></i>
-    <h5>Giỏ hàng của bạn đang trống</h5>
-    <p class="text-muted mb-3">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục</p>
-    <a href="${pageContext.request.contextPath}/products" class="btn btn-primary">
-      <i class="bi bi-shop"></i> Khám phá sản phẩm
-    </a>
-  </div>
-</c:if>
+    <c:if test="${empty sessionScope.CART}">
+      <div class="alert alert-info text-center py-5">
+        <i class="bi bi-cart-x display-4 d-block mb-3"></i>
+        <h5>Giỏ hàng của bạn đang trống</h5>
+        <a href="${pageContext.request.contextPath}/products" class="btn btn-primary mt-3">
+          Khám phá sản phẩm
+        </a>
+      </div>
+    </c:if>
 
-<c:if test="${not empty sessionScope.CART}">
-    <c:set var="total" value="${0}" />
-    <c:forEach var="item" items="${sessionScope.CART}">
-        <c:set var="total" value="${total + item.lineTotal}" />
-    </c:forEach>
+    <c:if test="${not empty sessionScope.CART}">
+        <c:set var="total" value="${0}" />
+        <c:forEach var="item" items="${sessionScope.CART}">
+            <c:set var="total" value="${total + item.lineTotal}" />
+        </c:forEach>
 
-    <form method="post" action="${pageContext.request.contextPath}/checkout" id="checkoutForm">
-        <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="card mb-4">
-                    <div class="card-header bg-light">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-basket"></i> Giỏ hàng của bạn 
-                            <span class="badge bg-primary">${sessionScope.CART.size()} sản phẩm</span>
-                        </h5>
-                    </div>
-                    <div class="card-body p-2">
-                        <c:forEach var="item" items="${sessionScope.CART}" varStatus="status">
-                            <div class="cart-item-card p-3" data-product-id="${item.productId}" 
-                                 data-size="${item.sizeName}" data-toppings="${item.toppingsCsv}">
-                                <div class="row align-items-center">
-                                    <div class="col-auto">
-                                        <img src="${item.thumbnail}" class="item-thumbnail" alt="${item.productName}">
-                                    </div>
-                                    <div class="col">
-                                        <h6 class="mb-1">${item.productName}</h6>
-                                        <div class="text-muted small">
-                                            <c:if test="${not empty item.sizeName}">
-                                                <span class="badge bg-secondary">${item.sizeName}</span>
-                                            </c:if>
-                                            <c:if test="${not empty item.toppingsCsv}">
-                                                <br><i class="bi bi-plus-circle"></i> ${item.toppingsCsv}
-                                            </c:if>
-                                        </div>
-                                        <div class="mt-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary edit-item-btn">
-                                                <i class="bi bi-pencil"></i> Chỉnh sửa
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn">
-                                                <i class="bi bi-trash"></i> Xóa
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="col-auto text-end">
-                                        <div class="fw-bold text-primary mb-2">
-                                            <fmt:formatNumber value="${item.lineTotal}" pattern="#,##0₫"/>
-                                        </div>
-                                        <div class="quantity-control">
-                                            <button type="button" class="qty-decrease">-</button>
-                                            <input type="number" value="${item.quantity}" min="1" max="99" readonly>
-                                            <button type="button" class="qty-increase">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </c:forEach>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-person-circle"></i> Thông tin giao hàng
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
+        <form method="post" action="${pageContext.request.contextPath}/checkout" id="checkoutForm">
+            <div class="row g-3">
+                <!-- Left Column -->
+                <div class="col-lg-7">
+                    <!-- Delivery Info -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <i class="bi bi-geo-alt"></i> Địa chỉ giao hàng
+                        </div>
+                        <div class="row g-2">
                             <div class="col-md-6">
-                                <label class="form-label">Họ tên <span class="text-danger">*</span></label>
-                                <input class="form-control" name="fullname" required value="${sessionScope.currentUser.fullname}"/>
+                                <input class="form-control form-control-sm" name="fullname" 
+                                       placeholder="Họ tên *" required 
+                                       value="${sessionScope.currentUser.fullname}"/>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Điện thoại <span class="text-danger">*</span></label>
-                                <input class="form-control" name="phone" required value="${sessionScope.currentUser.phone}"/>
+                                <input class="form-control form-control-sm" name="phone" 
+                                       placeholder="Số điện thoại *" required 
+                                       value="${sessionScope.currentUser.phone}"/>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Địa chỉ giao hàng <span class="text-danger">*</span></label>
-                                <textarea class="form-control" name="address" required rows="3">${sessionScope.currentUser.address}</textarea>
+                                <textarea class="form-control form-control-sm" name="address" 
+                                          placeholder="Địa chỉ giao hàng *" required 
+                                          rows="2">${sessionScope.currentUser.address}</textarea>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Ghi chú (không bắt buộc)</label>
-                                <textarea class="form-control" name="note" rows="2" placeholder="Yêu cầu đặc biệt..."></textarea>
+                                <input class="form-control form-control-sm" name="note" 
+                                       placeholder="Ghi chú đơn hàng (không bắt buộc)"/>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="col-lg-4">
-                <div class="card mb-3">
-                    <div class="card-header bg-light">
-                        <h5 class="card-title mb-0">
+                    <!-- Payment Methods -->
+                    <div class="section-card">
+                        <div class="section-header">
                             <i class="bi bi-credit-card"></i> Phương thức thanh toán
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="payment-method-card mb-2 active" data-method="COD">
-                            <input type="radio" name="payment" value="COD" id="payment-cod" checked hidden>
-                            <label for="payment-cod" class="d-flex align-items-center w-100 mb-0 cursor-pointer">
-                                <i class="bi bi-cash-coin fs-3 me-3 text-success"></i>
-                                <div class="flex-grow-1">
-                                    <strong>Thanh toán khi nhận hàng</strong>
-                                    <div class="text-muted small">Tiền mặt khi giao hàng</div>
-                                </div>
-                            </label>
                         </div>
-                        <div class="payment-method-card mb-2" data-method="VNPAY">
-                            <input type="radio" name="payment" value="VNPAY" id="payment-vnpay" hidden>
-                            <label for="payment-vnpay" class="d-flex align-items-center w-100 mb-0 cursor-pointer">
-                                <i class="bi bi-credit-card fs-3 me-3 text-primary"></i>
-                                <div class="flex-grow-1">
-                                    <strong>VNPAY</strong>
-                                    <div class="text-muted small">Thanh toán qua cổng VNPAY</div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <label class="form-label">
-                            <i class="bi bi-tag"></i> Mã giảm giá
+                        
+                        <label class="payment-option active">
+                            <input type="radio" name="payment" value="COD" checked>
+                            <i class="bi bi-cash"></i> Thẻ ngân hàng/Thẻ tín dụng/Ví điện tử
                         </label>
-                        <div class="input-group">
-                            <input class="form-control" name="voucher" id="voucher-code" placeholder="Nhập mã giảm giá"/>
-                            <button class="btn btn-outline-secondary" type="button" id="apply-voucher-btn">
+                        
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="VNPAY">
+                            <i class="bi bi-wallet2"></i> Ví MoMo
+                        </label>
+                        
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="MOMO">
+                            <i class="bi bi-credit-card"></i> Ví ZaloPay
+                        </label>
+                        
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="ZALOPAY">
+                            <i class="bi bi-phone"></i> Ví ShopeePay
+                        </label>
+                    </div>
+
+                    <!-- VOUCHER SECTION - THÊM VÀO ĐÂY -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <i class="bi bi-tag"></i> Mã giảm giá
+                        </div>
+                        <div class="voucher-input-group">
+                            <input class="form-control form-control-sm" 
+                                   name="voucher" 
+                                   id="voucher-code" 
+                                   placeholder="Nhập mã giảm giá"/>
+                            <button class="btn btn-outline-primary btn-sm" 
+                                    type="button" 
+                                    id="apply-voucher-btn">
                                 Áp dụng
                             </button>
                         </div>
-                        <div id="voucher-message" class="mt-2 small"></div>
+                        <div id="voucher-message" class="voucher-message"></div>
                     </div>
                 </div>
 
-                <div class="card position-sticky" style="top: 80px;">
-                    <div class="card-header bg-light">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-receipt"></i> Tóm tắt đơn hàng
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Tạm tính</span>
-                            <strong id="subtotal-display">
-                                <fmt:formatNumber value="${total}" pattern="#,##0₫"/>
-                            </strong>
+                <!-- Right Column -->
+                <div class="col-lg-5">
+                    <div class="sticky-sidebar">
+                        <!-- Cart Items -->
+                        <div class="section-card">
+                            <div class="section-header">
+                                <i class="bi bi-bag-check"></i> Giỏ hàng của bạn 
+                                <span class="badge bg-primary">${sessionScope.CART.size()} món</span>
+                            </div>
+                            
+                            <c:forEach var="item" items="${sessionScope.CART}">
+                                <div class="cart-item-simple" data-product-id="${item.productId}" 
+                                     data-size="${item.sizeName}" data-toppings="${item.toppingsCsv}">
+                                    <img src="${item.thumbnail}" class="item-image" alt="${item.productName}">
+                                    
+                                    <div class="item-details">
+                                        <div class="item-name">${item.productName}</div>
+                                        <div class="item-options">
+                                            <c:if test="${not empty item.sizeName && item.sizeName ne 'Mặc định'}">
+                                                Kích cỡ: ${item.sizeName}
+                                            </c:if>
+                                            <c:if test="${not empty item.toppingsCsv}">
+                                                <br>Đá: ${item.toppingsCsv}
+                                            </c:if>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="item-actions d-flex flex-column align-items-end gap-2">
+                                        <div class="price-mini">
+                                            <fmt:formatNumber value="${item.lineTotal}" pattern="#,##0₫"/>
+                                        </div>
+                                        <div class="quantity-mini">
+                                            <button type="button" class="qty-decrease btn btn-sm btn-outline-secondary">−</button>
+                                            <input type="number" value="${item.quantity}" readonly>
+                                            <button type="button" class="qty-increase btn btn-sm btn-outline-secondary">+</button>
+                                        </div>
+                                        <div class="d-flex gap-1">
+                                            <button type="button" class="btn btn-sm btn-outline-primary btn-icon edit-item-btn" title="Sửa">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-icon remove-item-btn" title="Xóa">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
                         </div>
-                        <div class="d-flex justify-content-between mb-2 text-success">
-                            <span>Giảm giá</span>
-                            <strong id="discount-display">0₫</strong>
+
+                        <!-- Order Summary -->
+                        <div class="section-card">
+                            <div class="section-header">
+                                <i class="bi bi-receipt"></i> Thông tin thanh toán
+                            </div>
+                            
+                            <div class="summary-row">
+                                <span>Tổng tiền tạm tính</span>
+                                <strong id="subtotal-display">
+                                    <fmt:formatNumber value="${total}" pattern="#,##0₫"/>
+                                </strong>
+                            </div>
+                            
+                            <div class="summary-row text-muted">
+                                <span>Phí vận chuyển</span>
+                                <strong>0 đ</strong>
+                            </div>
+                            
+                            <div class="summary-row text-success">
+                                <span>Mã giảm giá</span>
+                                <strong id="discount-display">0 đ</strong>
+                            </div>
+                            
+                            <div class="summary-row total">
+                                <span>Tổng tiền (Đã có VAT)</span>
+                                <span class="text-primary" id="grand-total-display">
+                                    <fmt:formatNumber value="${total}" pattern="#,##0₫"/>
+                                </span>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mt-3">
+                                TIẾN HÀNH THANH TOÁN
+                            </button>
                         </div>
-                        <div class="d-flex justify-content-between mb-2 text-muted">
-                            <span>Phí vận chuyển</span>
-                            <strong>Miễn phí</strong>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between mb-3">
-                            <strong class="h5 mb-0">Tổng cộng</strong>
-                            <strong class="h5 mb-0 text-primary" id="grand-total-display">
-                                <fmt:formatNumber value="${total}" pattern="#,##0₫"/>
-                            </strong>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-lg w-100">
-                            <i class="bi bi-check-circle"></i> Đặt hàng
-                        </button>
-                        <a href="${pageContext.request.contextPath}/products" class="btn btn-outline-secondary w-100 mt-2">
-                            <i class="bi bi-arrow-left"></i> Tiếp tục mua sắm
-                        </a>
                     </div>
                 </div>
             </div>
-        </div>
-    </form>
-</c:if>
+        </form>
+    </c:if>
+</div>
 
+<!-- Edit Modal (giữ nguyên) -->
 <div class="modal fade" id="editItemModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -280,18 +391,25 @@ document.addEventListener("DOMContentLoaded", function() {
     const contextPath = '${pageContext.request.contextPath}';
     const currencyFormatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     // Payment method selection
-    document.querySelectorAll('.payment-method-card').forEach(card => {
-        card.addEventListener('click', function() {
-            document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.payment-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('active'));
             this.classList.add('active');
             this.querySelector('input[type="radio"]').checked = true;
         });
     });
 
-    // Quantity controls for each item
-    document.querySelectorAll('.cart-item-card').forEach(card => {
-        const qtyInput = card.querySelector('.quantity-control input');
+    // Quantity controls
+    document.querySelectorAll('.cart-item-simple').forEach(card => {
+        const qtyInput = card.querySelector('.quantity-mini input');
         const decreaseBtn = card.querySelector('.qty-decrease');
         const increaseBtn = card.querySelector('.qty-increase');
 
@@ -321,47 +439,106 @@ document.addEventListener("DOMContentLoaded", function() {
         increaseBtn.addEventListener('click', () => updateQuantity(1));
     });
 
-    // Remove item button
+    // Remove item
     document.querySelectorAll('.remove-item-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            const card = this.closest('.cart-item-card');
+            const card = this.closest('.cart-item-simple');
             if (!confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
             
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = contextPath + '/cart/remove';
-            
-            form.innerHTML = `
-                <input name="productId" value="${card.dataset.productId}">
-                <input name="size" value="${card.dataset.size || 'Mặc định'}">
-                <input name="toppings" value="${card.dataset.toppings || ''}">
-            `;
+            form.innerHTML = '<input name="productId" value="' + card.dataset.productId + '">' +
+                           '<input name="size" value="' + (card.dataset.size || 'Mặc định') + '">' +
+                           '<input name="toppings" value="' + (card.dataset.toppings || '') + '">';
             document.body.appendChild(form);
             form.submit();
         });
     });
 
-    // --- EDIT ITEM MODAL LOGIC ---
+    // VOUCHER APPLICATION - THÊM VÀO ĐÂY
+    document.getElementById('apply-voucher-btn')?.addEventListener('click', function() {
+        const code = document.getElementById('voucher-code').value.trim();
+        const msgEl = document.getElementById('voucher-message');
+        const discountEl = document.getElementById('discount-display');
+        const totalEl = document.getElementById('grand-total-display');
+        const subtotalEl = document.getElementById('subtotal-display');
+        
+        if (!code) {
+            msgEl.className = 'voucher-message text-warning';
+            msgEl.textContent = 'Vui lòng nhập mã giảm giá';
+            return;
+        }
+        
+        // Show loading
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang kiểm tra...';
+        
+        fetch(contextPath + '/api/voucher/apply', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'code=' + encodeURIComponent(code)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                msgEl.className = 'voucher-message text-success';
+                msgEl.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + data.message;
+                discountEl.textContent = '-' + data.discountFormatted;
+                discountEl.parentElement.classList.remove('text-success');
+                discountEl.parentElement.classList.add('text-danger');
+                totalEl.textContent = data.newTotalFormatted;
+            } else {
+                msgEl.className = 'voucher-message text-danger';
+                msgEl.innerHTML = '<i class="bi bi-x-circle-fill"></i> ' + data.message;
+                discountEl.textContent = '0 đ';
+                discountEl.parentElement.classList.remove('text-danger');
+                discountEl.parentElement.classList.add('text-success');
+                totalEl.textContent = subtotalEl.textContent;
+            }
+        })
+        .catch(error => {
+            console.error('Error applying voucher:', error);
+            msgEl.className = 'voucher-message text-danger';
+            msgEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Không thể áp dụng mã giảm giá';
+        })
+        .finally(() => {
+            this.disabled = false;
+            this.textContent = 'Áp dụng';
+        });
+    });
+
+    // EDIT MODAL - Giữ nguyên code đã fix trước đó
     let currentEditingItem = null;
     const editItemModal = new bootstrap.Modal(document.getElementById('editItemModal'));
     
     document.querySelectorAll('.edit-item-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            const card = this.closest('.cart-item-card');
+            const card = this.closest('.cart-item-simple');
             currentEditingItem = card;
             const pid = card.dataset.productId;
             
-            document.getElementById('editModalContent').innerHTML = '<div class="text-center my-5"><div class="spinner-border"></div></div>';
+            document.getElementById('editModalContent').innerHTML = 
+                '<div class="text-center my-5"><div class="spinner-border"></div></div>';
             editItemModal.show();
             
-            fetch(`${contextPath}/api/product-details?id=${pid}`)
-                .then(r => r.json())
+            fetch(contextPath + '/api/product-details?id=' + pid)
+                .then(r => {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                })
                 .then(data => {
                     if (data.ok) {
                         renderEditModal(data, card);
                     } else {
-                        document.getElementById('editModalContent').innerHTML = '<p class="text-danger">Không thể tải thông tin.</p>';
+                        document.getElementById('editModalContent').innerHTML = 
+                            '<div class="alert alert-danger">Lỗi: ' + (data.message || 'Không thể tải') + '</div>';
                     }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('editModalContent').innerHTML = 
+                        '<div class="alert alert-danger">Không thể tải thông tin sản phẩm</div>';
                 });
         });
     });
@@ -370,96 +547,105 @@ document.addEventListener("DOMContentLoaded", function() {
         const content = document.getElementById('editModalContent');
         const currentSize = card.dataset.size || "Mặc định";
         const currentToppingsStr = card.dataset.toppings || "";
-        const currentQuantity = card.querySelector('.quantity-control input').value;
 
-        let sizesHtml = data.sizes.map((s, index) => {
-        	  const isChecked = (s.name === currentSize);
-        	  const priceAdjText = new Intl.NumberFormat('vi-VN').format(s.priceAdjustment);
-        	  return ''
-        	    + '<div class="col-auto">'
-        	    +   '<input type="radio" class="btn-check" name="edit-size" id="edit-size-' + index + '"'
-        	    +   ' value="' + s.name + '" data-price-adj="' + s.priceAdjustment + '"' + (isChecked ? ' checked' : '') + '>'
-        	    +   '<label class="btn btn-outline-primary btn-size" for="edit-size-' + index + '">'
-        	    +     s.name
-        	    +     '<div class="small fw-normal">' + (s.priceAdjustment >= 0 ? '+' : '') + priceAdjText + ' đ</div>'
-        	    +   '</label>'
-        	    + '</div>';
-        	}).join('');
+        let sizesHtml = '';
+        if (data.sizes && data.sizes.length > 0) {
+            sizesHtml = data.sizes.map((s, i) => {
+                const checked = (s.name === currentSize) ? 'checked' : '';
+                const adj = new Intl.NumberFormat('vi-VN').format(s.priceAdjustment);
+                return '<div class="col-auto">' +
+                    '<input type="radio" class="btn-check" name="edit-size" id="edit-size-' + i + '" ' +
+                    'value="' + escapeHtml(s.name) + '" data-price-adj="' + s.priceAdjustment + '" ' + checked + '>' +
+                    '<label class="btn btn-outline-primary btn-size" for="edit-size-' + i + '">' +
+                    escapeHtml(s.name) + '<div class="small fw-normal">' + 
+                    (s.priceAdjustment >= 0 ? '+' : '') + adj + ' đ</div></label></div>';
+            }).join('');
+        }
 
-        	let toppingsHtml = data.toppings.map((t) => {
-        	  const regex = new RegExp(t.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '( x(\\d+))?');
-        	  const match = currentToppingsStr.match(regex);
-        	  const currentQty = match ? (match[2] ? parseInt(match[2]) : 1) : 0;
-        	  return ''
-        	    + '<div class="d-flex justify-content-between align-items-center mb-2">'
-        	    +   '<div>' + t.name + ' <small class="text-muted">(+' + currencyFormatter.format(t.price) + ')</small></div>'
-        	    +   '<div class="input-group" style="width: 100px;">'
-        	    +     '<button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateEditModalToppingQty(' + t.id + ', -1)">-</button>'
-        	    +     '<input type="text" class="form-control form-control-sm text-center" value="' + currentQty + '" readonly id="edit-topping-qty-' + t.id + '" data-topping-id="' + t.id + '" data-price="' + t.price + '">'
-        	    +     '<button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateEditModalToppingQty(' + t.id + ', 1)">+</button>'
-        	    +   '</div>'
-        	    + '</div>';
-        	}).join('');
+        let toppingsHtml = '';
+        if (data.toppings && data.toppings.length > 0) {
+            toppingsHtml = data.toppings.map(t => {
+                const regex = new RegExp(t.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '( x(\\d+))?');
+                const match = currentToppingsStr.match(regex);
+                const qty = match ? (match[2] ? parseInt(match[2]) : 1) : 0;
+                
+                return '<div class="d-flex justify-content-between align-items-center mb-2">' +
+                    '<div>' + escapeHtml(t.name) + ' <small class="text-muted">(+' + 
+                    currencyFormatter.format(t.price) + ')</small></div>' +
+                    '<div class="input-group" style="width: 100px;">' +
+                    '<button class="btn btn-outline-secondary btn-sm" type="button" ' +
+                    'onclick="updateEditModalToppingQty(' + t.id + ', -1)">-</button>' +
+                    '<input type="text" class="form-control form-control-sm text-center" value="' + qty + '" readonly ' +
+                    'id="edit-topping-qty-' + t.id + '" data-topping-id="' + t.id + '" data-price="' + t.price + '">' +
+                    '<button class="btn btn-outline-secondary btn-sm" type="button" ' +
+                    'onclick="updateEditModalToppingQty(' + t.id + ', 1)">+</button>' +
+                    '</div></div>';
+            }).join('');
+        }
 
-        	let sizesBlock    = sizesHtml    ? '<div class="mb-3"><h6>Size</h6><div class="row g-2">' + sizesHtml    + '</div></div>' : '';
-        	let toppingsBlock = toppingsHtml ? '<div class="mb-3"><h6>Topping</h6>' + toppingsHtml + '</div>' : '';
+        const sizesBlock = sizesHtml ? '<div class="mb-3"><h6>Size</h6><div class="row g-2">' + sizesHtml + '</div></div>' : '';
+        const toppingsBlock = toppingsHtml ? '<div class="mb-3"><h6>Topping</h6>' + toppingsHtml + '</div>' : '';
 
-        	let finalHtml = ''
-        	  + '<div class="row g-4">'
-        	  +   '<div class="col-md-5"><img src="' + data.product.thumbnail + '" class="img-fluid rounded"></div>'
-        	  +   '<div class="col-md-7">'
-        	  +     '<h4>' + data.product.name + '</h4>'
-        	  +     '<p class="h5 text-primary fw-bold mb-3" id="edit-base-price" data-price="' + data.product.basePrice + '">'
-        	  +        currencyFormatter.format(data.product.basePrice) + '</p>'
-        	  +     '<div style="max-height: 250px; overflow-y: auto; padding-right: 10px;">'
-        	  +        sizesBlock + toppingsBlock
-        	  +     '</div>'
-        	  +   '</div>'
-        	  + '</div>';
-        	content.innerHTML = finalHtml;
+        content.innerHTML = '<div class="row g-4">' +
+            '<div class="col-md-5"><img src="' + escapeHtml(data.product.thumbnail) + '" ' +
+            'class="img-fluid rounded" alt="' + escapeHtml(data.product.name) + '"></div>' +
+            '<div class="col-md-7">' +
+            '<h4>' + escapeHtml(data.product.name) + '</h4>' +
+            '<p class="h5 text-primary fw-bold mb-3" id="edit-base-price" data-price="' + data.product.basePrice + '">' +
+            currencyFormatter.format(data.product.basePrice) + '</p>' +
+            '<div style="max-height: 300px; overflow-y: auto;">' +
+            sizesBlock + toppingsBlock +
+            (!sizesBlock && !toppingsBlock ? '<p class="text-muted">Sản phẩm này không có tùy chọn.</p>' : '') +
+            '</div></div></div>';
 
-
-        content.querySelectorAll('input[name="edit-size"]').forEach(radio => radio.addEventListener('change', updateEditModalPrice));
+        content.querySelectorAll('input[name="edit-size"]').forEach(r => 
+            r.addEventListener('change', updateEditModalPrice));
         updateEditModalPrice();
     }
 
     window.updateEditModalToppingQty = (id, change) => {
-        const qtyInput = document.getElementById(`edit-topping-qty-${id}`);
-        let currentQty = parseInt(qtyInput.value) + change;
-        if (currentQty >= 0) {
-            qtyInput.value = currentQty;
+        const input = document.getElementById('edit-topping-qty-' + id);
+        if (!input) return;
+        let qty = parseInt(input.value) + change;
+        if (qty >= 0) {
+            input.value = qty;
             updateEditModalPrice();
         }
     };
 
     function updateEditModalPrice() {
-        const basePriceEl = document.getElementById('edit-base-price');
-        if (!basePriceEl) return;
-        const basePrice = parseFloat(basePriceEl.dataset.price) || 0;
+        const el = document.getElementById('edit-base-price');
+        if (!el) return;
+        
+        const base = parseFloat(el.dataset.price) || 0;
         const sizeInput = document.querySelector('input[name="edit-size"]:checked');
         const sizeAdj = sizeInput ? (parseFloat(sizeInput.dataset.priceAdj) || 0) : 0;
-        let toppingsPrice = 0;
-        document.querySelectorAll('#editModalContent input[data-topping-id]').forEach(input => {
-            toppingsPrice += (parseFloat(input.dataset.price) || 0) * (parseInt(input.value) || 0);
+        
+        let toppingsCost = 0;
+        document.querySelectorAll('#editModalContent input[data-topping-id]').forEach(inp => {
+            toppingsCost += (parseFloat(inp.dataset.price) || 0) * (parseInt(inp.value) || 0);
         });
-        const finalPrice = basePrice + sizeAdj + toppingsPrice;
-        document.getElementById('updateItemBtn').textContent =
-        	  'Cập nhật - ' + currencyFormatter.format(finalPrice);
+        
+        document.getElementById('updateItemBtn').textContent = 
+            'Cập nhật - ' + currencyFormatter.format(base + sizeAdj + toppingsCost);
     }
 
     document.getElementById('updateItemBtn').addEventListener('click', function() {
         if (!currentEditingItem) return;
 
+        const newSize = document.querySelector('input[name="edit-size"]:checked');
+        const newToppings = Array.from(document.querySelectorAll('#editModalContent input[data-topping-id]'))
+            .filter(inp => parseInt(inp.value) > 0)
+            .map(inp => inp.dataset.toppingId + ':' + inp.value)
+            .join(',');
+
         const params = new URLSearchParams({
             oldProductId: currentEditingItem.dataset.productId,
             oldSize: currentEditingItem.dataset.size || "Mặc định",
             oldToppingsCsv: currentEditingItem.dataset.toppings || "",
-            quantity: currentEditingItem.querySelector('.quantity-control input').value,
-            newSize: document.querySelector('input[name="edit-size"]:checked')?.value || "Mặc định",
-            newToppings: Array.from(document.querySelectorAll('#editModalContent input[data-topping-id]'))
-                            .filter(input => parseInt(input.value) > 0)
-                            .map(input => `${input.dataset.toppingId}:${input.value}`)
-                            .join(',')
+            quantity: currentEditingItem.querySelector('.quantity-mini input').value,
+            newSize: newSize ? newSize.value : "Mặc định",
+            newToppings: newToppings
         });
 
         fetch(contextPath + '/cart/update-item', {
@@ -469,37 +655,15 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(r => r.json())
         .then(data => {
-            if (data.ok) {
-                location.reload();
-            } else {
-                alert('Lỗi: ' + data.message);
-            }
-        });
-        editItemModal.hide();
-    });
-
-    // Voucher application
-    document.getElementById('apply-voucher-btn')?.addEventListener('click', function() {
-        const code = document.getElementById('voucher-code').value.trim();
-        if (!code) return;
-        fetch(contextPath + '/api/voucher/apply', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'code=' + encodeURIComponent(code)
+            if (data.ok) location.reload();
+            else alert('Lỗi: ' + (data.message || 'Không cập nhật được'));
         })
-        .then(r => r.json())
-        .then(data => {
-            const msgEl = document.getElementById('voucher-message');
-            if (data.ok) {
-                msgEl.className = 'mt-2 small text-success';
-                msgEl.textContent = data.message;
-                document.getElementById('discount-display').textContent = '-' + data.discountFormatted;
-                document.getElementById('grand-total-display').textContent = data.newTotalFormatted;
-            } else {
-                msgEl.className = 'mt-2 small text-danger';
-                msgEl.textContent = data.message;
-            }
+        .catch(err => {
+            console.error(err);
+            alert('Có lỗi xảy ra');
         });
+        
+        editItemModal.hide();
     });
 });
 </script>
