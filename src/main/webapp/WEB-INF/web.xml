@@ -13,6 +13,10 @@
 	<filter>
     <filter-name>sitemesh</filter-name>
     <filter-class>org.sitemesh.config.ConfigurableSiteMeshFilter</filter-class>
+      <init-param>
+    <param-name>exclude-path</param-name>
+    <param-value>/api/*</param-value> <!-- THÊM -->
+  </init-param>
 	  </filter>
 	
 	  <filter-mapping>

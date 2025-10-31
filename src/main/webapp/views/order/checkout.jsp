@@ -77,7 +77,7 @@
     <h5>Giỏ hàng của bạn đang trống</h5>
     <p class="text-muted mb-3">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục</p>
     <a href="${pageContext.request.contextPath}/products" class="btn btn-primary">
-        <i class="bi bi-shop"></i> Khám phá sản phẩm
+      <i class="bi bi-shop"></i> Khám phá sản phẩm
     </a>
   </div>
 </c:if>
@@ -90,9 +90,7 @@
 
     <form method="post" action="${pageContext.request.contextPath}/checkout" id="checkoutForm">
         <div class="row g-4">
-            <!-- Left Column: Cart Items & Customer Info -->
             <div class="col-lg-8">
-                <!-- Cart Items -->
                 <div class="card mb-4">
                     <div class="card-header bg-light">
                         <h5 class="card-title mb-0">
@@ -143,7 +141,6 @@
                     </div>
                 </div>
 
-                <!-- Customer Information -->
                 <div class="card">
                     <div class="card-header bg-light">
                         <h5 class="card-title mb-0">
@@ -154,13 +151,11 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Họ tên <span class="text-danger">*</span></label>
-                                <input class="form-control" name="fullname" required 
-                                       value="${sessionScope.currentUser.fullname}"/>
+                                <input class="form-control" name="fullname" required value="${sessionScope.currentUser.fullname}"/>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Điện thoại <span class="text-danger">*</span></label>
-                                <input class="form-control" name="phone" required 
-                                       value="${sessionScope.currentUser.phone}"/>
+                                <input class="form-control" name="phone" required value="${sessionScope.currentUser.phone}"/>
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Địa chỉ giao hàng <span class="text-danger">*</span></label>
@@ -175,9 +170,7 @@
                 </div>
             </div>
 
-            <!-- Right Column: Payment & Summary -->
             <div class="col-lg-4">
-                <!-- Payment Method -->
                 <div class="card mb-3">
                     <div class="card-header bg-light">
                         <h5 class="card-title mb-0">
@@ -185,7 +178,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div class="payment-method-card mb-2" data-method="COD">
+                        <div class="payment-method-card mb-2 active" data-method="COD">
                             <input type="radio" name="payment" value="COD" id="payment-cod" checked hidden>
                             <label for="payment-cod" class="d-flex align-items-center w-100 mb-0 cursor-pointer">
                                 <i class="bi bi-cash-coin fs-3 me-3 text-success"></i>
@@ -205,28 +198,16 @@
                                 </div>
                             </label>
                         </div>
-                        <div class="payment-method-card" data-method="MOMO">
-                            <input type="radio" name="payment" value="MOMO" id="payment-momo" hidden>
-                            <label for="payment-momo" class="d-flex align-items-center w-100 mb-0 cursor-pointer">
-                                <i class="bi bi-phone fs-3 me-3 text-danger"></i>
-                                <div class="flex-grow-1">
-                                    <strong>Ví MoMo</strong>
-                                    <div class="text-muted small">Thanh toán qua ví điện tử</div>
-                                </div>
-                            </label>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Voucher -->
                 <div class="card mb-3">
                     <div class="card-body">
                         <label class="form-label">
                             <i class="bi bi-tag"></i> Mã giảm giá
                         </label>
                         <div class="input-group">
-                            <input class="form-control" name="voucher" id="voucher-code" 
-                                   placeholder="Nhập mã giảm giá"/>
+                            <input class="form-control" name="voucher" id="voucher-code" placeholder="Nhập mã giảm giá"/>
                             <button class="btn btn-outline-secondary" type="button" id="apply-voucher-btn">
                                 Áp dụng
                             </button>
@@ -235,7 +216,6 @@
                     </div>
                 </div>
 
-                <!-- Order Summary -->
                 <div class="card position-sticky" style="top: 80px;">
                     <div class="card-header bg-light">
                         <h5 class="card-title mb-0">
@@ -267,8 +247,7 @@
                         <button type="submit" class="btn btn-primary btn-lg w-100">
                             <i class="bi bi-check-circle"></i> Đặt hàng
                         </button>
-                        <a href="${pageContext.request.contextPath}/products" 
-                           class="btn btn-outline-secondary w-100 mt-2">
+                        <a href="${pageContext.request.contextPath}/products" class="btn btn-outline-secondary w-100 mt-2">
                             <i class="bi bi-arrow-left"></i> Tiếp tục mua sắm
                         </a>
                     </div>
@@ -278,7 +257,6 @@
     </form>
 </c:if>
 
-<!-- Edit Item Modal -->
 <div class="modal fade" id="editItemModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -298,235 +276,230 @@
 </div>
 
 <script>
-const contextPath = '${pageContext.request.contextPath}';
-const currencyFormatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+document.addEventListener("DOMContentLoaded", function() {
+    const contextPath = '${pageContext.request.contextPath}';
+    const currencyFormatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
-// Payment method selection
-document.querySelectorAll('.payment-method-card').forEach(card => {
-    card.addEventListener('click', function() {
-        document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('active'));
-        this.classList.add('active');
-        this.querySelector('input[type="radio"]').checked = true;
-    });
-});
-
-// Quantity controls
-document.querySelectorAll('.cart-item-card').forEach(card => {
-    const qtyInput = card.querySelector('.quantity-control input');
-    const decreaseBtn = card.querySelector('.qty-decrease');
-    const increaseBtn = card.querySelector('.qty-increase');
-    
-    decreaseBtn.addEventListener('click', () => updateQuantity(card, -1));
-    increaseBtn.addEventListener('click', () => updateQuantity(card, 1));
-});
-
-function updateQuantity(card, change) {
-    const input = card.querySelector('.quantity-control input');
-    let newQty = parseInt(input.value) + change;
-    if (newQty < 1) return;
-    
-    const pid = card.dataset.productId;
-    const size = card.dataset.size || "Mặc định";
-    const toppings = card.dataset.toppings || "";
-
-    const params = new URLSearchParams({
-        productId: pid,
-        size: size,
-        toppings: toppings,
-        quantity: newQty
+    // Payment method selection
+    document.querySelectorAll('.payment-method-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            this.querySelector('input[type="radio"]').checked = true;
+        });
     });
 
-    fetch(contextPath + '/cart/update', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: params
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.ok) {
-            location.reload();
-        }
-    });
-}
+    // Quantity controls for each item
+    document.querySelectorAll('.cart-item-card').forEach(card => {
+        const qtyInput = card.querySelector('.quantity-control input');
+        const decreaseBtn = card.querySelector('.qty-decrease');
+        const increaseBtn = card.querySelector('.qty-increase');
 
-// Remove item
-document.querySelectorAll('.remove-item-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const card = this.closest('.cart-item-card');
-        if (!confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
-        
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = contextPath + '/cart/remove';
-        
-        const size = card.dataset.size || "Mặc định";
-        const toppings = card.dataset.toppings || "";
+        const updateQuantity = (change) => {
+            let newQty = parseInt(qtyInput.value) + change;
+            if (newQty < 1) return;
+            
+            const params = new URLSearchParams({
+                productId: card.dataset.productId,
+                size: card.dataset.size || "Mặc định",
+                toppings: card.dataset.toppings || "",
+                quantity: newQty
+            });
 
-        form.innerHTML = '<input name="productId" value="' + card.dataset.productId + '">' +
-                         '<input name="size" value="' + size + '">' +
-                         '<input name="toppings" value="' + toppings + '">';
-        document.body.appendChild(form);
-        form.submit();
-    });
-});
-
-// Edit item - Load product details modal
-let currentEditingItem = null;
-const editItemModal = new bootstrap.Modal(document.getElementById('editItemModal'));
-
-document.querySelectorAll('.edit-item-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const card = this.closest('.cart-item-card');
-        currentEditingItem = card;
-        const pid = card.dataset.productId;
-        
-        document.getElementById('editModalContent').innerHTML = '<div class="text-center"><div class="spinner-border"></div></div>';
-        editItemModal.show();
-        
-        fetch(contextPath + '/api/product-details?id=' + pid)
+            fetch(contextPath + '/cart/update', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: params
+            })
             .then(r => r.json())
             .then(data => {
-                if (data.ok) {
-                    renderEditModal(data, card);
-                } else {
-                    document.getElementById('editModalContent').innerHTML = '<p class="text-danger">Không thể tải thông tin.</p>';
-                }
+                if (data.ok) location.reload();
             });
+        };
+        
+        decreaseBtn.addEventListener('click', () => updateQuantity(-1));
+        increaseBtn.addEventListener('click', () => updateQuantity(1));
     });
-});
 
-// === SỬA LỖI PARSEEXCEPTION TẠI ĐÂY ===
-function renderEditModal(data, card) {
-    const content = document.getElementById('editModalContent');
-    const currentSize = card.dataset.size || "Mặc định";
-    const currentToppingsStr = card.dataset.toppings || "";
+    // Remove item button
+    document.querySelectorAll('.remove-item-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.cart-item-card');
+            if (!confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
+            
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = contextPath + '/cart/remove';
+            
+            form.innerHTML = `
+                <input name="productId" value="${card.dataset.productId}">
+                <input name="size" value="${card.dataset.size || 'Mặc định'}">
+                <input name="toppings" value="${card.dataset.toppings || ''}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        });
+    });
 
-    let sizesHtml = data.sizes.map((s, index) => {
-        const isChecked = (s.name === currentSize);
-        const priceAdjText = new Intl.NumberFormat('vi-VN').format(s.priceAdjustment);
-        return '<div class="col-auto">' +
-            '<input type="radio" class="btn-check" name="edit-size" id="edit-size-' + index + '" value="' + s.name + '" data-price-adj="' + s.priceAdjustment + '" ' + (isChecked ? 'checked' : '') + '>' +
-            '<label class="btn btn-outline-primary btn-size" for="edit-size-' + index + '">' +
-                s.name +
-                '<div class="small fw-normal">' + (s.priceAdjustment >= 0 ? '+' : '') + priceAdjText + ' đ</div>' +
-            '</label>' +
-        '</div>';
-    }).join('');
+    // --- EDIT ITEM MODAL LOGIC ---
+    let currentEditingItem = null;
+    const editItemModal = new bootstrap.Modal(document.getElementById('editItemModal'));
+    
+    document.querySelectorAll('.edit-item-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.cart-item-card');
+            currentEditingItem = card;
+            const pid = card.dataset.productId;
+            
+            document.getElementById('editModalContent').innerHTML = '<div class="text-center my-5"><div class="spinner-border"></div></div>';
+            editItemModal.show();
+            
+            fetch(`${contextPath}/api/product-details?id=${pid}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) {
+                        renderEditModal(data, card);
+                    } else {
+                        document.getElementById('editModalContent').innerHTML = '<p class="text-danger">Không thể tải thông tin.</p>';
+                    }
+                });
+        });
+    });
 
-    let toppingsHtml = data.toppings.map(t => {
-        const regex = new RegExp(t.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '( x(\\d+))?');
-        const match = currentToppingsStr.match(regex);
-        const currentQty = match ? (match[2] ? parseInt(match[2]) : 1) : 0;
-        return '<div class="d-flex justify-content-between align-items-center mb-2">' +
-            '<div>' + t.name + ' <small class="text-muted">(+' + currencyFormatter.format(t.price) + ')</small></div>' +
-            '<div class="input-group" style="width: 100px;">' +
-                '<button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateEditModalToppingQty(' + t.id + ', -1)">-</button>' +
-                '<input type="text" class="form-control form-control-sm text-center" value="' + currentQty + '" readonly id="edit-topping-qty-' + t.id + '" data-topping-id="' + t.id + '" data-price="' + t.price + '">' +
-                '<button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateEditModalToppingQty(' + t.id + ', 1)">+</button>' +
-            '</div>' +
-        '</div>';
-    }).join('');
+    function renderEditModal(data, card) {
+        const content = document.getElementById('editModalContent');
+        const currentSize = card.dataset.size || "Mặc định";
+        const currentToppingsStr = card.dataset.toppings || "";
+        const currentQuantity = card.querySelector('.quantity-control input').value;
 
-    // Xây dựng HTML bằng cách nối chuỗi an toàn
-    let finalHtml = '<div class="row g-4">' +
-        '<div class="col-md-5"><img src="' + data.product.thumbnail + '" class="img-fluid rounded"></div>' +
-        '<div class="col-md-7">' +
-            '<h4>' + data.product.name + '</h4>' +
-            '<p class="h5 text-primary fw-bold mb-3" id="edit-base-price" data-price="' + data.product.basePrice + '">' + currencyFormatter.format(data.product.basePrice) + '</p>' +
-            '<div style="max-height: 250px; overflow-y: auto; padding-right: 10px;">';
+        let sizesHtml = data.sizes.map((s, index) => {
+        	  const isChecked = (s.name === currentSize);
+        	  const priceAdjText = new Intl.NumberFormat('vi-VN').format(s.priceAdjustment);
+        	  return ''
+        	    + '<div class="col-auto">'
+        	    +   '<input type="radio" class="btn-check" name="edit-size" id="edit-size-' + index + '"'
+        	    +   ' value="' + s.name + '" data-price-adj="' + s.priceAdjustment + '"' + (isChecked ? ' checked' : '') + '>'
+        	    +   '<label class="btn btn-outline-primary btn-size" for="edit-size-' + index + '">'
+        	    +     s.name
+        	    +     '<div class="small fw-normal">' + (s.priceAdjustment >= 0 ? '+' : '') + priceAdjText + ' đ</div>'
+        	    +   '</label>'
+        	    + '</div>';
+        	}).join('');
 
-    if (sizesHtml) {
-        finalHtml += '<div class="mb-3"><h6>Size</h6><div class="row g-2">' + sizesHtml + '</div></div>';
-    }
-    if (toppingsHtml) {
-        finalHtml += '<div class="mb-3"><h6>Topping</h6>' + toppingsHtml + '</div>';
-    }
+        	let toppingsHtml = data.toppings.map((t) => {
+        	  const regex = new RegExp(t.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '( x(\\d+))?');
+        	  const match = currentToppingsStr.match(regex);
+        	  const currentQty = match ? (match[2] ? parseInt(match[2]) : 1) : 0;
+        	  return ''
+        	    + '<div class="d-flex justify-content-between align-items-center mb-2">'
+        	    +   '<div>' + t.name + ' <small class="text-muted">(+' + currencyFormatter.format(t.price) + ')</small></div>'
+        	    +   '<div class="input-group" style="width: 100px;">'
+        	    +     '<button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateEditModalToppingQty(' + t.id + ', -1)">-</button>'
+        	    +     '<input type="text" class="form-control form-control-sm text-center" value="' + currentQty + '" readonly id="edit-topping-qty-' + t.id + '" data-topping-id="' + t.id + '" data-price="' + t.price + '">'
+        	    +     '<button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateEditModalToppingQty(' + t.id + ', 1)">+</button>'
+        	    +   '</div>'
+        	    + '</div>';
+        	}).join('');
 
-    finalHtml += '</div></div></div>';
-    content.innerHTML = finalHtml;
+        	let sizesBlock    = sizesHtml    ? '<div class="mb-3"><h6>Size</h6><div class="row g-2">' + sizesHtml    + '</div></div>' : '';
+        	let toppingsBlock = toppingsHtml ? '<div class="mb-3"><h6>Topping</h6>' + toppingsHtml + '</div>' : '';
 
-    content.querySelectorAll('input[name="edit-size"]').forEach(radio => radio.addEventListener('change', updateEditModalPrice));
-    updateEditModalPrice();
-}
+        	let finalHtml = ''
+        	  + '<div class="row g-4">'
+        	  +   '<div class="col-md-5"><img src="' + data.product.thumbnail + '" class="img-fluid rounded"></div>'
+        	  +   '<div class="col-md-7">'
+        	  +     '<h4>' + data.product.name + '</h4>'
+        	  +     '<p class="h5 text-primary fw-bold mb-3" id="edit-base-price" data-price="' + data.product.basePrice + '">'
+        	  +        currencyFormatter.format(data.product.basePrice) + '</p>'
+        	  +     '<div style="max-height: 250px; overflow-y: auto; padding-right: 10px;">'
+        	  +        sizesBlock + toppingsBlock
+        	  +     '</div>'
+        	  +   '</div>'
+        	  + '</div>';
+        	content.innerHTML = finalHtml;
 
-window.updateEditModalToppingQty = (id, change) => {
-    const qtyInput = document.getElementById('edit-topping-qty-' + id);
-    let currentQty = parseInt(qtyInput.value) + change;
-    if (currentQty >= 0) {
-        qtyInput.value = currentQty;
+
+        content.querySelectorAll('input[name="edit-size"]').forEach(radio => radio.addEventListener('change', updateEditModalPrice));
         updateEditModalPrice();
     }
-};
 
-function updateEditModalPrice() {
-    const basePriceEl = document.getElementById('edit-base-price');
-    if (!basePriceEl) return;
-    const basePrice = parseFloat(basePriceEl.dataset.price) || 0;
-    const sizeInput = document.querySelector('input[name="edit-size"]:checked');
-    const sizeAdj = sizeInput ? (parseFloat(sizeInput.dataset.priceAdj) || 0) : 0;
-    let toppingsPrice = 0;
-    document.querySelectorAll('#editModalContent input[data-topping-id]').forEach(input => {
-        toppingsPrice += (parseFloat(input.dataset.price) || 0) * (parseInt(input.value) || 0);
-    });
-    const finalPrice = basePrice + sizeAdj + toppingsPrice;
-    document.getElementById('updateItemBtn').textContent = 'Cập nhật - ' + currencyFormatter.format(finalPrice);
-}
-
-document.getElementById('updateItemBtn').addEventListener('click', function() {
-    if (!currentEditingItem) return;
-    const oldProductId = currentEditingItem.dataset.productId;
-    const oldSize = currentEditingItem.dataset.size || "Mặc định";
-    const oldToppingsCsv = currentEditingItem.dataset.toppings || "";
-    const quantity = currentEditingItem.querySelector('.quantity-control input').value;
-    const newSize = document.querySelector('input[name="edit-size"]:checked')?.value || "Mặc định";
-    const newToppings = [];
-    document.querySelectorAll('#editModalContent input[data-topping-id]').forEach(input => {
-        const qty = parseInt(input.value);
-        if (qty > 0) newToppings.push(input.dataset.toppingId + ':' + qty);
-    });
-
-    const params = new URLSearchParams({
-        oldProductId, oldSize, oldToppingsCsv, quantity,
-        newSize, newToppings: newToppings.join(',')
-    });
-
-    fetch(contextPath + '/cart/update-item', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: params
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.ok) {
-            location.reload();
-        } else {
-            alert('Lỗi: ' + data.message);
+    window.updateEditModalToppingQty = (id, change) => {
+        const qtyInput = document.getElementById(`edit-topping-qty-${id}`);
+        let currentQty = parseInt(qtyInput.value) + change;
+        if (currentQty >= 0) {
+            qtyInput.value = currentQty;
+            updateEditModalPrice();
         }
-    });
-    editItemModal.hide();
-});
+    };
 
-// Voucher application
-document.getElementById('apply-voucher-btn')?.addEventListener('click', function() {
-    const code = document.getElementById('voucher-code').value.trim();
-    if (!code) return;
-    fetch(contextPath + '/api/voucher/apply', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'code=' + encodeURIComponent(code)
-    })
-    .then(r => r.json())
-    .then(data => {
-        const msgEl = document.getElementById('voucher-message');
-        if (data.ok) {
-            msgEl.className = 'mt-2 small text-success';
-            msgEl.textContent = data.message;
-            document.getElementById('discount-display').textContent = '-' + data.discountFormatted;
-            document.getElementById('grand-total-display').textContent = data.newTotalFormatted;
-        } else {
-            msgEl.className = 'mt-2 small text-danger';
-            msgEl.textContent = data.message;
-        }
+    function updateEditModalPrice() {
+        const basePriceEl = document.getElementById('edit-base-price');
+        if (!basePriceEl) return;
+        const basePrice = parseFloat(basePriceEl.dataset.price) || 0;
+        const sizeInput = document.querySelector('input[name="edit-size"]:checked');
+        const sizeAdj = sizeInput ? (parseFloat(sizeInput.dataset.priceAdj) || 0) : 0;
+        let toppingsPrice = 0;
+        document.querySelectorAll('#editModalContent input[data-topping-id]').forEach(input => {
+            toppingsPrice += (parseFloat(input.dataset.price) || 0) * (parseInt(input.value) || 0);
+        });
+        const finalPrice = basePrice + sizeAdj + toppingsPrice;
+        document.getElementById('updateItemBtn').textContent =
+        	  'Cập nhật - ' + currencyFormatter.format(finalPrice);
+    }
+
+    document.getElementById('updateItemBtn').addEventListener('click', function() {
+        if (!currentEditingItem) return;
+
+        const params = new URLSearchParams({
+            oldProductId: currentEditingItem.dataset.productId,
+            oldSize: currentEditingItem.dataset.size || "Mặc định",
+            oldToppingsCsv: currentEditingItem.dataset.toppings || "",
+            quantity: currentEditingItem.querySelector('.quantity-control input').value,
+            newSize: document.querySelector('input[name="edit-size"]:checked')?.value || "Mặc định",
+            newToppings: Array.from(document.querySelectorAll('#editModalContent input[data-topping-id]'))
+                            .filter(input => parseInt(input.value) > 0)
+                            .map(input => `${input.dataset.toppingId}:${input.value}`)
+                            .join(',')
+        });
+
+        fetch(contextPath + '/cart/update-item', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: params
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                location.reload();
+            } else {
+                alert('Lỗi: ' + data.message);
+            }
+        });
+        editItemModal.hide();
+    });
+
+    // Voucher application
+    document.getElementById('apply-voucher-btn')?.addEventListener('click', function() {
+        const code = document.getElementById('voucher-code').value.trim();
+        if (!code) return;
+        fetch(contextPath + '/api/voucher/apply', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'code=' + encodeURIComponent(code)
+        })
+        .then(r => r.json())
+        .then(data => {
+            const msgEl = document.getElementById('voucher-message');
+            if (data.ok) {
+                msgEl.className = 'mt-2 small text-success';
+                msgEl.textContent = data.message;
+                document.getElementById('discount-display').textContent = '-' + data.discountFormatted;
+                document.getElementById('grand-total-display').textContent = data.newTotalFormatted;
+            } else {
+                msgEl.className = 'mt-2 small text-danger';
+                msgEl.textContent = data.message;
+            }
+        });
     });
 });
 </script>
