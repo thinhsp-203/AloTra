@@ -178,10 +178,40 @@ public class CartController extends HttpServlet {
     }
 
     private void update(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        // This logic is for the +/- buttons on the checkout page. It seems correct.
-        // ... (body of this method is unchanged)
-    }
+        try {
+            int pid = Integer.parseInt(req.getParameter("productId"));
+            String size = req.getParameter("size");
+            String toppings = req.getParameter("toppings");
+            int newQty = Integer.parseInt(req.getParameter("quantity"));
 
+            final String finalSize = (size == null || "undefined".equalsIgnoreCase(size) || size.isBlank()) ? "Mặc định" : size;
+            final String finalToppings = (toppings == null || "undefined".equalsIgnoreCase(toppings)) ? "" : toppings;
+
+            List<CartItem> cart = cart(req.getSession());
+            
+            for (CartItem item : cart) {
+                if (item.getProductId().equals(pid) &&
+                    Objects.equals(item.getSizeName(), finalSize) &&
+                    Objects.equals(item.getToppingsCsv(), finalToppings)) {
+                    
+                    if (newQty <= 0) {
+                        cart.remove(item);
+                    } else {
+                        item.setQuantity(newQty);
+                    }
+                    break;
+                }
+            }
+            
+            resp.setContentType("application/json; charset=UTF-8");
+            resp.getWriter().print("{\"ok\":true}");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setContentType("application/json; charset=UTF-8");
+            resp.getWriter().print("{\"ok\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
+        }
+    }
     private void remove(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             int pid = Integer.parseInt(req.getParameter("productId"));

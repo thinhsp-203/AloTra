@@ -121,14 +121,33 @@ public class CheckoutController extends HttpServlet {
               String paymentUrl = null;
               
               switch (payment) {
-                  case "VNPAY":
-                      VNPayService vnpayService = new VNPayService();
-                      paymentUrl = vnpayService.createPaymentUrl(order, payment, returnUrl);
-                      break;
-                   
-                  default:
-                      System.err.println("Unsupported payment method: " + payment);
-              }
+              case "VNPAY":
+                  VNPayService vnpayService = new VNPayService();
+                  paymentUrl = vnpayService.createPaymentUrl(order, payment, returnUrl);
+                  break;
+              
+              case "MOMO":
+                  // TODO: Implement MoMo payment
+                  System.err.println("MoMo payment not implemented yet");
+                  paymentUrl = null;
+                  break;
+              
+              case "ZALOPAY":
+                  // TODO: Implement ZaloPay payment
+                  System.err.println("ZaloPay payment not implemented yet");
+                  paymentUrl = null;
+                  break;
+              
+              case "SHOPEEPAY":
+                  // TODO: Implement ShopeePay payment
+                  System.err.println("ShopeePay payment not implemented yet");
+                  paymentUrl = null;
+                  break;
+               
+              default:
+                  System.err.println("Unsupported payment method: " + payment);
+                  paymentUrl = null;
+          }
               
               if (paymentUrl != null) {
                   // Clear cart before redirecting to payment gateway
