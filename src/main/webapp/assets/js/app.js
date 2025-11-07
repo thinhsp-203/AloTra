@@ -658,3 +658,55 @@
 	    }
 	})
 })();
+/*
+ * ========================================
+ * SB ADMIN 2 - JAVASCRIPT
+ * ========================================
+ */
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // 1. Sidebar Toggle (Nút gạch ở Topbar)
+    const sidebarToggleTop = document.getElementById('sidebarToggleTop');
+    if (sidebarToggleTop) {
+        sidebarToggleTop.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.body.classList.toggle('sidebar-toggled');
+            document.getElementById('accordionSidebar').classList.toggle('toggled');
+        });
+    }
+
+    // 2. Sidebar Toggle (Nút mũi tên ở Sidebar)
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.body.classList.toggle('sidebar-toggled');
+            document.getElementById('accordionSidebar').classList.toggle('toggled');
+        });
+    }
+
+    // 3. Scroll to Top Button
+    const scrollTopButton = document.querySelector('.scroll-to-top');
+    const mainContent = document.querySelector('.main-content'); // Vùng cuộn chính
+    
+    if (scrollTopButton && mainContent) {
+        // Hiển thị nút khi cuộn
+        mainContent.addEventListener('scroll', function() {
+            if (mainContent.scrollTop > 100) {
+                scrollTopButton.style.display = 'block';
+            } else {
+                scrollTopButton.style.display = 'none';
+            }
+        });
+
+        // Click để cuộn lên
+        scrollTopButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            mainContent.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+
+});

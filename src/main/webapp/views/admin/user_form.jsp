@@ -1,13 +1,8 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h4 mb-0">${empty user ?
-'Tạo mới' : 'Chỉnh sửa'} người dùng</h1>
-    <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Quay lại
-    </a>
-</div>
+<h1 class="h3 mb-4 text-gray-800">${empty user ? 'Tạo mới' : 'Chỉnh sửa'} người dùng</h1>
 
 <c:if test="${not empty sessionScope.error}">
     <div class="alert alert-danger alert-dismissible fade show">
@@ -18,8 +13,11 @@
 </c:if>
 
 <div class="row">
-    <div class="col-md-8">
-        <div class="card">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Thông tin tài khoản</h6>
+          </div>
             <div class="card-body">
   
               <form method="post" action="${pageContext.request.contextPath}/admin/users/save">
@@ -55,7 +53,7 @@ class="form-label">Email <span class="text-danger">*</span></label>
                                    value="${user.fullname}">
                         </div>
                         
-                                    <div class="col-md-6">
+            <div class="col-md-6">
                             <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
                             <input type="tel" class="form-control" name="phone" 
            value="${user.phone}" pattern="[0-9]{9,11}" required>
@@ -116,7 +114,7 @@ empty user ? 'selected' : ''}>Khách hàng</option>
                             <hr>
                             <button type="submit" class="btn btn-primary">
                                 <i 
-class="bi bi-save"></i> Lưu thông tin
+class="fas fa-save fa-sm"></i> Lưu thông tin
                             </button>
                             <a href="${pageContext.request.contextPath}/admin/users" 
                                class="btn btn-outline-secondary">Hủy</a>
@@ -129,11 +127,11 @@ class="bi bi-save"></i> Lưu thông tin
     </div>
     
     <c:if test="${not empty user}">
-        <div class="col-md-4">
+        <div class="col-lg-4">
   
-          <div class="card">
-                <div class="card-header bg-light">
-                    <h5 class="card-title mb-0">Thông tin</h5>
+          <div class="card shadow-sm mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Thông tin</h6>
                 </div>
                 <div class="card-body">
                
@@ -147,8 +145,8 @@ class="bi bi-save"></i> Lưu thông tin
                         <div>
                             <c:choose>
                           
-      <c:when test="${not empty user.createdDate}">
-                                    <fmt:formatDate value="${user.createdDate}" pattern="dd/MM/yyyy HH:mm"/>
+      <c:when test="${not empty user.createdDateAsDate}">
+                                    <fmt:formatDate value="${user.createdDateAsDate}" pattern="dd/MM/yyyy HH:mm"/>
                                 </c:when>
                     
             <c:otherwise>N/A</c:otherwise>

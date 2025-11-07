@@ -1,18 +1,14 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="h4 mb-0">
-    <i class="bi bi-pencil text-primary"></i> Chỉnh sửa danh mục
-  </h1>
-  <a href="${pageContext.request.contextPath}/admin/category/list" class="btn btn-outline-secondary">
-    <i class="bi bi-arrow-left"></i> Quay lại
-  </a>
-</div>
+<h1 class="h3 mb-4 text-gray-800">Chỉnh sửa danh mục</h1>
 
 <div class="row">
-  <div class="col-md-8">
-    <div class="card">
+  <div class="col-lg-8">
+    <div class="card shadow mb-4">
+       <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Thông tin danh mục</h6>
+      </div>
       <div class="card-body">
         <form action="${pageContext.request.contextPath}/admin/category/edit" 
               method="post" 
@@ -39,8 +35,7 @@
             <div class="mb-2">
               <c:choose>
                 <c:when test="${not empty category.icon}">
-                  <img 
-src="${pageContext.request.contextPath}/uploads/${category.icon}" 
+<img src="${pageContext.request.contextPath}/uploads/${category.icon}" 
                        class="rounded border" 
                        style="max-width: 200px;
 max-height: 200px; object-fit: cover;"
@@ -89,7 +84,7 @@ height: 200px;"
           <div class="d-flex gap-2">
           
   <button type="submit" class="btn btn-primary">
-              <i class="bi bi-save"></i> Cập nhật
+              <i class="fas fa-save fa-sm"></i> Cập nhật
             </button>
             <a href="${pageContext.request.contextPath}/admin/category/list" 
                class="btn btn-outline-secondary">
@@ -102,11 +97,11 @@ height: 200px;"
     </div>
   </div>
   
-  <div class="col-md-4">
-    <div class="card">
-      <div class="card-header bg-light">
-        <h6 class="card-title mb-0">
-          <i class="bi bi-info-circle text-primary"></i> Thông tin danh mục
+  <div class="col-lg-4">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-info-circle fa-sm"></i> Thông tin
         </h6>
       </div>
       <div class="card-body">
@@ -119,21 +114,6 @@ height: 200px;"
           <small class="text-muted">Tên hiện tại</small>
           <div class="fw-bold">${category.name}</div>
         </div>
-      </div>
-    </div>
-    
-    <div class="card bg-light mt-3">
-      <div class="card-body">
-   
-     <h6 class="card-title">
-          <i class="bi bi-lightbulb text-warning"></i> Lưu ý
-        </h6>
-        <ul class="small mb-0 ps-3">
-          <li class="mb-2">Thay đổi tên danh mục không ảnh hưởng đến sản phẩm</li>
-          <li class="mb-2">Ảnh cũ sẽ được thay thế nếu chọn ảnh mới</li>
-          <li>Để trống ô "Chọn ảnh mới" nếu giữ nguyên 
-ảnh hiện tại</li>
-        </ul>
       </div>
     </div>
   </div>

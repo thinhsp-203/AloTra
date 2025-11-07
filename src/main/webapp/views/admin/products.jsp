@@ -2,14 +2,9 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="h4 mb-0">
-    <i class="bi bi-box-seam text-primary"></i> Quản lý sản phẩm
-  </h1>
-  <a href="${pageContext.request.contextPath}/admin/products/create" class="btn btn-primary">
-    <i class="bi bi-plus-circle"></i> Thêm sản phẩm
-  </a>
-</div>
+<h1 class="h3 mb-2 text-gray-800">Quản lý sản phẩm</h1>
+<p class="mb-4">Danh sách toàn bộ sản phẩm trong cửa hàng.</p>
+
 
 <c:if test="${not empty sessionScope.success}">
   <div class="alert alert-success alert-dismissible fade show">
@@ -18,7 +13,6 @@
   </div>
   <c:remove var="success" scope="session"/>
 </c:if>
-
 <c:if test="${not empty sessionScope.error}">
   <div class="alert alert-danger alert-dismissible fade show">
     <i class="bi bi-exclamation-triangle"></i> ${sessionScope.error}
@@ -27,10 +21,16 @@
   <c:remove var="error" scope="session"/>
 </c:if>
 
-<div class="card">
+<div class="card shadow mb-4">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary">Danh sách sản phẩm</h6>
+    <a href="${pageContext.request.contextPath}/admin/products/create" class="btn btn-primary btn-sm">
+      <i class="fas fa-plus fa-sm"></i> Thêm sản phẩm
+    </a>
+  </div>
   <div class="card-body">
     <div class="table-responsive">
-      <table class="table table-hover align-middle">
+      <table class="table table-hover align-middle" id="dataTable" width="100%" cellspacing="0">
    
      <thead class="table-light">
           <tr>
@@ -158,13 +158,13 @@ role="group">
                          title="Xem chi tiết"
                       
    target="_blank">
-                        <i class="bi bi-eye"></i>
+                        <i class="fas fa-eye"></i>
                       </a>
                       <a href="${pageContext.request.contextPath}/admin/products/edit?id=${p.product_id}" 
                          
 class="btn btn-outline-primary" 
                          title="Chỉnh sửa">
-                        <i class="bi bi-pencil"></i>
+                        <i class="fas fa-pencil-alt"></i>
                       </a>
                       
                       <form action="${pageContext.request.contextPath}/admin/products/delete" method="post" 
@@ -172,7 +172,7 @@ class="btn btn-outline-primary"
                             onsubmit="return confirm('Xác nhận xóa sản phẩm &quot;${p.product_name}&quot;?')">
                         <input type="hidden" name="id" value="${p.product_id}">
                         <button type="submit" class="btn btn-outline-danger" title="Xóa">
-                          <i class="bi bi-trash"></i>
+                          <i class="fas fa-trash"></i>
                         </button>
                       </form>
                       
@@ -187,29 +187,4 @@ class="btn btn-outline-primary"
       </table>
     </div>
   </div>
-  
-  <c:if test="${not empty list}">
-    <div class="card-footer bg-light">
-      <div class="text-muted small">
-        <i class="bi bi-info-circle"></i> 
-        Tổng cộng: <strong>${list.size()}</strong> sản phẩm
-      </div>
-    </div>
-  </c:if>
 </div>
-
-<style>
-  .btn-group-sm 
-.btn {
-    padding: 0.25rem 0.5rem;
-  }
-  
-  /* Đảm bảo form bên trong btn-group không làm hỏng layout */
-  .btn-group-sm form {
-    margin: 0;
-  }
-  .btn-group-sm form .btn {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-  }
-</style>

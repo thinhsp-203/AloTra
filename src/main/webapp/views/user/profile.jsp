@@ -227,10 +227,9 @@ class="form-control" name="newPassword"
                            
  <strong>
                                 <c:choose>
-                                    <%-- SỬA LỖI: Thay user.createdDateAsDate thành user.createdDate --%>
-                                    <c:when test="${not empty user.createdDate}">
+                                    <c:when test="${not empty user.createdDateAsDate}">
                             
-            <fmt:formatDate value="${user.createdDate}" pattern="dd/MM/yyyy"/>
+            <fmt:formatDate value="${user.createdDateAsDate}" pattern="dd/MM/yyyy"/>
                                     </c:when>
                                     <c:otherwise>N/A</c:otherwise>
               
@@ -274,40 +273,35 @@ class="form-control" name="newPassword"
 </div>
 
 <script>
-// Password visibility toggle
+// (Giữ nguyên các script cho password và avatar)
 function togglePasswordVisibility(fieldId) {
     const field = document.getElementById(fieldId);
-    const btn = field.nextElementSibling;
+    const btn = field.nextElementSibling; 
+    if (!btn) return;
     const icon = btn.querySelector('i');
-    
+    if (!icon) return;
     if (field.type === 'password') {
         field.type = 'text';
         icon.classList.remove('bi-eye');
         icon.classList.add('bi-eye-slash');
     } else {
-  
       field.type = 'password';
         icon.classList.remove('bi-eye-slash');
         icon.classList.add('bi-eye');
 }
 }
 
-// Password strength indicator
 document.getElementById('newPassword')?.addEventListener('input', function() {
     const password = this.value;
     const strengthBar = document.getElementById('newPasswordStrength');
-    
     let strength = 0;
     let strengthClass = '';
-    
     if (password.length >= 6) strength += 20;
     if (password.length >= 10) strength += 20;
     if (/[a-z]/.test(password)) strength += 20;
     if (/[A-Z]/.test(password)) strength += 20;
     if (/[0-9]/.test(password)) strength += 10;
     if (/[^A-Za-z0-9]/.test(password)) strength += 10;
-    
-   
  if (strength < 40) {
         strengthClass = 'bg-danger';
     } else if (strength < 70) {
@@ -315,16 +309,14 @@ document.getElementById('newPassword')?.addEventListener('input', function() {
     } else {
         strengthClass = 'bg-success';
     }
-    
     strengthBar.style.width = strength + '%';
     strengthBar.className = 'progress-bar ' + strengthClass;
 });
-// Password match validation
+
 document.getElementById('confirmPassword')?.addEventListener('input', function() {
     const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = this.value;
     const mismatchMsg = document.getElementById('passwordMismatchMsg');
-    
     if (confirmPassword && newPassword !== confirmPassword) {
         this.classList.add('is-invalid');
         mismatchMsg.classList.remove('d-none');
@@ -333,36 +325,37 @@ document.getElementById('confirmPassword')?.addEventListener('input', function()
         mismatchMsg.classList.add('d-none');
     }
 });
-// Form validation
+
 document.getElementById('changePasswordForm')?.addEventListener('submit', function(e) {
     const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
-    
     if (newPassword !== confirmPassword) {
         e.preventDefault();
         alert('Mật khẩu xác nhận không khớp!');
         document.getElementById('confirmPassword').focus();
         return false;
     }
-    
     if (newPassword.length < 6) {
         e.preventDefault();
-        
 alert('Mật khẩu mới phải có ít nhất 6 ký tự!');
         document.getElementById('newPassword').focus();
         return false;
     }
-    
     return true;
 });
-//THÊM MỚI: Script cho preview avatar
+
 document.getElementById('avatarInput').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (file) {
+    if (file.size > 10 * 1024 * 1024) { // 10MB
+        alert('Lỗi: Kích thước file quá lớn (Tối đa 10MB)');
+        e.target.value = null;
+        return;
+    }
     const reader = new FileReader();
     reader.onload = function(e) {
       document.getElementById('avatarPreview').src = e.target.result;
-      document.getElementById('btnSaveAvatar').style.display = 'block'; // Hiển thị nút lưu
+      document.getElementById('btnSaveAvatar').style.display = 'block';
     }
     reader.readAsDataURL(file);
   }

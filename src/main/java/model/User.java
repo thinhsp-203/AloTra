@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import utils.Roles;
 import java.time.LocalDateTime;
+import java.time.ZoneId; // Import ZoneId
 import java.util.Date;
 
 @Entity
@@ -46,14 +47,16 @@ public class User {
     return Roles.resolve(this.roleid != null ? this.roleid : 0);
   }
   
+  /**
+   * CHUẨN HÓA TÊN PHƯƠNG THỨC:
+   * Đổi tên từ getCreatedDate() -> getCreatedDateAsDate()
+   * để nhất quán với model Orders.java và JSTL
+   */
   @Transient
-  public Date getCreatedDate() {
+  public Date getCreatedDateAsDate() { 
     if (this.createdDate == null) return null;
     return Date.from(this.createdDate
-        .atZone(java.time.ZoneId.systemDefault())
+        .atZone(ZoneId.systemDefault())
         .toInstant());
   }
-  
-  // XÓA CÁC TRANSIENT METHOD DUPLICATE: getUsername(), getFullname()
-  // VÌ LOMBOK ĐÃ TẠO SẴN @Getter cho các field này
 }
