@@ -9,7 +9,6 @@
 </div>
 
 <div class="row g-4">
-  <!-- Thông tin đơn hàng -->
   <div class="col-md-8">
     <div class="card mb-4">
       <div class="card-header bg-light">
@@ -17,7 +16,8 @@
       </div>
       <div class="card-body">
         <div class="row">
-          <div class="col-6 mb-2"><strong>Họ tên:</strong> ${order.fullname}</div>
+    
+      <div class="col-6 mb-2"><strong>Họ tên:</strong> ${order.fullname}</div>
           <div class="col-6 mb-2"><strong>Điện thoại:</strong> ${order.phone}</div>
           <div class="col-12 mb-2"><strong>Địa chỉ:</strong> ${order.address}</div>
           <c:if test="${not empty order.note}">
@@ -27,7 +27,6 @@
       </div>
     </div>
 
-    <!-- Chi tiết sản phẩm -->
     <div class="card">
       <div class="card-header bg-light">
         <h5 class="card-title mb-0">Sản phẩm đã đặt</h5>
@@ -37,7 +36,8 @@
           <thead>
             <tr>
               <th>Sản phẩm</th>
-              <th>Size</th>
+         
+     <th>Size</th>
               <th>Topping</th>
               <th>Số lượng</th>
               <th>Đơn giá</th>
@@ -45,24 +45,29 @@
             </tr>
           </thead>
           <tbody>
-            <c:forEach var="item" items="${details}">
+    
+        <c:forEach var="item" items="${details}">
               <tr>
                 <td>${item.product_name}</td>
-                <td>${empty item.size_name ? '-' : item.size_name}</td>
-                <td>${empty item.toppings ? '-' : item.toppings}</td>
+                <td>${empty item.size_name ?
+'-' : item.size_name}</td>
+                <td>${empty item.toppings ?
+'-' : item.toppings}</td>
                 <td>${item.quantity}</td>
                 <td><fmt:formatNumber value="${item.price}" pattern="#,##0₫"/></td>
                 <td class="fw-bold">
                   <fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0₫"/>
                 </td>
-              </tr>
+         
+     </tr>
             </c:forEach>
           </tbody>
           <tfoot class="table-light">
             <tr>
               <th colspan="5" class="text-end">Tổng cộng:</th>
               <th class="text-primary">
-                <fmt:formatNumber value="${order.total_amount}" pattern="#,##0₫"/>
+                <fmt:formatNumber value="${order.total_amount}" 
+pattern="#,##0₫"/>
               </th>
             </tr>
           </tfoot>
@@ -71,13 +76,13 @@
     </div>
   </div>
 
-  <!-- Cập nhật trạng thái -->
   <div class="col-md-4">
     <div class="card mb-3">
       <div class="card-header bg-light">
         <h5 class="card-title mb-0">Trạng thái đơn hàng</h5>
       </div>
-      <div class="card-body">
+ 
+     <div class="card-body">
         <form method="post" action="${pageContext.request.contextPath}/admin/orders">
           <input type="hidden" name="action" value="updateStatus">
           <input type="hidden" name="orderId" value="${order.order_id}">
@@ -85,11 +90,17 @@
           <div class="mb-3">
             <label class="form-label">Trạng thái hiện tại</label>
             <select class="form-select" name="status">
-              <option value="Chờ xác nhận" ${order.order_status eq 'Chờ xác nhận' ? 'selected' : ''}>Chờ xác nhận</option>
-              <option value="Đang chuẩn bị" ${order.order_status eq 'Đang chuẩn bị' ? 'selected' : ''}>Đang chuẩn bị</option>
-              <option value="Đang giao" ${order.order_status eq 'Đang giao' ? 'selected' : ''}>Đang giao</option>
-              <option value="Hoàn thành" ${order.order_status eq 'Hoàn thành' ? 'selected' : ''}>Hoàn thành</option>
-              <option value="Đã hủy" ${order.order_status eq 'Đã hủy' ? 'selected' : ''}>Đã hủy</option>
+       
+       <option value="Chờ xác nhận" ${order.order_status eq 'Chờ xác nhận' ?
+'selected' : ''}>Chờ xác nhận</option>
+              <option value="Đang chuẩn bị" ${order.order_status eq 'Đang chuẩn bị' ?
+'selected' : ''}>Đang chuẩn bị</option>
+              <option value="Đang giao" ${order.order_status eq 'Đang giao' ?
+'selected' : ''}>Đang giao</option>
+              <option value="Hoàn thành" ${order.order_status eq 'Hoàn thành' ?
+'selected' : ''}>Hoàn thành</option>
+              <option value="Đã hủy" ${order.order_status eq 'Đã hủy' ?
+'selected' : ''}>Đã hủy</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary w-100">Cập nhật trạng thái</button>
@@ -102,7 +113,8 @@
         <h5 class="card-title mb-0">Thanh toán</h5>
       </div>
       <div class="card-body">
-        <form method="post" action="${pageContext.request.contextPath}/admin/orders">
+   
+     <form method="post" action="${pageContext.request.contextPath}/admin/orders">
           <input type="hidden" name="action" value="updatePayment">
           <input type="hidden" name="orderId" value="${order.order_id}">
           
@@ -110,8 +122,11 @@
           <div class="mb-3">
             <label class="form-label">Trạng thái thanh toán</label>
             <select class="form-select" name="paymentStatus">
-              <option value="Chưa thanh toán" ${order.payment_status eq 'Chưa thanh toán' ? 'selected' : ''}>Chưa thanh toán</option>
-              <option value="Đã thanh toán" ${order.payment_status eq 'Đã thanh toán' ? 'selected' : ''}>Đã thanh toán</option>
+   
+           <option value="Chưa thanh toán" ${order.payment_status eq 'Chưa thanh toán' ?
+'selected' : ''}>Chưa thanh toán</option>
+              <option value="Đã thanh toán" ${order.payment_status eq 'Đã thanh toán' ?
+'selected' : ''}>Đã thanh toán</option>
             </select>
           </div>
           <button type="submit" class="btn btn-success w-100">Cập nhật thanh toán</button>
@@ -120,8 +135,9 @@
         <hr class="my-3">
         
         <div class="small text-muted">
-          <div><strong>Ngày đặt:</strong> <fmt:formatDate value="${order.createdDate}" pattern="dd/MM/yyyy HH:mm"/></div>
-          <div><strong>Cập nhật:</strong> <fmt:formatDate value="${order.updatedDate}" pattern="dd/MM/yyyy HH:mm"/></div>
+          <div><strong>Ngày đặt:</strong> <fmt:formatDate value="${order.createdDateAsDate}" 
+pattern="dd/MM/yyyy HH:mm"/></div>
+          <div><strong>Cập nhật:</strong> <fmt:formatDate value="${order.updatedDateAsDate}" pattern="dd/MM/yyyy HH:mm"/></div>
         </div>
       </div>
     </div>

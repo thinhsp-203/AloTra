@@ -54,21 +54,7 @@ public class AdminProductController extends HttpServlet {
         req.getRequestDispatcher("/views/admin/product_form.jsp").forward(req, resp);
         
       } else if ("/delete".equals(path)){
-        int id = parseInt(req.getParameter("id"), 0);
-        if (id > 0) {
-          var tx = em.getTransaction(); 
-          tx.begin();
-          try {
-            Product p = em.find(Product.class, id);
-            if (p != null) {
-              em.remove(p);
-            }
-            tx.commit();
-          } catch(Exception ex) { 
-            if(tx.isActive()) tx.rollback(); 
-            throw ex; 
-          }
-        }
+        // CHUYỂN HƯỚNG NẾU DÙNG GET
         resp.sendRedirect(req.getContextPath() + "/admin/products");
         
       } else {
@@ -83,78 +69,106 @@ public class AdminProductController extends HttpServlet {
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
       throws IOException, ServletException {
     String path = req.getPathInfo();
-    if (!"/save".equals(path)) { 
-      resp.sendError(404); 
-      return; 
-    }
-
-    int id = parseInt(req.getParameter("id"), 0);
-    String name = req.getParameter("product_name");
-    String desc = req.getParameter("description");
-    BigDecimal price = parseDec(req.getParameter("price"));
-    BigDecimal discount = parseDec(req.getParameter("discount"));
-    Integer stock = parseInt(req.getParameter("stock"), 0);
-    String thumbnail = req.getParameter("thumbnail");
-    Integer cateId = parseIntObj(req.getParameter("cate_id"));
-    Integer supId = parseIntObj(req.getParameter("supplier_id"));
-    boolean active = "on".equals(req.getParameter("isActive"));
-    boolean featured = "on".equals(req.getParameter("isFeatured"));
-
     EntityManager em = JpaUtil.em();
-    var tx = em.getTransaction(); 
-    tx.begin();
-    try {
-      Product p = (id > 0) ? em.find(Product.class, id) : new Product();
-      if (p == null) { 
-        tx.rollback(); 
-        resp.sendError(404, "Product not found"); 
-        return; 
-      }
-      
-      p.setProduct_name(name);
-      p.setDescription(desc);
-      p.setPrice(price);
-      p.setDiscount(discount);
-      p.setStock(stock);
-      p.setThumbnail(thumbnail);
-      
-      if (cateId != null) {
-        Category cat = em.find(Category.class, cateId);
-        if (cat != null) {
-          p.setCategory(cat);
-        }
-      }
-      
-      if (supId != null) {
-        Supplier sup = em.find(Supplier.class, supId);
-        if (sup != null) {
-          p.setSupplier(sup);
-        }
-      }
-      
-      p.setIsActive(active);
-      p.setIsFeatured(featured);
-      
-      java.time.LocalDateTime now = java.time.LocalDateTime.now();
-      if (p.getProduct_id() == null) {
-        p.setCreatedDate(now);
-        em.persist(p);
-      } else {
-        em.merge(p);
-      }
-      p.setUpdatedDate(now);
-      
-      tx.commit();
-    } catch(Exception ex) { 
-      if(tx.isActive()) tx.rollback(); 
-      throw ex; 
-    } finally { 
-      em.close(); 
-    }
 
+    try {
+        if ("/save".equals(path)) {
+            // Logic lưu sản phẩm (Thêm/Sửa)
+            int id = parseInt(req.getParameter("id"), 0);
+            String name = req.getParameter("product_name");
+            String desc = req.getParameter("description");
+            BigDecimal price = parseDec(req.getParameter("price"));
+            BigDecimal discount = parseDec(req.getParameter("discount"));
+            Integer stock = parseInt(req.getParameter("stock"), 0);
+            String thumbnail = req.getParameter("thumbnail");
+            Integer cateId = parseIntObj(req.getParameter("cate_id"));
+            Integer supId = parseIntObj(req.getParameter("supplier_id"));
+            boolean active = "on".equals(req.getParameter("isActive"));
+            boolean featured = "on".equals(req.getParameter("isFeatured"));
+    
+            var tx = em.getTransaction(); 
+            tx.begin();
+            try {
+              Product p = (id > 0) ? em.find(Product.class, id) : new Product();
+              if (p == null) { 
+                tx.rollback(); 
+                resp.sendError(404, "Product not found"); 
+                return; 
+              }
+              
+              p.setProduct_name(name);
+              p.setDescription(desc);
+              p.setPrice(price);
+              p.setDiscount(discount);
+              p.setStock(stock);
+              p.setThumbnail(thumbnail);
+              
+              if (cateId != null) {
+                Category cat = em.find(Category.class, cateId);
+                if (cat != null) {
+                  p.setCategory(cat);
+                }
+              }
+              
+              if (supId != null) {
+                Supplier sup = em.find(Supplier.class, supId);
+                if (sup != null) {
+                  p.setSupplier(sup);
+                }
+              }
+              
+              p.setIsActive(active);
+              p.setIsFeatured(featured);
+              
+              java.time.LocalDateTime now = java.time.LocalDateTime.now();
+              if (p.getProduct_id() == null) {
+                p.setCreatedDate(now);
+                em.persist(p);
+              } else {
+                em.merge(p);
+              }
+              p.setUpdatedDate(now);
+              
+              tx.commit();
+              req.getSession().setAttribute("success", "Đã lưu sản phẩm thành công!");
+            } catch(Exception ex) { 
+              if(tx.isActive()) tx.rollback(); 
+              req.getSession().setAttribute("error", "Lỗi khi lưu sản phẩm: " + ex.getMessage());
+              throw ex; 
+            }
+            
+        } else if ("/delete".equals(path)) {
+            // Logic xóa sản phẩm (đã chuyển sang POST)
+            int id = parseInt(req.getParameter("id"), 0);
+            if (id > 0) {
+              var tx = em.getTransaction(); 
+              tx.begin();
+              try {
+                Product p = em.find(Product.class, id);
+                if (p != null) {
+                  em.remove(p);
+                  req.getSession().setAttribute("success", "Đã xóa sản phẩm thành công!");
+                }
+                tx.commit();
+              } catch(Exception ex) { 
+                if(tx.isActive()) tx.rollback(); 
+                req.getSession().setAttribute("error", "Lỗi khi xóa sản phẩm: " + ex.getMessage());
+                throw ex; 
+              }
+            }
+        } else {
+            resp.sendError(404);
+            return;
+        }
+    } finally {
+        if (em.isOpen()) em.close();
+    }
+    
+    // Redirect chung về trang danh sách
     resp.sendRedirect(req.getContextPath() + "/admin/products");
   }
 
+  // --- (Giữ nguyên các hàm helper: parseInt, parseIntObj, parseDec) ---
   private static int parseInt(String s, int defaultValue) { 
     try {
       return Integer.parseInt(s);

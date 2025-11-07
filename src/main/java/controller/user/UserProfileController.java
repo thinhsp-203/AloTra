@@ -4,17 +4,26 @@ import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig; // THÊM IMPORT
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part; // THÊM IMPORT
 import model.User;
 import model.Orders;
+import utils.Constant; // THÊM IMPORT
 import utils.PasswordUtil;
 
+import java.io.File; // THÊM IMPORT
 import java.io.IOException;
+import java.io.InputStream; // THÊM IMPORT
+import java.nio.file.Files; // THÊM IMPORT
+import java.nio.file.Paths; // THÊM IMPORT
 import java.util.List;
+import java.util.UUID; // THÊM IMPORT
 
+@MultipartConfig(fileSizeThreshold = 2*1024*1024, maxFileSize = 10*1024*1024, maxRequestSize = 50*1024*1024) // THÊM ANNOTATION
 @WebServlet(urlPatterns = {"/user/profile", "/user/orders"})
 public class UserProfileController extends HttpServlet {
     
@@ -143,12 +152,28 @@ public class UserProfileController extends HttpServlet {
                 String phone = sanitize(req.getParameter("phone"));
                 String address = sanitize(req.getParameter("address"));
                 
-                // Validate phone
-                if (phone != null && !phone.isEmpty() && !phone.matches("^[0-9]{9,11}$")) {
+                // Validate phone (bắt buộc)
+                if (phone == null || phone.isEmpty() || !phone.matches("^[0-9]{9,11}$")) {
                     req.setAttribute("error", "Số điện thoại không hợp lệ!");
                     req.setAttribute("user", user);
+                    tx.rollback(); // Rollback vì có lỗi
                     req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
                     return;
+                }
+                
+                // Kiểm tra SĐT trùng
+                if (!phone.equals(user.getPhone())) {
+                    Long countPhone = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.phone = :phone AND u.id <> :userId", Long.class)
+                        .setParameter("phone", phone)
+                        .setParameter("userId", user.getId())
+                        .getSingleResult();
+                    if (countPhone > 0) {
+                        req.setAttribute("error", "Số điện thoại đã tồn tại!");
+                        req.setAttribute("user", user);
+                        tx.rollback();
+                        req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
+                        return;
+                    }
                 }
                 
                 user.setFullname(fullname);
@@ -179,6 +204,49 @@ public class UserProfileController extends HttpServlet {
                     em.merge(user);
                     tx.commit();
                     req.setAttribute("success", "Đổi mật khẩu thành công!");
+                }
+            }
+            // THÊM MỚI: Logic đổi avatar
+            else if ("changeAvatar".equals(action)) {
+                Part filePart = req.getPart("avatar");
+                if (filePart == null || filePart.getSize() == 0) {
+                    req.setAttribute("error", "Vui lòng chọn một file ảnh!");
+                } else {
+                    String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                    String extension = "";
+                    int i = originalFileName.lastIndexOf('.');
+                    if (i > 0) {
+                        extension = originalFileName.substring(i); // .png
+                    }
+                    
+                    // Tạo tên file duy nhất
+                    String finalFileName = "user-" + user.getId() + "-" + UUID.randomUUID().toString() + extension;
+                    
+                    File uploadDir = new File(Constant.UPLOAD_DIRECTORY);
+                    if (!uploadDir.exists()) uploadDir.mkdirs();
+                    File fileToSave = new File(uploadDir, finalFileName);
+
+                    // Xóa avatar cũ (nếu có)
+                    if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
+                        File oldFile = new File(uploadDir, user.getAvatar());
+                        if (oldFile.exists()) {
+                            oldFile.delete();
+                        }
+                    }
+
+                    // Lưu file mới
+                    try (InputStream input = filePart.getInputStream()) {
+                        Files.copy(input, fileToSave.toPath());
+                    }
+                    
+                    // Cập nhật DB
+                    user.setAvatar(finalFileName);
+                    em.merge(user);
+                    tx.commit();
+                    
+                    // Cập nhật session
+                    req.getSession().setAttribute("currentUser", user);
+                    req.setAttribute("success", "Cập nhật ảnh đại diện thành công!");
                 }
             }
             

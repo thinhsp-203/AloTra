@@ -17,8 +17,9 @@ public class UserServiceImpl implements UserService {
         EntityManager em = JpaUtil.em();
         try {
             var repo = new UserRepository(em);
+            // CẬP NHẬT: Kiểm tra cả 3 trường
             if (repo.existsByEmail(email) || repo.existsByUsername(username)
-                || (phone != null && !phone.isBlank() && repo.existsByPhone(phone))) {
+                || repo.existsByPhone(phone)) {
                 return false;
             }
             String hash = PasswordUtil.hash(rawPassword);
@@ -30,7 +31,7 @@ public class UserServiceImpl implements UserService {
                 u.setUsername(username);
                 u.setFullname(fullname);
                 u.setPassword(hash);
-                u.setPhone((phone == null || phone.isBlank()) ? null : phone);
+                u.setPhone(phone); // CẬP NHẬT: Lưu SĐT (không cần kiểm tra null)
                 u.setRoleid(3);
                 u.setIsActive(true);
                 u.setCreatedDate(LocalDateTime.now());
@@ -42,11 +43,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User login(String username, String rawPassword) {
+    public User login(String usernameOrEmail, String rawPassword) {
         EntityManager em = JpaUtil.em();
         try {
             var repo = new UserRepository(em);
-            var uopt = repo.findByUsername(username);
+            // CẬP NHẬT: Tìm bằng username hoặc email
+            var uopt = repo.findByUsernameOrEmail(usernameOrEmail); 
+            
             if (uopt.isEmpty()) return null;
             User u = uopt.get();
             if (u.getIsActive() != null && !u.getIsActive()) return null;

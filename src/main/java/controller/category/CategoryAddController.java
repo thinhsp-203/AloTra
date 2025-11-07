@@ -5,10 +5,13 @@ import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.UUID;
 import model.Category;
 import service.CategoryService;
 import service.impl.CategoryServiceImpl;
+import utils.Constant; // Import Constant
 
 @WebServlet(urlPatterns = {"/admin/category/add"})
 @MultipartConfig(fileSizeThreshold = 2*1024*1024, maxFileSize = 10*1024*1024, maxRequestSize = 50*1024*1024)
@@ -26,22 +29,37 @@ public class CategoryAddController extends HttpServlet {
     req.setCharacterEncoding("UTF-8");
     String name = req.getParameter("name");
 
-    String rel = null;
+    String finalFileName = null; // Tên file sẽ lưu vào DB
     Part part = req.getPart("icon");
+    
     if (part != null && part.getSize() > 0) {
-      String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-      String realPath = getServletContext().getRealPath("/uploads");
-      File dir = new File(realPath);
-      if (!dir.exists()) dir.mkdirs();
-      part.write(new File(dir, fileName).getPath());
-      rel = "uploads/" + fileName; // đường dẫn tương đối để hiển thị
+      String originalFileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+      
+      // Tạo tên file duy nhất để tránh trùng lặp
+      String extension = "";
+      int i = originalFileName.lastIndexOf('.');
+      if (i > 0) {
+          extension = originalFileName.substring(i); // Lấy cả dấu . (vd: .png)
+      }
+      finalFileName = "category-" + UUID.randomUUID().toString() + extension;
+      
+      // SỬA LỖI: Lưu file vào đường dẫn tuyệt đối
+      File uploadDir = new File(Constant.UPLOAD_DIRECTORY);
+      if (!uploadDir.exists()) uploadDir.mkdirs();
+      
+      File fileToSave = new File(uploadDir, finalFileName);
+      
+      try (InputStream input = part.getInputStream()) {
+          Files.copy(input, fileToSave.toPath());
+      }
     }
 
     Category c = new Category();
     c.setName(name);
-    c.setIcon(rel);
+    c.setIcon(finalFileName); // Chỉ lưu tên file duy nhất
     service.insert(c);
 
+    req.getSession().setAttribute("success", "Đã thêm danh mục thành công!");
     resp.sendRedirect(req.getContextPath() + "/admin/category/list");
   }
 }

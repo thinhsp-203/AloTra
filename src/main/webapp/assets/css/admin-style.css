@@ -1,24 +1,19 @@
 /* ========================================
-   ADMIN DASHBOARD - UNIFIED STYLES
+   ADMIN DASHBOARD - BẢN NÂNG CẤP
    ======================================== */
 
-/* Variables */
+/* Biến màu (giữ nguyên) */
 :root {
-  --admin-primary: #0d6efd;
-  --admin-sidebar-bg: #f8f9fa;
+  --admin-primary: #006633; /* Thay đổi màu chủ đạo cho hợp theme AloTra */
+  --admin-sidebar-bg: #ffffff; /* Nền trắng cho sidebar */
+  --admin-body-bg: #f4f7f6;   /* Nền xám nhạt cho body */
   --admin-border-color: #dee2e6;
-  --admin-hover-bg: #e7f1ff;
+  --admin-hover-bg: #e6f0eb; /* Màu hover nhạt theo theme */
 }
 
 /* Sidebar Styling */
 .admin-sidebar {
-  min-height: calc(100vh - 56px);
-  background: linear-gradient(180deg, var(--admin-sidebar-bg) 0%, #e9ecef 100%);
-  border-right: 2px solid var(--admin-border-color);
-  box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-  position: sticky;
-  top: 56px;
-  overflow-y: auto;
+  /* CSS cho sidebar đã được chuyển vào admin.jsp (style inline) */
 }
 
 .admin-nav .nav-link {
@@ -41,7 +36,7 @@
 .admin-nav .nav-link.active {
   background-color: var(--admin-primary);
   color: #fff;
-  box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 102, 51, 0.3);
 }
 
 .admin-nav .nav-link i {
@@ -50,21 +45,22 @@
   font-size: 1.1rem;
 }
 
-/* Cards */
+/* Cards (Nâng cấp) */
 .card {
   border: none;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); /* Shadow đẹp hơn */
   transition: box-shadow 0.2s ease;
   border-radius: 0.5rem;
+  margin-bottom: 1.5rem; /* Thêm khoảng cách giữa các card */
 }
 
 .card:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+  box-shadow: 0 0 1px rgba(0,0,0,.125), 0 3px 6px rgba(0,0,0,.2);
 }
 
 .card-header {
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #e9ecef;
+  background-color: #ffffff; /* Nền trắng cho header card */
+  border-bottom: 1px solid #f0f0f0; /* Viền mỏng hơn */
   font-weight: 600;
   padding: 1rem 1.25rem;
   border-radius: 0.5rem 0.5rem 0 0 !important;
@@ -94,8 +90,14 @@
   background-color: #f8f9fa;
 }
 
-.table-responsive {
+/* Bọc table trong card-body */
+.card-body .table-responsive {
   border-radius: 0.5rem;
+}
+/* Xóa padding của card-body nếu chứa table */
+.card-body.p-0 .table-responsive {
+    border-radius: 0 0 0.5rem 0.5rem;
+    overflow: hidden;
 }
 
 /* Badges */
@@ -124,19 +126,11 @@
   transform: translateY(0);
 }
 
-.btn-sm {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-}
+/* ... (Giữ nguyên các style khác) ... */
 
-.btn-group-sm .btn {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-}
-
-/* Dashboard Stats Cards */
+/* Dashboard Stats Cards (Sử dụng màu theme) */
 .bg-primary {
-  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+  background: linear-gradient(135deg, var(--admin-primary) 0%, #004d26 100%) !important;
 }
 
 .bg-success {
@@ -166,14 +160,8 @@
 
 .form-control:focus,
 .form-select:focus {
-  border-color: #86b7fe;
-  box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.25);
-}
-
-.form-label {
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: #495057;
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 0.25rem rgba(0, 102, 51, 0.25);
 }
 
 /* Pagination */

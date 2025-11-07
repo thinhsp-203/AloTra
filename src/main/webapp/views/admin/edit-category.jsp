@@ -17,59 +17,69 @@
         <form action="${pageContext.request.contextPath}/admin/category/edit" 
               method="post" 
               enctype="multipart/form-data">
-          <input type="hidden" name="id" value="${category.id}"/>
+ 
+         <input type="hidden" name="id" value="${category.id}"/>
           
           <div class="mb-3">
             <label class="form-label">
               Tên danh mục <span class="text-danger">*</span>
             </label>
             <input type="text" 
-                   class="form-control" 
+          
+         class="form-control" 
                    name="name" 
                    value="${category.name}" 
                    required 
                    autofocus/>
           </div>
-          
+ 
+         
           <div class="mb-3">
             <label class="form-label">Ảnh hiện tại</label>
             <div class="mb-2">
               <c:choose>
                 <c:when test="${not empty category.icon}">
-                  <img src="${pageContext.request.contextPath}/${category.icon}" 
+                  <img 
+src="${pageContext.request.contextPath}/uploads/${category.icon}" 
                        class="rounded border" 
-                       style="max-width: 200px; max-height: 200px; object-fit: cover;"
+                       style="max-width: 200px;
+max-height: 200px; object-fit: cover;"
                        alt="${category.name}"
                        id="currentImage"/>
                 </c:when>
                 <c:otherwise>
-                  <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center"
-                       style="width: 200px; height: 200px;"
+                  <div 
+class="bg-secondary text-white rounded d-flex align-items-center justify-content-center"
+                       style="width: 200px;
+height: 200px;"
                        id="currentImage">
                     <i class="bi bi-image fs-1"></i>
                   </div>
                 </c:otherwise>
               </c:choose>
-            </div>
+     
+       </div>
           </div>
           
           <div class="mb-3">
             <label class="form-label">Chọn ảnh mới (để trống nếu không đổi)</label>
             <input type="file" 
                    class="form-control" 
-                   name="icon" 
+        
+           name="icon" 
                    accept="image/*"
                    id="iconInput"/>
             <div class="form-text">Chỉ chọn file nếu muốn thay đổi ảnh</div>
           </div>
           
-          <!-- Preview ảnh mới -->
-          <div class="mb-3" id="previewContainer" style="display: none;">
+          
+<div class="mb-3" id="previewContainer" style="display: none;">
             <label class="form-label">Xem trước ảnh mới</label>
             <div>
               <img id="imagePreview" 
                    class="rounded border" 
-                   style="max-width: 200px; max-height: 200px; object-fit: cover;"
+                 
+  style="max-width: 200px; max-height: 200px; object-fit: cover;"
                    alt="Preview"/>
             </div>
           </div>
@@ -77,14 +87,16 @@
           <hr>
           
           <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
+          
+  <button type="submit" class="btn btn-primary">
               <i class="bi bi-save"></i> Cập nhật
             </button>
             <a href="${pageContext.request.contextPath}/admin/category/list" 
                class="btn btn-outline-secondary">
               Hủy
             </a>
-          </div>
+         
+ </div>
         </form>
       </div>
     </div>
@@ -99,7 +111,8 @@
       </div>
       <div class="card-body">
         <div class="mb-2">
-          <small class="text-muted">ID danh mục</small>
+    
+      <small class="text-muted">ID danh mục</small>
           <div class="fw-bold">${category.id}</div>
         </div>
         <div class="mb-2">
@@ -111,13 +124,15 @@
     
     <div class="card bg-light mt-3">
       <div class="card-body">
-        <h6 class="card-title">
+   
+     <h6 class="card-title">
           <i class="bi bi-lightbulb text-warning"></i> Lưu ý
         </h6>
         <ul class="small mb-0 ps-3">
           <li class="mb-2">Thay đổi tên danh mục không ảnh hưởng đến sản phẩm</li>
           <li class="mb-2">Ảnh cũ sẽ được thay thế nếu chọn ảnh mới</li>
-          <li>Để trống ô "Chọn ảnh mới" nếu giữ nguyên ảnh hiện tại</li>
+          <li>Để trống ô "Chọn ảnh mới" nếu giữ nguyên 
+ảnh hiện tại</li>
         </ul>
       </div>
     </div>
@@ -128,14 +143,14 @@
 // Preview ảnh khi chọn file
 document.getElementById('iconInput').addEventListener('change', function(e) {
   const file = e.target.files[0];
-  if (file) {
+if (file) {
     const reader = new FileReader();
-    reader.onload = function(e) {
+reader.onload = function(e) {
       document.getElementById('imagePreview').src = e.target.result;
       document.getElementById('previewContainer').style.display = 'block';
     }
     reader.readAsDataURL(file);
-  } else {
+} else {
     document.getElementById('previewContainer').style.display = 'none';
   }
 });

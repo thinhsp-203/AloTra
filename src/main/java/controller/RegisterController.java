@@ -44,7 +44,7 @@ public class RegisterController extends HttpServlet {
         String fullname = safe(req.getParameter("fullname"));
         String password = safe(req.getParameter("password"));
         String confirmPassword = safe(req.getParameter("confirmPassword"));
-        String phone    = safe(req.getParameter("phone"));
+        String phone    = safe(req.getParameter("phone")); // SĐT giờ là bắt buộc
 
         // Validate password confirmation
         if (!password.equals(confirmPassword)) {
@@ -55,7 +55,7 @@ public class RegisterController extends HttpServlet {
         }
 
         // Validate server-side
-        String err = validate(email, username, password, phone);
+        String err = validate(email, username, password, phone); // Thêm phone vào validation
         if (err != null) {
             req.setAttribute("alert", err);
             preserveFormData(req, email, username, fullname, phone);
@@ -91,6 +91,11 @@ public class RegisterController extends HttpServlet {
             return "Email/Username/Password không được rỗng!";
         }
         
+        // SĐT là bắt buộc
+        if (phone.isEmpty()) {
+            return "Số điện thoại là bắt buộc!";
+        }
+        
         // Email validation
         if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,63}$")) {
             return "Email không hợp lệ!";
@@ -110,8 +115,8 @@ public class RegisterController extends HttpServlet {
             return "Mật khẩu quá dài!";
         }
         
-        // Phone validation (optional)
-        if (!phone.isEmpty() && !phone.matches("^[0-9]{9,11}$")) {
+        // Phone validation (bây giờ là bắt buộc)
+        if (!phone.matches("^[0-9]{9,11}$")) {
             return "Số điện thoại: 9-11 chữ số!";
         }
         

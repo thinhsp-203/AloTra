@@ -21,13 +21,22 @@ public class CategoryDeleteController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // Chuyển hướng về trang danh sách nếu truy cập bằng GET
+        resp.sendRedirect(req.getContextPath() + "/admin/category/list");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             int id = Integer.parseInt(req.getParameter("id"));
             categoryService.delete(id);
+            req.getSession().setAttribute("success", "Đã xóa danh mục thành công!");
         } catch (NumberFormatException e) {
             logger.error("Invalid category ID format", e);
+            req.getSession().setAttribute("error", "ID danh mục không hợp lệ!");
         } catch (Exception e) {
-            logger.error("Error deleting category", e);
+              logger.error("Error deleting category", e);
+            req.getSession().setAttribute("error", "Không thể xóa danh mục. (Có thể vẫn còn sản phẩm thuộc danh mục này).");
         }
         resp.sendRedirect(req.getContextPath() + "/admin/category/list");
     }

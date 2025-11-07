@@ -37,6 +37,14 @@ public class UserRepository {
     return rs.isEmpty()? Optional.empty() : Optional.of(rs.get(0));
   }
 
+  // THÊM MỚI: Phương thức tìm kiếm cho việc đăng nhập
+  public Optional<User> findByUsernameOrEmail(String usernameOrEmail){
+    List<User> rs = em.createQuery("select u from User u where u.username = :login or u.email = :login", User.class)
+                      .setParameter("login", usernameOrEmail)
+                      .setMaxResults(1).getResultList();
+    return rs.isEmpty()? Optional.empty() : Optional.of(rs.get(0));
+  }
+
   // Tận dụng cho Forgot/Reset
   public Optional<User> findByEmail(String email){
     List<User> rs = em.createQuery("select u from User u where u.email = :e", User.class)

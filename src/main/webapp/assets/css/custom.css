@@ -663,3 +663,38 @@ body {
         padding-right: 1rem;
     }
 }
+/* ========================================
+   FIX: FORM INPUT ICON (Thêm mới)
+   ======================================== */
+.form-icon-group {
+    position: relative;
+}
+
+/* Di chuyển chữ trong ô input sang phải để chừa chỗ cho icon */
+.form-icon-group .form-control {
+    padding-left: 3rem; 
+}
+
+/* Đặt icon vào vị trí tuyệt đối bên trái */
+.form-icon-group .form-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    color: #6c757d;
+    line-height: 1; /* Đảm bảo icon căn giữa chuẩn */
+}
+
+/* Đặt nút xem mật khẩu vào vị trí tuyệt đối bên phải */
+.form-icon-group .btn-toggle-pass {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    padding: 0.25rem 0.5rem;
+}
