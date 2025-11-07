@@ -86,7 +86,7 @@ height: 60px;">
                   <td>
                     <div class="fw-semibold">${p.product_name}</div>
                     <c:if test="${p.isFeatured}">
-                      <span class="badge bg-warning text-dark">
+                      <span class="badge text-bg-warning">
   
                       <i class="bi bi-star-fill"></i> Nổi bật
                       </span>
@@ -96,7 +96,7 @@ height: 60px;">
     <td>
                     <c:choose>
                       <c:when test="${not empty p.category}">
-                        <span class="badge bg-info">${p.category.name}</span>
+                        <span class="badge text-bg-info">${p.category.name}</span>
                       </c:when>
    
                    <c:otherwise>
@@ -112,7 +112,7 @@ height: 60px;">
             
         <c:if test="${p.discount != null && p.discount > 0}">
                       <div>
-                        <span class="badge bg-danger">-${p.discount}%</span>
+                        <span class="badge text-bg-danger">-${p.discount}%</span>
                       </div>
                
      </c:if>
@@ -121,14 +121,14 @@ height: 60px;">
                     <c:choose>
                       <c:when test="${p.stock == null ||
 p.stock == 0}">
-                        <span class="badge bg-danger">Hết hàng</span>
+                        <span class="badge text-bg-danger">Hết hàng</span>
                       </c:when>
                       <c:when test="${p.stock < 10}">
                         
-<span class="badge bg-warning text-dark">${p.stock}</span>
+<span class="badge text-bg-warning">${p.stock}</span>
                       </c:when>
                       <c:otherwise>
-                        <span class="badge bg-success">${p.stock}</span>
+                        <span class="badge text-bg-success">${p.stock}</span>
                       </c:otherwise>
      
                </c:choose>
@@ -137,13 +137,13 @@ p.stock == 0}">
                     <c:choose>
                       <c:when test="${p.isActive}">
      
-                   <span class="badge bg-success">
+                   <span class="badge text-bg-success">
                           <i class="bi bi-eye"></i> Hiển thị
                         </span>
                       </c:when>
    
                    <c:otherwise>
-                        <span class="badge bg-secondary">
+                        <span class="badge text-bg-secondary">
                           <i class="bi bi-eye-slash"></i> Ẩn
                         </span>
   

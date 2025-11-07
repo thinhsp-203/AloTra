@@ -99,7 +99,7 @@
                 <td>${user.email}</td>
                 <td>${user.roleName}</td>
                 <td class="text-center">
-                  <span class="badge bg-${user.isActive ? 'success' : 'secondary'}">
+                  <span class="badge text-bg-${user.isActive ? 'success' : 'secondary'}">
                       ${user.isActive ?
 'Kích hoạt' : 'Vô hiệu hóa'}
                   </span>

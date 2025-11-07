@@ -116,7 +116,7 @@
                   <td><strong>#${status.index + 1}</strong></td>
                   <td class="fw-semibold">${item[0]}</td>
                   <td class="text-end">
-                    <span class="badge bg-success">${item[1]} sp</span>
+                    <span class="badge text-bg-success">${item[1]} sp</span>
                   </td>
                 </tr>
               </c:forEach>
@@ -129,6 +129,7 @@
 </div>
 
 <script>
+// Script cho Biểu đồ
 document.addEventListener("DOMContentLoaded", function() {
     const revenueData = [
         <c:forEach var="item" items="${stats.monthlyRevenue}">

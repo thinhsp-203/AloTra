@@ -1,3 +1,4 @@
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
@@ -75,7 +76,7 @@
                     <fmt:formatNumber value="${order.total_amount}" pattern="#,##0₫"/>
                   </td>
                   <td>
-                    <span class="badge bg-${order.payment_status eq 
+                    <span class="badge text-bg-${order.payment_status eq 
 'Đã thanh toán' ? 'success' : 'warning'}">
                       ${order.payment_status}
                     </span>
@@ -83,19 +84,19 @@
                   <td>
                     <c:choose>
   <c:when test="${order.order_status eq 'Chờ xác nhận'}">
-                        <span class="badge bg-secondary">${order.order_status}</span>
+                        <span class="badge text-bg-secondary">${order.order_status}</span>
                       </c:when>
                       <c:when test="${order.order_status eq 'Đang chuẩn bị'}">
-                        <span class="badge bg-info">${order.order_status}</span>
+                        <span class="badge text-bg-info">${order.order_status}</span>
           </c:when>
                       <c:when test="${order.order_status eq 'Đang giao'}">
-                        <span class="badge bg-primary">${order.order_status}</span>
+                        <span class="badge text-bg-primary">${order.order_status}</span>
                       </c:when>
                       <c:when test="${order.order_status eq 'Hoàn thành'}">
-              <span class="badge bg-success">${order.order_status}</span>
+              <span class="badge text-bg-success">${order.order_status}</span>
                       </c:when>
                       <c:otherwise>
-                        <span class="badge bg-danger">${order.order_status}</span>
+                        <span class="badge text-bg-danger">${order.order_status}</span>
                       </c:otherwise>
         </c:choose>
                   </td>

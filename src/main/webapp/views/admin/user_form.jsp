@@ -157,7 +157,7 @@ class="fas fa-save fa-sm"></i> Lưu thông tin
     <div class="mb-2">
                         <small class="text-muted">Trạng thái:</small>
                         <div>
-                            <span class="badge bg-${user.isActive ?
+                            <span class="badge text-bg-${user.isActive ?
 'success' : 'secondary'}">
                                 ${user.isActive ? 'Kích hoạt' : 'Vô hiệu hóa'}
                             </span>

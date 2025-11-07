@@ -55,14 +55,14 @@ varStatus="st">
                     <c:choose>
       
                 <c:when test="${config.payment_method eq 'VNPAY'}">
-                        <span class="badge bg-primary ms-2">Cổng thanh toán</span>
+                        <span class="badge text-bg-primary ms-2">Cổng thanh toán</span>
                       </c:when>
                       <c:when test="${config.payment_method eq 'MOMO'}">
      
-                   <span class="badge bg-danger ms-2">Ví điện tử</span>
+                   <span class="badge text-bg-danger ms-2">Ví điện tử</span>
                       </c:when>
                       <c:when test="${config.payment_method eq 'COD'}">
-                        <span class="badge bg-success ms-2">Tiền mặt</span>
+                        <span class="badge text-bg-success ms-2">Tiền mặt</span>
  
                      </c:when>
                     </c:choose>
