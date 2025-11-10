@@ -710,3 +710,88 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
 });
+/*
+ * ========================================
+ * LOGIC WISHLIST (MỚI)
+ * ========================================
+ */
+document.addEventListener("DOMContentLoaded", function() {
+    const contextPath = document.body.dataset.contextPath || '';
+    
+    // 1. Tô màu các nút đã "thích" khi tải trang
+    function updateWishlistHearts() {
+        fetch(`${contextPath}/api/wishlist/ids`)
+            .then(resp => resp.json())
+            .then(data => {
+                const wishlistIds = data.wishlistIds || [];
+                if (wishlistIds.length > 0) {
+                    document.querySelectorAll('.btn-wishlist').forEach(btn => {
+                        const productId = btn.dataset.productId;
+                        if (wishlistIds.includes(parseInt(productId))) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error("Lỗi khi lấy ID wishlist:", err));
+    }
+    
+    updateWishlistHearts(); // Chạy khi tải trang
+
+    // 2. Gắn sự kiện click cho TẤT CẢ các nút wishlist (kể cả modal)
+    // Dùng event delegation
+    document.body.addEventListener('click', function(e) {
+        // Tìm nút .btn-wishlist gần nhất mà user click
+        const wishlistBtn = e.target.closest('.btn-wishlist');
+        
+        if (wishlistBtn) {
+            e.preventDefault(); // Ngăn hành vi mặc định
+            e.stopPropagation(); // Ngăn các sự kiện khác
+            
+            const productId = wishlistBtn.dataset.productId;
+            
+            fetch(`${contextPath}/api/wishlist/toggle?productId=${productId}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(resp => {
+                if (resp.status === 401) { // Lỗi chưa đăng nhập
+                    window.location.href = `${contextPath}/login`;
+                    return null;
+                }
+                return resp.json();
+            })
+            .then(data => {
+                if (data) {
+                    console.log(data.message);
+                    if (data.status === 'added') {
+                        wishlistBtn.classList.add('active');
+                    } else if (data.status === 'removed') {
+                        wishlistBtn.classList.remove('active');
+                        
+                        // Nếu đang ở trang wishlist, xóa card
+                        const card = wishlistBtn.closest('.col');
+                        if (card && window.location.pathname.includes('/user/wishlist')) {
+                            card.remove();
+                        }
+                    }
+                }
+            })
+            .catch(err => console.error("Lỗi toggle wishlist:", err));
+        }
+    });
+
+    // Cần gọi lại updateWishlistHearts mỗi khi modal được hiển thị
+    // (Vì modal được load động)
+    const productModal = document.getElementById('productModal');
+    if (productModal) {
+        productModal.addEventListener('shown.bs.modal', function () {
+             updateWishlistHearts();
+        });
+    }
+
+});

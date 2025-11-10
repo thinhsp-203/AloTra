@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId; // THÊM IMPORT NÀY
+import java.util.Date;   // THÊM IMPORT NÀY
 
 @Entity
 @Table(name="Voucher")
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
 public class Voucher {
   @Id
   @GeneratedValue(strategy=GenerationType.IDENTITY)
-  private Integer voucher_id;
+  private Integer voucher_id; // Tên cũ là "id", model của bạn là "voucher_id"
 
   @Column(nullable=false, length=50, unique=true)
   private String code;
@@ -39,4 +41,18 @@ public class Voucher {
   private LocalDateTime end_date;
 
   private Boolean isActive;
+  
+  // --- CÁC PHƯƠNG THỨC TRANSIENT ĐƯỢC THÊM VÀO ---
+  
+  @Transient
+  public Date getStart_dateAsDate() {
+    if (this.start_date == null) return null;
+    return Date.from(this.start_date.atZone(ZoneId.systemDefault()).toInstant());
+  }
+  
+  @Transient
+  public Date getEnd_dateAsDate() {
+    if (this.end_date == null) return null;
+    return Date.from(this.end_date.atZone(ZoneId.systemDefault()).toInstant());
+  }
 }

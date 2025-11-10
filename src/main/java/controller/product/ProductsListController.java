@@ -1,49 +1,65 @@
 package controller.product;
 
 import config.JpaUtil;
+import dao.jpa.CategoryRepository;
+import dao.jpa.ProductQueryRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import model.Category; // Thêm import
+import model.Product; // Thêm import
 import java.io.IOException;
+import java.util.List; // Thêm import
 
 @WebServlet(urlPatterns = "/products")
 public class ProductsListController extends HttpServlet {
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        var em = JpaUtil.em();
-        try {
-            // Lấy danh sách categories để hiển thị filter
-            var categories = em.createQuery("SELECT c FROM Category c ORDER BY c.name", model.Category.class)
-                              .getResultList();
-            req.setAttribute("categories", categories);
-            
-            // Lấy các tham số filter
-            String keyword = req.getParameter("q");
-            String cateParam = req.getParameter("cate");
-            String supplierParam = req.getParameter("supplier");
-            
-            // Set lại các giá trị đã chọn để giữ trạng thái filter
-            req.setAttribute("searchKeyword", keyword != null ? keyword.trim() : "");
-            req.setAttribute("selectedCate", cateParam != null ? cateParam : "");
-            req.setAttribute("selectedSupplier", supplierParam != null ? supplierParam : "");
-            
-            // Lấy thông tin category nếu có filter
-            if (cateParam != null && !cateParam.isEmpty()) {
-                try {
-                    int cateId = Integer.parseInt(cateParam);
-                    var category = em.find(model.Category.class, cateId);
-                    req.setAttribute("currentCategory", category);
-                } catch (NumberFormatException e) {
-                    // Ignore invalid category ID
-                }
-            }
+    
+    // SỬA LỖI: Khởi tạo Repository bằng cách truyền EntityManager
+    private ProductQueryRepository productRepo;
+    private CategoryRepository categoryRepo;
 
-            req.getRequestDispatcher("/views/product/list.jsp").forward(req, resp);
-        } finally {
-            em.close();
+    @Override
+    public void init() throws ServletException {
+        productRepo = new ProductQueryRepository(JpaUtil.em());
+        categoryRepo = new CategoryRepository(JpaUtil.em());
+    }
+    // KẾT THÚC SỬA LỖI
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String cateIdParam = req.getParameter("cate");
+        String keyword = req.getParameter("q");
+        
+        // THAM SỐ LỌC MỚI
+        String sortBy = req.getParameter("sortBy"); // newest, price-asc, price-desc
+        String priceRange = req.getParameter("price"); // 0-50000, 50000-100000, 100000+
+        
+        Integer cateId = null;
+        if (cateIdParam != null && !cateIdParam.isEmpty()) { // Kiểm tra isEmpty
+            cateId = Integer.parseInt(cateIdParam);
+            req.setAttribute("category", categoryRepo.findById(cateId));
         }
+
+        // Truyền các tham số mới vào repository
+        List<Product> products = productRepo.findProducts(
+            cateId, 
+            keyword, 
+            sortBy, 
+            priceRange
+        );
+        
+        req.setAttribute("products", products);
+        req.setAttribute("categories", categoryRepo.findAll());
+        
+        // Giữ lại các giá trị đã lọc để hiển thị trên form
+        req.setAttribute("selectedCateId", cateIdParam); // Giữ lại chuỗi
+        req.setAttribute("keyword", keyword);
+        req.setAttribute("selectedSortBy", sortBy);
+        req.setAttribute("selectedPrice", priceRange);
+
+        req.getRequestDispatcher("/views/product/list.jsp").forward(req, resp);
     }
 }

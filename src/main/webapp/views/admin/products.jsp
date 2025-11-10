@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <h1 class="h3 mb-2 text-gray-800">Quản lý sản phẩm</h1>
 <p class="mb-4">Danh sách toàn bộ sản phẩm trong cửa hàng.</p>
@@ -62,27 +63,19 @@
                 <tr>
                   <td><strong>#${p.product_id}</strong></td>
                   <td>
-                    <c:choose>
-  
-                    <c:when test="${not empty p.thumbnail}">
-                        <img src="${p.thumbnail}" 
-                             class="rounded" 
-                     
-        style="width: 60px; height: 60px;
-object-fit: cover;"
-                             alt="${p.product_name}"/>
-                      </c:when>
-                      <c:otherwise>
-                        <div class="bg-secondary 
-text-white rounded d-flex align-items-center justify-content-center"
-                             style="width: 60px;
-height: 60px;">
-                          <i class="bi bi-image"></i>
-                        </div>
-                      </c:otherwise>
-                    </c:choose>
-     
-             </td>
+                    <c:set var="thumbnailSrc" value="${p.thumbnail}"/>
+                    <c:if test="${not empty thumbnailSrc and not fn:startsWith(thumbnailSrc, 'http')}">
+                       <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/uploads/${p.thumbnail}"/>
+                    </c:if>
+                    <c:if test="${empty thumbnailSrc}">
+                       <c:set var="thumbnailSrc" value="https://via.placeholder.com/60"/>
+                    </c:if>
+                    
+                    <img src="${thumbnailSrc}" 
+                         class="rounded" 
+                         style="width: 60px; height: 60px; object-fit: cover;"
+                         alt="${p.product_name}"/>
+                  </td>
                   <td>
                     <div class="fw-semibold">${p.product_name}</div>
                     <c:if test="${p.isFeatured}">

@@ -1,91 +1,71 @@
 package controller.product;
 
-import jakarta.servlet.*; 
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*; 
-import java.io.IOException; 
-import java.math.BigDecimal; 
-import java.util.*;
-import config.JpaUtil; 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import config.JpaUtil;
 import dao.jpa.ProductQueryRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import model.Product;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
-@WebServlet(urlPatterns = "/products/page")
+@WebServlet("/api/products")
 public class ProductPageController extends HttpServlet {
-    
-    @Override 
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        int page = p(req.getParameter("page"), 0);
-        int size = p(req.getParameter("size"), 12);
-        Integer cate = po(req.getParameter("cate"));
-        Integer sup = po(req.getParameter("supplier"));
-        BigDecimal min = pd(req.getParameter("min"));
-        BigDecimal max = pd(req.getParameter("max"));
-        String q = req.getParameter("q");
-        
-        // Xử lý keyword tìm kiếm
-        if (q != null) {
-            q = q.trim();
-            if (q.isEmpty()) q = null;
-        }
-        
-        var em = JpaUtil.em();
+    private static final long serialVersionUID = 1L;
+    private ProductQueryRepository repo;
+
+    @Override
+    public void init() throws ServletException {
+        repo = new ProductQueryRepository(JpaUtil.em());
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
         try {
-            var repo = new ProductQueryRepository(em);
-            var items = repo.search(cate, sup, min, max, q, page, size);
-            long total = repo.count(cate, sup, min, max, q);
-            boolean more = (long)(page + 1) * size < total;
+            int page = Integer.parseInt(request.getParameter("page"));
+            int size = Integer.parseInt(request.getParameter("size"));
+            Integer cateId = request.getParameter("cateId") != null ? Integer.parseInt(request.getParameter("cateId")) : null;
+            Integer suppId = request.getParameter("suppId") != null ? Integer.parseInt(request.getParameter("suppId")) : null;
+            BigDecimal minPrice = request.getParameter("minPrice") != null ? new BigDecimal(request.getParameter("minPrice")) : null;
+            BigDecimal maxPrice = request.getParameter("maxPrice") != null ? new BigDecimal(request.getParameter("maxPrice")) : null;
+            String keyword = request.getParameter("keyword");
+
+            var data = repo.search(cateId, suppId, minPrice, maxPrice, keyword, page, size);
+            long total = (long) data.get("total");
+
+            // SỬA LỖI: Lấy List<Product> từ Map
+            List<Product> products = (List<Product>) data.get("products");
             
-            resp.setContentType("application/json; charset=UTF-8");
-            resp.getWriter().print(json(items, total, more));
-        } finally { 
-            em.close(); 
+            json(products, total, true, response); // Truyền List<Product> vào
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            json(null, 0, false, response);
         }
     }
-    
-    private static int p(String s, int d) {
-        try {
-            return Integer.parseInt(s);
-        } catch(Exception e) {
-            return d;
-        }
-    }
-    
-    private static Integer po(String s) {
-        try {
-            return Integer.valueOf(s);
-        } catch(Exception e) {
-            return null;
-        }
-    }
-    
-    private static BigDecimal pd(String s) {
-        try {
-            return new BigDecimal(s);
-        } catch(Exception e) {
-            return null;
-        }
-    }
-    
-    private static String esc(String s) {
-        return s == null ? "" : s.replace("\\","\\\\").replace("\"","\\\"").replace("\n", " ").replace("\r", " ");
-    }
-    
-    private static String json(List<Product> items, long total, boolean more) {
-        var sb = new StringBuilder("{\"total\":").append(total)
-            .append(",\"hasMore\":").append(more)
-            .append(",\"items\":[");
+
+    private void json(List<Product> products, long total, boolean success, HttpServletResponse response)
+            throws IOException {
+        Gson gson = new GsonBuilder().create();
+        PrintWriter out = response.getWriter();
         
-        for(int i = 0; i < items.size(); i++) {
-            var p = items.get(i);
-            sb.append("{\"id\":").append(p.getProduct_id())
-              .append(",\"name\":\"").append(esc(p.getProduct_name()))
-              .append("\",\"price\":").append(p.getPrice())
-              .append(",\"thumb\":\"").append(esc(p.getThumbnail()))
-              .append("\"}");
-            if(i < items.size() - 1) sb.append(",");
-        }
-        
-        return sb.append("]}").toString();
+        Map<String, Object> result = Map.of(
+            "data", products,
+            "total", total,
+            "success", success
+        );
+        out.print(gson.toJson(result));
+        out.flush();
     }
 }

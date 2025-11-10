@@ -41,7 +41,7 @@
             <div class="card shadow-lg auth-card">
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <img src="https://www.phuclong.com.vn/images/logo-phuclong.png" alt="AloTra Logo" style="height: 50px;" class="mb-3">
+                        <img src="https://github.com/TurtleBP/Android/blob/main/app/src/main/res/mipmap-xhdpi/ic_launcher.webp?raw=true" alt="AloTra" style="height: 50px;" class="mb-3">
                         <h2 class="h4 mt-2 mb-0">Đăng nhập</h2>
                         <p class="text-muted small">Chào mừng bạn quay trở lại!</p>
                     </div>

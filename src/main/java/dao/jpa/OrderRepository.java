@@ -1,5 +1,6 @@
 package dao.jpa;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import model.*;
 import java.math.BigDecimal;
 import java.util.List;
@@ -55,6 +56,31 @@ public class OrderRepository {
     } catch (Exception ex){
       // BỎ KHỐI: if (tx.isActive()) tx.rollback();
       throw ex; // Ném exception để Controller xử lý rollback
+    }
+  }
+/**
+ * Kiểm tra xem một user đã mua một sản phẩm cụ thể chưa VÀ đơn hàng đã hoàn thành.
+ * @param userId ID của User
+ * @param productId ID của Product
+ * @return true nếu đã mua và hoàn thành, false ngược lại.
+ */
+public boolean hasUserPurchasedProduct(Integer userId, Integer productId) {
+    String ql = "SELECT COUNT(o.order_id) FROM Orders o " +
+                "JOIN o.orderDetails od " +
+                "WHERE o.user.id = :userId AND od.product.product_id = :productId " +
+                "AND o.order_status = 'Hoàn thành'";
+    
+    TypedQuery<Long> query = this.em.createQuery(ql, Long.class);
+    query.setParameter("userId", userId);
+    query.setParameter("productId", productId);
+    
+    try {
+        return query.getSingleResult() > 0;
+    } catch (jakarta.persistence.NoResultException e) {
+        return false;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
     }
   }
 }
