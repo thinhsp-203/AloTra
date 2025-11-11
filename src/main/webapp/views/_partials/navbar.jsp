@@ -142,15 +142,12 @@ color: #6c757d;
         <div class="row align-items-center g-3">
             <div class="col-auto">
                 <a class="navbar-brand" href="${pageContext.request.contextPath}/home">
-                    <c:choose>
-                        <c:when test="${not empty siteSettings.LOGO_URL}">
-                            <img src="${siteSettings.LOGO_URL}" alt="AloTra Logo" style="height: 40px;">
-                        </c:when>
-                        <c:otherwise>
-                            <img src="https://www.phuclong.com.vn/images/logo-phuclong.png" alt="AloTra Logo" style="height: 40px;">
-                        </c:otherwise>
-                    </c:choose>
-                </a>
+				    <c:choose>
+				        <c:when test="${not empty siteSettings.LOGO_URL}">
+				            <img src="${siteSettings.LOGO_URL}" alt="AloTra">
+				        </c:when>
+				    </c:choose>
+				</a>
       </div>
             <div class="col">
                 <div class="search-autocomplete-container mx-auto" style="max-width: 500px;">

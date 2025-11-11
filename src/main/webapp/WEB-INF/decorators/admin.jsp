@@ -87,14 +87,19 @@
           <span>Cấu hình TT</span>
         </a>
       </li>
-      
-      <li class="nav-item ${fn:contains(pageContext.request.requestURI, '/admin/settings') ? 'active' : ''}">
-        <a class="nav-link" href="${pageContext.request.contextPath}/admin/settings">
-          <i class="fas fa-fw fa-cog"></i>
-          <span>Cài đặt Website</span>
-        </a>
-      </li>
-      
+	<li class="nav-item">
+	    <a class="nav-link" href="${pageContext.request.contextPath}/admin/banners">
+	        <i class="fas fa-fw fa-images"></i>
+	        <span>Quản lý Banner</span>
+	    </a>
+	</li>
+	
+	<li class="nav-item">
+	    <a class="nav-link" href="${pageContext.request.contextPath}/admin/settings">
+	        <i class="fas fa-fw fa-cog"></i>
+	        <span>Cài đặt</span>
+	    </a>
+	</li>
       <hr class="sidebar-divider d-none d-md-block">
       <div class="text-center d-none d-md-inline">
         <button class="rounded-circle border-0" id="sidebarToggle"></button>

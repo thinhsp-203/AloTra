@@ -598,6 +598,10 @@ body {
 #product-detail-container .col-md-7 {
     position: relative;
 }
+.navbar-brand img {
+    max-height: 50px; /* Tăng chiều cao tối đa (mặc định có thể là 30-35px) */
+    width: auto;      /* Để chiều rộng tự điều chỉnh */
+}
 
 /* Sticky bottom bar for add to cart */
 .sticky-bottom {
@@ -738,4 +742,52 @@ body {
 }
 .btn-wishlist.active i::before {
     content: "\f415"; /* Đổi icon sang bi-heart-fill */
+}
+/* CSS cho ảnh banner tự co giãn đẹp */
+#heroCarousel .carousel-item img {
+    height: 550px; /* Đặt một chiều cao cố định cho banner */
+    object-fit: cover; /* Đây là thuộc tính quan trọng: ảnh sẽ tự zoom và cắt để lấp đầy */
+    width: 100%;
+}
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700&display=swap');
+
+body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: #fcfaf6; /* Màu nền hơi kem/vàng nhạt */
+}
+
+/* Định nghĩa lại màu primary của Bootstrap thành màu vàng của trang mẫu */
+:root {
+    --bs-primary: #d3a439;
+    --bs-primary-rgb: 211, 164, 57;
+    
+    /* Bạn có thể định nghĩa lại màu secondary nếu muốn */
+    --bs-secondary: #4a3f35; /* Màu nâu đậm */
+}
+
+/* Ghi đè màu nút primary */
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+.btn-primary:hover {
+    background-color: #c29532; /* Tối hơn một chút khi hover */
+    border-color: #c29532;
+}
+
+/* Thêm hiệu ứng cho card sản phẩm */
+.product-card {
+    border: 1px solid #eee;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-5px); /* Hiệu ứng nhấc lên */
+}
+
+/* Chỉnh lại màu tiêu đề sản phẩm */
+.product-card .card-title {
+    color: var(--bs-secondary); /* Màu nâu đậm */
+    font-weight: 500;
 }

@@ -42,7 +42,7 @@ public class AppContextListener implements ServletContextListener {
     private void loadCategories(ServletContext context) {
         EntityManager em = JpaUtil.em(); 
         try {
-            CategoryRepository repo = new CategoryRepository(em); 
+        	CategoryRepository repo = new CategoryRepository(em); 
             context.setAttribute("categories", repo.findAll());
             logger.info("Categories loaded into application scope.");
         } catch (Exception e) {

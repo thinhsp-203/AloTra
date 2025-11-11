@@ -54,7 +54,7 @@ public class DownloadImageController extends HttpServlet {
         
         if (!file.exists() || file.isDirectory()) {
             // Trả về ảnh "không tìm thấy" thay vì lỗi 404
-            String placeholder = getServletContext().getRealPath("/assets/images/placeholder.png");
+            String placeholder = getServletContext().getRealPath("/assets/placeholder.png");
             if (placeholder != null) {
                 file = new File(placeholder);
             } else {

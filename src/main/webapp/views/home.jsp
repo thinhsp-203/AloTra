@@ -2,18 +2,64 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
-<%-- Hero Section (ĐÃ SỬA LỖI) --%>
-<div class="hero-section mb-5" 
-     style="background-image: url('${not empty siteSettings.BANNER_URL ? siteSettings.BANNER_URL : 'https://images.foody.vn/res/g98/970114/prof/s/foody-upload-api-foody-phuc-long-970114-110-637951016912389104.jpeg'}');">
-    <div class="hero-overlay"></div>
-    <div class="hero-content text-white">
-        <h1 class="display-4 fw-bold">
-            ${not empty siteSettings.BANNER_TEXT ? siteSettings.BANNER_TEXT : 'Đặt món giao tận nơi'}
-        </h1>
-        <p class="lead">Trải nghiệm hương vị trà và cà phê đậm vị đặc trưng.</p>
+<c:if test="${not empty banners}">
+    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        
+        <div class="carousel-indicators">
+            <c:forEach items="${banners}" var="b" varStatus="status">
+                <button type="button" 
+                        data-bs-target="#heroCarousel" 
+                        data-bs-slide-to="${status.index}" 
+                        class="${status.index == 0 ? 'active' : ''}" 
+                        aria-label="Slide ${status.count}">
+                </button>
+            </c:forEach>
+        </div>
+
+        <div class="carousel-inner">
+            <c:forEach items="${banners}" var="b" varStatus="status">
+                <div class="carousel-item ${status.index == 0 ? 'active' : ''}">
+                    
+                    <%-- Tạo thẻ <img> với logic src chính xác --%>
+                    <c:set var="imgTag">
+                        <c:choose>
+                            <%-- Nếu là URL (bắt đầu bằng http) --%>
+                            <c:when test="${fn:startsWith(b.imageUrl, 'http')}">
+                                <img src="${b.imageUrl}" class="d-block w-100" alt="Banner ${status.count}">
+                            </c:when>
+                            <%-- Nếu là file upload (không có http) --%>
+                            <c:otherwise>
+                                <img src="<c:url value='/${b.imageUrl}'/>" class="d-block w-100" alt="Banner ${status.count}">
+                            </c:otherwise>
+                        </c:choose>
+                    </c:set>
+
+                    <%-- Bọc thẻ <img> trong <a> nếu có link --%>
+                    <c:choose>
+                        <c:when test="${not empty b.linkUrl}">
+                            <a href="${b.linkUrl}" target="_blank"> <%-- Thêm target="_blank" để mở tab mới --%>
+                                ${imgTag}
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            ${imgTag}
+                        </c:otherwise>
+                    </c:choose>
+                    
+                </div>
+            </c:forEach>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
     </div>
-</div>
-<%-- Hết Hero Section --%>
+</c:if>
 
 
 <%-- Best Sellers --%>

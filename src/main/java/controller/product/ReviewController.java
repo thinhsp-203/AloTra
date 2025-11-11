@@ -24,7 +24,7 @@ public class ReviewController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        orderRepo = new OrderRepository(JpaUtil.em());
+        orderRepo = new OrderRepository();
     }
 
     @Override
@@ -47,7 +47,7 @@ public class ReviewController extends HttpServlet {
             String comment = req.getParameter("comment");
 
             // 1. Xác thực: User đã mua hàng chưa?
-            boolean hasPurchased = orderRepo.hasUserPurchasedProduct(currentUser.getId(), productId);
+            boolean hasPurchased = orderRepo.hasUserPurchasedProduct(currentUser.getId(), productId, em);
             if (!hasPurchased) {
                 req.getSession().setAttribute("error", "Bạn chỉ có thể đánh giá sản phẩm đã mua.");
                 resp.sendRedirect(req.getContextPath() + "/p?id=" + productId);
