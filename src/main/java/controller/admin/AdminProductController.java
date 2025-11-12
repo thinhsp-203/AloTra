@@ -75,10 +75,10 @@ public class AdminProductController extends HttpServlet {
   private void showProductForm(HttpServletRequest req, HttpServletResponse resp, Integer id)
       throws ServletException, IOException {
     EntityManager em = JpaUtil.em();
-    Product p = new Product(); // Mặc định là sản phẩm mới
+    Product p = new Product(); 
     
     if (id != null) {
-      p = em.find(Product.class, id); // Tìm sản phẩm cũ nếu là edit
+      p = em.find(Product.class, id); 
     }
     
     // Lấy danh sách Categories và Suppliers
@@ -90,7 +90,15 @@ public class AdminProductController extends HttpServlet {
     req.setAttribute("suppliers", suppQuery.getResultList());
     req.getRequestDispatcher("/views/admin/product_form.jsp").forward(req, resp);
   }
-
+	  private static final String PRODUCT_SUBDIR = "products";
+	  private String uploadDirPhysical;
+	
+	  @Override
+	  public void init() throws ServletException {
+	      uploadDirPhysical = Paths.get(Constant.UPLOAD_DIRECTORY, PRODUCT_SUBDIR).toFile().getAbsolutePath();
+	      File uploadDir = new File(uploadDirPhysical);
+	      if (!uploadDir.exists()) uploadDir.mkdirs();
+	  }
   private void saveProduct(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
     EntityManager em = JpaUtil.em();
@@ -104,15 +112,15 @@ public class AdminProductController extends HttpServlet {
         p = em.find(Product.class, Integer.parseInt(idParam));
       } else {
         p = new Product();
-        p.setCreatedDate(java.time.LocalDateTime.now()); // Set ngày tạo
+        p.setCreatedDate(java.time.LocalDateTime.now()); 
       }
-      p.setUpdatedDate(java.time.LocalDateTime.now()); // Set ngày cập nhật
+      p.setUpdatedDate(java.time.LocalDateTime.now()); 
 
       // 1. Lấy thông tin từ form
       p.setProduct_name(req.getParameter("product_name"));
       p.setDescription(req.getParameter("description"));
       
-      // SỬA LỖI: Dùng BigDecimal thay vì double/int
+      
       p.setPrice(new BigDecimal(req.getParameter("price")));
       
       String discountParam = req.getParameter("discount");
@@ -121,7 +129,6 @@ public class AdminProductController extends HttpServlet {
       } else {
           p.setDiscount(new BigDecimal(discountParam));
       }
-      // KẾT THÚC SỬA LỖI
       
       String stockParam = req.getParameter("stock");
       p.setStock( (stockParam == null || stockParam.isEmpty()) ? 0 : Integer.parseInt(stockParam) );
@@ -133,8 +140,8 @@ public class AdminProductController extends HttpServlet {
       p.setIsActive(req.getParameter("isActive") != null);
       p.setIsFeatured(req.getParameter("isFeatured") != null);
 
-      // 2. XỬ LÝ UPLOAD ẢNH (NÂNG CẤP)
-      String thumbnailUrlFromUrl = req.getParameter("thumbnailUrl"); // Lấy từ ô URL
+      // 2. XỬ LÝ UPLOAD ẢNH 
+      String thumbnailUrlFromUrl = req.getParameter("thumbnailUrl"); 
       Part filePart = req.getPart("thumbnailFile"); // Lấy từ ô File
       String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
 
@@ -150,9 +157,9 @@ public class AdminProductController extends HttpServlet {
           File uploadDir = new File(Constant.UPLOAD_DIRECTORY);
           if (!uploadDir.exists()) uploadDir.mkdirs();
           
-          File fileToSave = new File(uploadDir, finalFileName);
+          File fileToSave = new File(uploadDirPhysical, finalFileName);
 
-          // Xóa ảnh cũ (nếu có và không phải là URL)
+          // Xóa ảnh cũ
           if (p.getThumbnail() != null && !p.getThumbnail().isEmpty() && !p.getThumbnail().startsWith("http")) {
               File oldFile = new File(uploadDir, p.getThumbnail());
               if (oldFile.exists()) {
@@ -165,14 +172,12 @@ public class AdminProductController extends HttpServlet {
               Files.copy(input, fileToSave.toPath(), StandardCopyOption.REPLACE_EXISTING);
           }
           
-          // Lưu tên file vào DB (ví dụ: product-abc.png)
-          p.setThumbnail(finalFileName); 
+          // Lưu tên file vào DB
+          p.setThumbnail(PRODUCT_SUBDIR + "/" + finalFileName);
           
       } else if (thumbnailUrlFromUrl != null && !thumbnailUrlFromUrl.isEmpty()) {
-          // --- Dùng URL nếu không upload file ---
           p.setThumbnail(thumbnailUrlFromUrl);
       }
-      // (Nếu cả hai đều trống, giữ nguyên ảnh cũ)
 
       
       // 3. Lưu vào DB
@@ -209,7 +214,8 @@ public class AdminProductController extends HttpServlet {
         
         // (Tùy chọn) Xóa file ảnh nếu tồn tại
         if (p.getThumbnail() != null && !p.getThumbnail().isEmpty() && !p.getThumbnail().startsWith("http")) {
-            File oldFile = new File(Constant.UPLOAD_DIRECTORY, p.getThumbnail());
+            String fileName = Paths.get(p.getThumbnail()).getFileName().toString();
+            File oldFile = new File(uploadDirPhysical, fileName);
             if (oldFile.exists()) {
                 oldFile.delete();
             }

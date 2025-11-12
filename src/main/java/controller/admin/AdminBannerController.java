@@ -20,20 +20,21 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
+import utils.Constant;
 
 @WebServlet(urlPatterns = "/admin/banners")
 @MultipartConfig
 public class AdminBannerController extends HttpServlet {
 
     private BannerRepository bannerRepo;
-    private static final String UPLOAD_DIR_RELATIVE = "uploads/banners";
+    private static final String BANNER_SUBDIR = "banners";
     private String uploadDirPhysical;
 
     @Override
     public void init() throws ServletException {
         bannerRepo = new BannerRepository();
         
-        uploadDirPhysical = getServletContext().getRealPath("") + File.separator + UPLOAD_DIR_RELATIVE.replace("/", File.separator);
+        uploadDirPhysical = Paths.get(Constant.UPLOAD_DIRECTORY, BANNER_SUBDIR).toFile().getAbsolutePath();
         
         // Tạo thư mục này nếu nó chưa tồn tại
         File uploadDir = new File(uploadDirPhysical);
@@ -66,7 +67,7 @@ public class AdminBannerController extends HttpServlet {
                 bannerRepo.findById(id, em).ifPresent(banner -> {
                     if (banner.getImageUrl() != null && !banner.getImageUrl().startsWith("http")) {
                         try {
-                            String fileName = Paths.get(banner.getImageUrl()).getFileName().toString();
+                        	String fileName = Paths.get(banner.getImageUrl()).getFileName().toString();
                             File fileToDelete = new File(uploadDirPhysical, fileName);
                             if (fileToDelete.exists()) {
                                 fileToDelete.delete();
@@ -102,7 +103,7 @@ public class AdminBannerController extends HttpServlet {
                     }
                     
                     // Lưu đường dẫn tương đối (dùng /)
-                    finalImageUrl = UPLOAD_DIR_RELATIVE + "/" + finalFileName;
+                    finalImageUrl = BANNER_SUBDIR + "/" + finalFileName;
                     
                 } else if (imageUrlFromText != null && !imageUrlFromText.isEmpty()) {
                     finalImageUrl = imageUrlFromText;

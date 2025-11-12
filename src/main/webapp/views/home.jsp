@@ -25,19 +25,17 @@
                         <c:choose>
                             <%-- Nếu là URL (bắt đầu bằng http) --%>
                             <c:when test="${fn:startsWith(b.imageUrl, 'http')}">
-                                <img src="${b.imageUrl}" class="d-block w-100" alt="Banner ${status.count}">
+                                <img src="${b.imageUrl}" alt="Banner ${status.count}">
                             </c:when>
-                            <%-- Nếu là file upload (không có http) --%>
                             <c:otherwise>
-                                <img src="<c:url value='/${b.imageUrl}'/>" class="d-block w-100" alt="Banner ${status.count}">
-                            </c:otherwise>
+							    <img src="${pageContext.request.contextPath}/uploads/${b.imageUrl}" alt="Banner ${status.count}">
+							</c:otherwise>
                         </c:choose>
                     </c:set>
 
-                    <%-- Bọc thẻ <img> trong <a> nếu có link --%>
                     <c:choose>
                         <c:when test="${not empty b.linkUrl}">
-                            <a href="${b.linkUrl}" target="_blank"> <%-- Thêm target="_blank" để mở tab mới --%>
+                            <a href="${b.linkUrl}" target="_blank">
                                 ${imgTag}
                             </a>
                         </c:when>
