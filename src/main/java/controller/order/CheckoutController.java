@@ -4,27 +4,24 @@ import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.*;
 import config.JpaUtil;
 import jakarta.persistence.EntityManager;
-import dao.jpa.OrderRepository;
-import dao.jpa.VoucherRepository; // SỬA: Thêm import
 import model.*;
+import service.OrderService;
+import service.impl.OrderServiceImpl;
 import service.impl.VNPayService;
 
 @WebServlet(urlPatterns = {"/checkout", "/checkout/*"})
 public class CheckoutController extends HttpServlet {
 
     // SỬA 1: Khai báo repository ở đây (stateless)
-    private OrderRepository orderRepo;
-    private VoucherRepository voucherRepo;
+    private OrderService orderService;
 
     // SỬA 2: Thêm hàm init()
     @Override
     public void init() throws ServletException {
-        orderRepo = new OrderRepository();
-        voucherRepo = new VoucherRepository();
+        orderService = new OrderServiceImpl();
     }
 
     @SuppressWarnings("unchecked")
@@ -78,58 +75,9 @@ public class CheckoutController extends HttpServlet {
         String voucherCode = req.getParameter("voucher");
         String payment = Optional.ofNullable(req.getParameter("payment")).orElse("COD");
 
-        EntityManager em = JpaUtil.em(); // Bắt đầu quản lý em
+        Orders order;
         try {
-            em.getTransaction().begin();
-
-            BigDecimal total = items.stream()
-                    .map(CartItem::getLineTotal)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            BigDecimal discountAmount = BigDecimal.ZERO;
-            if (voucherCode != null && !voucherCode.isBlank()) {
-                
-                // SỬA 3: Sử dụng voucherRepo (stateless) và truyền 'em'
-                var vopt = voucherRepo.findActiveByCode(voucherCode.trim(), em); 
-
-                if (vopt.isPresent()) {
-                    Voucher v = vopt.get();
-                    if (v.getMin_order_value() == null || total.compareTo(v.getMin_order_value()) >= 0) {
-                        if ("Percent".equalsIgnoreCase(v.getDiscount_type())) {
-                            discountAmount = total.multiply(v.getDiscount_value().divide(BigDecimal.valueOf(100)));
-                        } else {
-                            discountAmount = v.getDiscount_value();
-                        }
-                        if (v.getMax_discount() != null && discountAmount.compareTo(v.getMax_discount()) > 0) {
-                            discountAmount = v.getMax_discount();
-                        }
-                        v.setUsed_count((v.getUsed_count() == null ? 0 : v.getUsed_count()) + 1);
-                        em.merge(v);
-                    }
-                } else {
-                    em.getTransaction().rollback();
-                    req.getSession().setAttribute("checkoutError", "Mã giảm giá không hợp lệ hoặc đã hết hạn!");
-                    resp.sendRedirect(req.getContextPath() + "/checkout");
-                    return;
-                }
-            }
-
-            BigDecimal grandTotal = total.subtract(discountAmount);
-            grandTotal = grandTotal.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : grandTotal;
-
-            User managedUser = em.find(User.class, currentUser.getId());
-            
-            // SỬA 4: Bỏ khởi tạo OrderRepository ở đây
-            // OrderRepository repo = new OrderRepository(em); // BỎ DÒNG NÀY
-
-            String paymentStatus = "COD".equals(payment) ? "Chưa thanh toán" : "Chờ thanh toán";
-            String orderStatus = "Chờ xác nhận";
-
-            // SỬA 5 (LỖI CHÍNH): Truyền 'em' vào làm tham số cuối cùng
-            Orders order = orderRepo.createOrder(managedUser, fullname, phone, address, note,
-                    grandTotal, payment, paymentStatus, orderStatus, items, em); // <-- THÊM 'em'
-
-            em.getTransaction().commit();
+            order = orderService.placeOrder(currentUser, items, fullname, phone, address, note, voucherCode, payment);
 
             // Handle payment method
             if (!"COD".equals(payment)) {
@@ -185,17 +133,10 @@ public class CheckoutController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/user/orders");
 
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
             e.printStackTrace();
             req.getSession().setAttribute("checkoutError",
                     "Lỗi khi tạo đơn hàng. Vui lòng thử lại hoặc liên hệ hỗ trợ.");
             resp.sendRedirect(req.getContextPath() + "/checkout");
-        } finally {
-            if (em.isOpen()) {
-                em.close(); // Đảm bảo em luôn đóng
-            }
         }
     }
 

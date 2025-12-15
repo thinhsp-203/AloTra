@@ -2,6 +2,7 @@ package controller.admin;
 
 import config.JpaUtil;
 import dao.BannerRepository;
+import dao.impl.BannerRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -32,7 +33,7 @@ public class AdminBannerController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        bannerRepo = new BannerRepository();
+        bannerRepo = new BannerRepositoryImpl();
         
         uploadDirPhysical = Paths.get(Constant.UPLOAD_DIRECTORY, BANNER_SUBDIR).toFile().getAbsolutePath();
         

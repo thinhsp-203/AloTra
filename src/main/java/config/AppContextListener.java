@@ -1,6 +1,7 @@
 package config;
 
 import dao.CategoryRepository;
+import dao.impl.CategoryRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
@@ -22,8 +23,6 @@ public class AppContextListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         logger.info("Application starting... Loading shared data.");
 
-        JpaUtil.getEMFactory(); 
-        
         ServletContext context = sce.getServletContext();
         loadCategories(context);
         loadSiteSettings(context);
@@ -33,16 +32,16 @@ public class AppContextListener implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent sce) {
         logger.info("Application shutting down.");
   
-        JpaUtil.closeEMFactory();
+        JpaUtil.shutdown();
     }
 
     /**
      * Tải danh mục và lưu vào Application Scope
      */
     private void loadCategories(ServletContext context) {
-        EntityManager em = JpaUtil.em(); 
+        EntityManager em = JpaUtil.em();
         try {
-        	CategoryRepository repo = new CategoryRepository(em); 
+            CategoryRepository repo = new CategoryRepositoryImpl(em);
             context.setAttribute("categories", repo.findAll());
             logger.info("Categories loaded into application scope.");
         } catch (Exception e) {

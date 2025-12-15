@@ -2,15 +2,15 @@ package controller.product;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import config.JpaUtil;
-import dao.jpa.ProductQueryRepository;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Product;
+import service.ProductQueryService;
+import service.impl.ProductQueryServiceImpl;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
@@ -20,11 +20,11 @@ import java.util.Map;
 @WebServlet("/api/products")
 public class ProductPageController extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private ProductQueryRepository repo;
+    private ProductQueryService productQueryService;
 
     @Override
     public void init() throws ServletException {
-        repo = new ProductQueryRepository(JpaUtil.em());
+        productQueryService = new ProductQueryServiceImpl();
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -41,10 +41,11 @@ public class ProductPageController extends HttpServlet {
             BigDecimal maxPrice = request.getParameter("maxPrice") != null ? new BigDecimal(request.getParameter("maxPrice")) : null;
             String keyword = request.getParameter("keyword");
 
-            var data = repo.search(cateId, suppId, minPrice, maxPrice, keyword, page, size);
+            var data = productQueryService.search(cateId, suppId, minPrice, maxPrice, keyword, page, size);
             long total = (long) data.get("total");
 
             // SỬA LỖI: Lấy List<Product> từ Map
+            @SuppressWarnings("unchecked")
             List<Product> products = (List<Product>) data.get("products");
             
             json(products, total, true, response); // Truyền List<Product> vào
