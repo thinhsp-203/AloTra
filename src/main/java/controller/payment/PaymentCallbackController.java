@@ -1,13 +1,12 @@
 package controller.payment;
 
-import config.JpaUtil;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.Orders;
+import service.OrderService;
+import service.impl.OrderServiceImpl;
 import service.impl.VNPayService;
 
 import java.io.IOException;
@@ -16,6 +15,13 @@ import java.util.Map;
 
 @WebServlet(urlPatterns = {"/payment/vnpay-return", "/payment/momo-return", "/payment/callback"})
 public class PaymentCallbackController extends HttpServlet {
+
+    private OrderService orderService;
+
+    @Override
+    public void init() throws ServletException {
+        orderService = new OrderServiceImpl();
+    }
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
@@ -36,7 +42,7 @@ public class PaymentCallbackController extends HttpServlet {
         String uri = req.getRequestURI();
         
         if (uri.endsWith("/callback")) {
-            String method = req.getParameter("method");
+            // TODO: handle other gateways IPN if needed
         } else {
             doGet(req, resp);
         }
@@ -66,11 +72,11 @@ public class PaymentCallbackController extends HttpServlet {
         
         if (isValid && "00".equals(responseCode)) {
             // Payment successful
-            updateOrderStatus(txnRef, "VNPAY", "Đã thanh toán", "Đang chuẩn bị", req, resp);
+            updateOrderStatus(txnRef, "Đã thanh toán", "Đang chuẩn bị", req, resp);
         } else {
             // Payment failed
             String errorMessage = VNPayService.getResponseDescription(responseCode);
-            updateOrderStatus(txnRef, "VNPAY", "Thất bại", "Đã hủy", req, resp);
+            updateOrderStatus(txnRef, "Thất bại", "Đã hủy", req, resp);
             
             req.getSession().setAttribute("checkoutError", 
                 "Thanh toán thất bại: " + errorMessage);
@@ -82,49 +88,22 @@ public class PaymentCallbackController extends HttpServlet {
     /**
      * Update order status and redirect user
      */
-    private void updateOrderStatus(String txnRef, String paymentMethod, 
+    private void updateOrderStatus(String txnRef,
                                    String paymentStatus, String orderStatus,
                                    HttpServletRequest req, HttpServletResponse resp) 
             throws IOException {
         try {
             int orderId = Integer.parseInt(txnRef);
-            
-            EntityManager em = JpaUtil.em();
-            var tx = em.getTransaction();
-            
-            try {
-                tx.begin();
-                Orders order = em.find(Orders.class, orderId);
-                
-                if (order != null) {
-                    order.setPayment_status(paymentStatus);
-                    order.setOrder_status(orderStatus);
-                    order.setUpdatedDate(java.time.LocalDateTime.now());
-                    em.merge(order);
-                }
-                
-                tx.commit();
-                
-                // Clear cart and redirect
-                req.getSession().removeAttribute("CART");
-                
-                if ("Đã thanh toán".equals(paymentStatus)) {
-                    req.getSession().setAttribute("orderSuccess", 
-                        "Thanh toán thành công! Đơn hàng #" + orderId + " đã được xác nhận.");
-                }
-                
-                resp.sendRedirect(req.getContextPath() + "/user/orders");
-                
-            } catch (Exception e) {
-                if (tx.isActive()) tx.rollback();
-                e.printStackTrace();
-                
-                req.getSession().setAttribute("checkoutError", 
-                    "Có lỗi khi xử lý thanh toán. Vui lòng liên hệ CSKH với mã đơn: " + orderId);
-                resp.sendRedirect(req.getContextPath() + "/user/orders");
-            } finally {
-                em.close();
+            orderService.markOrderPaid(orderId, paymentStatus, orderStatus);
+
+            req.getSession().removeAttribute("CART");
+
+            if ("Đã thanh toán".equals(paymentStatus)) {
+                req.getSession().setAttribute("orderSuccess",
+                    "Thanh toán thành công! Đơn hàng #" + orderId + " đã được xác nhận.");
             }
+
+            resp.sendRedirect(req.getContextPath() + "/user/orders");
             
         } catch (NumberFormatException e) {
             e.printStackTrace();
@@ -135,36 +114,4 @@ public class PaymentCallbackController extends HttpServlet {
     /**
      * Update order status silently (for IPN callback)
      */
-    private void updateOrderStatusSilent(String txnRef, String paymentMethod,
-                                        String paymentStatus, String orderStatus) {
-        try {
-            int orderId = Integer.parseInt(txnRef);
-            
-            EntityManager em = JpaUtil.em();
-            var tx = em.getTransaction();
-            
-            try {
-                tx.begin();
-                Orders order = em.find(Orders.class, orderId);
-                
-                if (order != null) {
-                    order.setPayment_status(paymentStatus);
-                    order.setOrder_status(orderStatus);
-                    order.setUpdatedDate(java.time.LocalDateTime.now());
-                    em.merge(order);
-                }
-                
-                tx.commit();
-                System.out.println("Order #" + orderId + " updated via IPN");
-                
-            } catch (Exception e) {
-                if (tx.isActive()) tx.rollback();
-                e.printStackTrace();
-            } finally {
-                em.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

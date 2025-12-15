@@ -1,7 +1,7 @@
 package service.impl;
 
 import config.JpaUtil;
-import dao.UserRepository;
+import dao.impl.UserRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import model.User;
@@ -16,7 +16,7 @@ public class UserServiceImpl implements UserService {
     public boolean register(String username, String rawPassword, String email, String fullname, String phone) {
         EntityManager em = JpaUtil.em();
         try {
-            var repo = new UserRepository(em);
+            var repo = new UserRepositoryImpl(em);
             if (repo.existsByEmail(email) || repo.existsByUsername(username)
                 || repo.existsByPhone(phone)) {
                 return false;
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
     public User login(String usernameOrEmail, String rawPassword) {
         EntityManager em = JpaUtil.em();
         try {
-            var repo = new UserRepository(em);
+            var repo = new UserRepositoryImpl(em);
             var uopt = repo.findByUsernameOrEmail(usernameOrEmail); 
             
             if (uopt.isEmpty()) return null;

@@ -1,10 +1,5 @@
 package controller.product;
 
-import config.JpaUtil;
-import dao.jpa.OrderRepository;
-import dao.jpa.ProductRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
@@ -14,6 +9,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import model.Product;
 import model.Review;
 import model.User;
+import service.ProductDetailService;
+import service.impl.ProductDetailServiceImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,18 +20,15 @@ import java.util.List;
 @WebServlet(urlPatterns = "/p")
 public class ProductDetailController extends HttpServlet {
 
-    private ProductRepository productRepo;
-    private OrderRepository orderRepo;
+    private ProductDetailService productDetailService;
 
     @Override
     public void init() throws ServletException {
-        productRepo = new ProductRepository();
-        orderRepo = new OrderRepository();
+        productDetailService = new ProductDetailServiceImpl();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        EntityManager em = null;
         try {
             // Lấy ID sản phẩm từ URL
             String idParam = req.getParameter("id");
@@ -44,10 +38,9 @@ public class ProductDetailController extends HttpServlet {
             }
 
             int id = Integer.parseInt(idParam);
-            em = JpaUtil.em();
 
             // 1. Lấy thông tin sản phẩm
-            Product p = productRepo.findById(id, em);
+            Product p = productDetailService.getProduct(id);
             if (p == null) {
                 resp.sendRedirect(req.getContextPath() + "/products");
                 return;
@@ -55,16 +48,11 @@ public class ProductDetailController extends HttpServlet {
             req.setAttribute("p", p);
 
             // 2. Lấy sản phẩm liên quan (Cùng danh mục)
-            List<Product> relatedProducts = productRepo.findRelatedProducts(p.getCategory().getId(), p.getProduct_id(), em);
+            List<Product> relatedProducts = productDetailService.getRelatedProducts(p.getCategory().getId(), p.getProduct_id(), 8);
             req.setAttribute("relatedProducts", relatedProducts);
 
             // 3. Lấy danh sách đánh giá (Review)
-            TypedQuery<Review> reviewQuery = em.createQuery(
-                "SELECT r FROM Review r WHERE r.product.product_id = :pid AND r.isApproved = true ORDER BY r.createdDate DESC",
-                Review.class
-            );
-            reviewQuery.setParameter("pid", p.getProduct_id());
-            List<Review> reviews = reviewQuery.getResultList();
+            List<Review> reviews = productDetailService.getApprovedReviews(p.getProduct_id());
             req.setAttribute("reviews", reviews);
 
             // 4. Tính điểm đánh giá trung bình
@@ -77,22 +65,12 @@ public class ProductDetailController extends HttpServlet {
             User currentUser = (User) req.getSession().getAttribute("currentUser");
             boolean canReview = false;
             if (currentUser != null) {
-                boolean hasPurchased = orderRepo.hasUserPurchasedProduct(currentUser.getId(), p.getProduct_id(), em);
-                boolean hasReviewed = false;
-                for (Review r : reviews) {
-                    if (r.getUser().getId().equals(currentUser.getId())) {
-                        hasReviewed = true;
-                        break;
-                    }
-                }
-                if (hasPurchased && !hasReviewed) {
-                    canReview = true;
-                }
+                canReview = productDetailService.canUserReview(currentUser.getId(), p.getProduct_id(), reviews);
             }
             req.setAttribute("canReview", canReview);
 
             // 6. XỬ LÝ SẢN PHẨM ĐÃ XEM (RECENTLY VIEWED)
-            handleRecentlyViewed(req, resp, p, em);
+            handleRecentlyViewed(req, resp, p);
 
             // Forward sang View
             req.getRequestDispatcher("/views/product/detail.jsp").forward(req, resp);
@@ -100,17 +78,13 @@ public class ProductDetailController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/products");
-        } finally {
-            if (em != null && em.isOpen()) {
-                em.close();
-            }
         }
     }
 
     /**
      * Logic xử lý Cookie lưu danh sách ID sản phẩm đã xem
      */
-    private void handleRecentlyViewed(HttpServletRequest req, HttpServletResponse resp, Product currentProduct, EntityManager em) {
+    private void handleRecentlyViewed(HttpServletRequest req, HttpServletResponse resp, Product currentProduct) {
         String cookieName = "viewedProducts";
         String separator = "-";
         String newValue = String.valueOf(currentProduct.getProduct_id());
@@ -157,23 +131,17 @@ public class ProductDetailController extends HttpServlet {
 
         if (!displayIds.isEmpty()) {
             try {
-                // Convert String ID sang Integer
                 List<Integer> intIds = new ArrayList<>();
                 for (String s : displayIds) {
                     try {
                         intIds.add(Integer.parseInt(s));
                     } catch (NumberFormatException e) {
-                        // Bỏ qua ID lỗi
+                        // ignore
                     }
                 }
 
                 if (!intIds.isEmpty()) {
-                    TypedQuery<Product> query = em.createQuery(
-                        "SELECT p FROM Product p WHERE p.product_id IN :ids", Product.class);
-                    query.setParameter("ids", intIds);
-                    List<Product> viewedProducts = query.getResultList();
-                    
-                    // Lưu vào request attribute để hiển thị bên JSP
+                    List<Product> viewedProducts = productDetailService.findProductsByIds(intIds);
                     req.setAttribute("viewedProducts", viewedProducts);
                 }
             } catch (Exception e) {

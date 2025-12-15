@@ -2,8 +2,9 @@ package service.impl;
 
 import config.JpaUtil;
 import dao.BannerRepository;
-import dao.CategoryRepository;
 import dao.ProductDao;
+import dao.impl.BannerRepositoryImpl;
+import dao.impl.CategoryRepositoryImpl;
 import dao.impl.ProductDaoImpl;
 import jakarta.persistence.EntityManager;
 import model.Banner;
@@ -16,7 +17,7 @@ import java.util.List;
 public class CatalogServiceImpl implements CatalogService {
 
     private final ProductDao productDao = new ProductDaoImpl();
-    private final BannerRepository bannerRepository = new BannerRepository();
+    private final BannerRepository bannerRepository = new BannerRepositoryImpl();
 
     @Override
     public List<Product> getFeaturedProducts(int limit) {
@@ -32,7 +33,7 @@ public class CatalogServiceImpl implements CatalogService {
     public List<Category> getAllCategories() {
         EntityManager em = JpaUtil.em();
         try {
-            return new CategoryRepository(em).findAll();
+            return new CategoryRepositoryImpl(em).findAll();
         } finally {
             em.close();
         }
