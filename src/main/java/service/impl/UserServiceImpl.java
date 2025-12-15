@@ -1,7 +1,7 @@
 package service.impl;
 
 import config.JpaUtil;
-import dao.jpa.UserRepository;
+import dao.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import model.User;
@@ -17,7 +17,6 @@ public class UserServiceImpl implements UserService {
         EntityManager em = JpaUtil.em();
         try {
             var repo = new UserRepository(em);
-            // CẬP NHẬT: Kiểm tra cả 3 trường
             if (repo.existsByEmail(email) || repo.existsByUsername(username)
                 || repo.existsByPhone(phone)) {
                 return false;
@@ -31,7 +30,7 @@ public class UserServiceImpl implements UserService {
                 u.setUsername(username);
                 u.setFullname(fullname);
                 u.setPassword(hash);
-                u.setPhone(phone); // CẬP NHẬT: Lưu SĐT (không cần kiểm tra null)
+                u.setPhone(phone); 
                 u.setRoleid(3);
                 u.setIsActive(true);
                 u.setCreatedDate(LocalDateTime.now());
@@ -47,7 +46,6 @@ public class UserServiceImpl implements UserService {
         EntityManager em = JpaUtil.em();
         try {
             var repo = new UserRepository(em);
-            // CẬP NHẬT: Tìm bằng username hoặc email
             var uopt = repo.findByUsernameOrEmail(usernameOrEmail); 
             
             if (uopt.isEmpty()) return null;

@@ -46,14 +46,11 @@ public class ProductModalApiController extends HttpServlet {
                     defaultSize.setPrice_adjustment(java.math.BigDecimal.ZERO);
                     sizes = Collections.singletonList(defaultSize);
                 }
-
-                // === START FIX: Conditionally load toppings ===
                 List<Topping> toppings = Collections.emptyList();
                 if (categoryName != null && categoryName.toLowerCase().contains("trà")) {
                     toppings = em.createQuery("SELECT t FROM Topping t WHERE t.isAvailable = true ORDER BY t.topping_name", Topping.class)
                                                .getResultList();
                 }
-                // === END FIX ===
 
                 String productJson = String.format(
                     "{\"id\":%d, \"name\":\"%s\", \"basePrice\":%s, \"thumbnail\":\"%s\", \"categoryName\":\"%s\"}",

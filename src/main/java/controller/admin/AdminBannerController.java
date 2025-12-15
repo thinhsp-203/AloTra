@@ -1,7 +1,7 @@
 package controller.admin;
 
 import config.JpaUtil;
-import dao.jpa.BannerRepository;
+import dao.BannerRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;

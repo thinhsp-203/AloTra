@@ -1,6 +1,6 @@
 package config;
 
-import dao.jpa.CategoryRepository;
+import dao.CategoryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;

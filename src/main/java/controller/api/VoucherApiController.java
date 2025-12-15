@@ -1,7 +1,7 @@
 package controller.api;
 
 import config.JpaUtil;
-import dao.jpa.VoucherRepository;
+import dao.VoucherRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

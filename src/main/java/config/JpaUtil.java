@@ -1,26 +1,28 @@
 package config;
 
-import jakarta.persistence.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 
 public class JpaUtil {
+    private static EntityManagerFactory factory;
 
-    private static EntityManagerFactory emf;
-    public static EntityManagerFactory getEMFactory() {
-        if (emf == null) {
-            emf = Persistence.createEntityManagerFactory("alotraPU");
+    static {
+        try {
+            factory = Persistence.createEntityManagerFactory("AloTra");
+        } catch (Throwable ex) {
+            System.err.println("Initial EntityManagerFactory creation failed." + ex);
+            throw new ExceptionInInitializerError(ex);
         }
-        return emf;
     }
+
     public static EntityManager em() {
-        if (emf == null) {
-            getEMFactory(); 
-        }
-        return emf.createEntityManager();
+        return factory.createEntityManager();
     }
 
-    public static void closeEMFactory() {
-        if (emf != null && emf.isOpen()) {
-            emf.close();
+    public static void shutdown() {
+        if (factory != null) {
+            factory.close();
         }
     }
 }

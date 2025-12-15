@@ -1,4 +1,4 @@
-package dao.jpa;
+package dao;
 
 import config.JpaUtil;
 import jakarta.persistence.EntityManager;
@@ -17,11 +17,15 @@ public class ProductQueryRepository {
         this.em = em;
     }
 
-    // HÀM MỚI (TỪ TÔI) ĐỂ LỌC VÀ SẮP XẾP
     public List<Product> findProducts(Integer cateId, String keyword, String sortBy, String priceRange) {
+        return findProducts(cateId, keyword, sortBy, priceRange, 0, -1);
+    }
+
+    public List<Product> findProducts(Integer cateId, String keyword, String sortBy, String priceRange, int offset, int limit) {
         Map<String, Object> params = new HashMap<>();
         StringBuilder qlString = new StringBuilder("SELECT p FROM Product p WHERE p.isActive = true");
 
+        // 1. Xử lý điều kiện lọc
         if (cateId != null) {
             qlString.append(" AND p.category.id = :cateId");
             params.put("cateId", cateId);
@@ -46,6 +50,7 @@ public class ProductQueryRepository {
             }
         }
 
+        // 2. Xử lý sắp xếp
         if (sortBy != null && !sortBy.isEmpty()) {
             switch (sortBy) {
                 case "price-asc":
@@ -55,7 +60,7 @@ public class ProductQueryRepository {
                     qlString.append(" ORDER BY p.price DESC");
                     break;
                 case "newest":
-                    qlString.append(" ORDER BY p.createdDate DESC"); // Giả sử bạn có cột createdDate
+                    qlString.append(" ORDER BY p.createdDate DESC"); 
                     break;
                 default:
                      qlString.append(" ORDER BY p.product_id DESC");
@@ -64,15 +69,23 @@ public class ProductQueryRepository {
             qlString.append(" ORDER BY p.product_id DESC");
         }
 
+        // 3. Tạo Query và set tham số
         TypedQuery<Product> query = em.createQuery(qlString.toString(), Product.class);
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             query.setParameter(entry.getKey(), entry.getValue());
         }
 
+        // 4. Áp dụng phân trang (Pagination)
+        if (offset >= 0) {
+            query.setFirstResult(offset);
+        }
+        if (limit > 0) {
+            query.setMaxResults(limit);
+        }
+
         return query.getResultList();
     }
 
-    // HÀM CŨ CỦA BẠN (GIỮ NGUYÊN)
     public Map<String, Object> search(Integer cateId, Integer suppId, BigDecimal minPrice, BigDecimal maxPrice, String keyword, int page, int size) {
         StringBuilder ql = new StringBuilder("SELECT p FROM Product p WHERE 1=1");
         Map<String, Object> params = new HashMap<>();
@@ -113,7 +126,6 @@ public class ProductQueryRepository {
         return result;
     }
 
-    // HÀM CŨ CỦA BẠN (GIỮ NGUYÊN)
     public long count(Integer cateId, Integer suppId, BigDecimal minPrice, BigDecimal maxPrice, String keyword) {
         StringBuilder ql = new StringBuilder("SELECT COUNT(p) FROM Product p WHERE 1=1");
         Map<String, Object> params = new HashMap<>();

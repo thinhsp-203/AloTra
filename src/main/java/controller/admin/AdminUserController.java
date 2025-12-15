@@ -201,57 +201,44 @@ public class AdminUserController extends HttpServlet {
                 tx.commit();
                 
             } else if (uri.endsWith("/delete")) {
-                // Xóa user
-                int deleteUserId = Integer.parseInt(req.getParameter("id"));
+            	int deleteUserId = Integer.parseInt(req.getParameter("id"));
                 tx.begin();
                 User user = em.find(User.class, deleteUserId);
                 
                 if (user != null) {
                     User currentUser = (User) req.getSession().getAttribute("currentUser");
-                    if (currentUser.getId().equals(deleteUserId)) {
-                        req.getSession().setAttribute("error", "Không thể xóa tài khoản của chính bạn!");
+                    if (currentUser != null && currentUser.getId().equals(deleteUserId)) {
+                        req.getSession().setAttribute("error", "Không thể xóa tài khoản đang đăng nhập!");
                     } else {
-                        em.remove(user);
-                        req.getSession().setAttribute("success", "Đã xóa người dùng thành công!");
+                        user.setIsActive(false); 
+                        em.merge(user); 
+                        req.getSession().setAttribute("success", "Đã vô hiệu hóa người dùng thành công!");
                     }
                 }
                 tx.commit();
 
             } else if (uri.endsWith("/toggle-status")) {
-                // Bật/tắt trạng thái active
                 int toggleUserId = Integer.parseInt(req.getParameter("id"));
                 tx.begin();
                 User user = em.find(User.class, toggleUserId);
                 
                 if (user != null) {
-                    user.setIsActive(!user.getIsActive());
+                    boolean currentStatus = user.getIsActive() != null ? user.getIsActive() : false;
+                    user.setIsActive(!currentStatus);
                     em.merge(user);
-                    req.getSession().setAttribute("success", "Đã cập nhật trạng thái người dùng!");
+                    req.getSession().setAttribute("success", "Đã cập nhật trạng thái hoạt động!");
                 }
                 tx.commit();
-            } else {
-                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-                 return;
             }
 
         } catch (Exception e) {
             if (tx.isActive()) tx.rollback();
-            logger.error("Error saving/deleting user", e);
-            req.getSession().setAttribute("error", "Có lỗi khi xử lý: " + e.getMessage());
-            
-            if (uri.endsWith("/save")) {
-                 if (userId == null) {
-                    resp.sendRedirect(req.getContextPath() + "/admin/users/create");
-                 } else {
-                    resp.sendRedirect(req.getContextPath() + "/admin/users/edit?id=" + userId);
-                 }
-                 return;
-            }
+            logger.error("Error in AdminUserController", e);
+            req.getSession().setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
         } finally {
             if (em.isOpen()) em.close();
         }
         
-        // Redirect về trang list sau mọi hành động POST
         resp.sendRedirect(req.getContextPath() + "/admin/users");
     }
 }

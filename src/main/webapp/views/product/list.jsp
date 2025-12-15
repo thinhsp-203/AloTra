@@ -80,3 +80,54 @@
         </div>
     </div>
 </div>
+<div class="text-center mt-4" id="loadMoreContainer">
+    <button class="btn btn-outline-primary" id="btnLoadMore" data-page="2">
+        Xem thêm sản phẩm <i class="bi bi-chevron-down"></i>
+    </button>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#btnLoadMore').click(function() {
+            var btn = $(this);
+            var page = btn.data('page');
+            
+            // Lấy các tham số từ URL hiện tại
+            var urlParams = new URLSearchParams(window.location.search);
+            var cate = urlParams.get('cate') || '';
+            var q = urlParams.get('q') || '';
+            var sortBy = urlParams.get('sortBy') || '';
+            var price = urlParams.get('price') || '';
+
+            $.ajax({
+                url: '${pageContext.request.contextPath}/api/products/load',
+                type: 'GET',
+                data: {
+                    page: page,
+                    cate: cate,
+                    q: q,
+                    sortBy: sortBy,
+                    price: price
+                },
+                beforeSend: function() {
+                    btn.html('Đang tải... <span class="spinner-border spinner-border-sm"></span>');
+                },
+                success: function(response) {
+                    if (response.trim() === '') {
+                        btn.text('Đã hết sản phẩm').prop('disabled', true);
+                        return;
+                    }
+                    // Append HTML trả về vào danh sách
+                    $('.row-cols-1').append(response);
+                    btn.data('page', page + 1);
+                    btn.html('Xem thêm sản phẩm <i class="bi bi-chevron-down"></i>');
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi tải thêm sản phẩm');
+                    btn.html('Thử lại');
+                }
+            });
+        });
+    });
+</script>

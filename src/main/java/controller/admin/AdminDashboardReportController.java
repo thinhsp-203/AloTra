@@ -22,8 +22,7 @@ public class AdminDashboardReportController extends HttpServlet {
 	    
 	    try {
 	        Map<String, Object> stats = new HashMap<>();
-	        
-	        // FIX: Handle null total_amount
+
 	        Object revenue = em.createQuery(
 	            "SELECT COALESCE(SUM(o.total_amount), 0) FROM Orders o WHERE o.order_status = 'Hoàn thành'")
 	            .getSingleResult();

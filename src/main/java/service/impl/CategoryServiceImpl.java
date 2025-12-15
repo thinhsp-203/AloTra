@@ -1,7 +1,7 @@
 package service.impl;
 
 import config.JpaUtil;
-import dao.jpa.CategoryRepository;
+import dao.CategoryRepository;
 import jakarta.persistence.EntityManager;
 import model.Category;
 import service.CategoryService;
