@@ -1,30 +1,41 @@
 package controller.admin;
 
-import config.JpaUtil;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.User;
-import utils.PasswordUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import service.AdminUserService;
+import service.impl.AdminUserServiceImpl;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
-@WebServlet(urlPatterns = {"/admin/users/create", "/admin/users/edit", "/admin/users/save", "/admin/users/delete", "/admin/users/toggle-status"})
+
+@WebServlet(urlPatterns = {
+    "/admin/users/create", 
+    "/admin/users/edit", 
+    "/admin/users/save", 
+    "/admin/users/delete", 
+    "/admin/users/toggle-status"
+})
 public class AdminUserController extends HttpServlet {
     
-    private static final Logger logger = LoggerFactory.getLogger(AdminUserController.class);
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private AdminUserService userService;
+    
+    @Override
+    public void init() throws ServletException {
+        userService = new AdminUserServiceImpl();
+    }
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         String uri = req.getRequestURI();
-        EntityManager em = JpaUtil.em();
         
         try {
             if (uri.endsWith("/create")) {
@@ -34,7 +45,7 @@ public class AdminUserController extends HttpServlet {
             } else if (uri.endsWith("/edit")) {
                 // Hiển thị form sửa user
                 int userId = Integer.parseInt(req.getParameter("id"));
-                User user = em.find(User.class, userId);
+                User user = userService.getUserById(userId);
                 
                 if (user == null) {
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
@@ -44,12 +55,17 @@ public class AdminUserController extends HttpServlet {
                 req.setAttribute("user", user);
                 req.getRequestDispatcher("/views/admin/user_form.jsp").forward(req, resp);
                 
-            } else if (uri.endsWith("/delete") || uri.endsWith("/toggle-status")) {
-                // CHUYỂN HƯỚNG NẾU DÙNG GET
-                 resp.sendRedirect(req.getContextPath() + "/admin/users");
+            } else {
+                // GET không hợp lệ cho delete/toggle-status
+                resp.sendRedirect(req.getContextPath() + "/admin/users");
             }
-        } finally {
-            em.close();
+        } catch (NumberFormatException e) {
+            req.getSession().setAttribute("error", "ID không hợp lệ!");
+            resp.sendRedirect(req.getContextPath() + "/admin/users");
+        } catch (Exception e) {
+            e.printStackTrace();
+            req.getSession().setAttribute("error", "Lỗi: " + e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/admin/users");
         }
     }
     
@@ -57,187 +73,90 @@ public class AdminUserController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         String uri = req.getRequestURI();
-        EntityManager em = JpaUtil.em();
-        var tx = em.getTransaction();
         
-        // Lấy ID trước để xử lý lỗi redirect
-        String idParam = req.getParameter("id");
-        Integer userId = (idParam != null && !idParam.isEmpty()) ? Integer.parseInt(idParam) : null;
-            
         try {
             if (uri.endsWith("/save")) {
-                
-                String username = req.getParameter("username");
-                String email = req.getParameter("email");
-                String fullname = req.getParameter("fullname");
-                String phone = req.getParameter("phone");
-                String address = req.getParameter("address");
-                String password = req.getParameter("password");
-                String roleIdParam = req.getParameter("roleid");
-                Integer roleId = (roleIdParam != null && !roleIdParam.isEmpty()) ? Integer.parseInt(roleIdParam) : 3;
-                boolean isActive = "on".equals(req.getParameter("isActive"));
-
-                // CẬP NHẬT: Validate SĐT bắt buộc
-                if (phone == null || phone.trim().isEmpty()) {
-                    req.getSession().setAttribute("error", "Số điện thoại là bắt buộc!");
-                    if (userId == null) {
-                        resp.sendRedirect(req.getContextPath() + "/admin/users/create");
-                    } else {
-                        resp.sendRedirect(req.getContextPath() + "/admin/users/edit?id=" + userId);
-                    }
-                    return;
-                }
-                
-                tx.begin();
-                
-                User user;
-                if (userId == null) {
-                    // TẠO MỚI
-                    user = new User();
-                    user.setUsername(username);
-                    user.setCreatedDate(LocalDateTime.now());
-                    
-                    // CẬP NHẬT: Kiểm tra trùng cả 3 trường
-                    Long countUsername = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.username = :username", Long.class)
-                        .setParameter("username", username)
-                        .getSingleResult();
-                    Long countEmail = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email", Long.class)
-                        .setParameter("email", email)
-                        .getSingleResult();
-                    Long countPhone = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.phone = :phone", Long.class)
-                        .setParameter("phone", phone)
-                        .getSingleResult();
-                    
-                    if (countUsername > 0) {
-                        req.getSession().setAttribute("error", "Username đã tồn tại!");
-                        tx.rollback();
-                        resp.sendRedirect(req.getContextPath() + "/admin/users/create");
-                        return;
-                    }
-                    if (countEmail > 0) {
-                        req.getSession().setAttribute("error", "Email đã tồn tại!");
-                        tx.rollback();
-                        resp.sendRedirect(req.getContextPath() + "/admin/users/create");
-                        return;
-                    }
-                    if (countPhone > 0) {
-                        req.getSession().setAttribute("error", "Số điện thoại đã tồn tại!");
-                        tx.rollback();
-                        resp.sendRedirect(req.getContextPath() + "/admin/users/create");
-                        return;
-                    }
-                    
-                    user.setEmail(email);
-                    user.setPhone(phone);
-                    
-                    // Hash password
-                    if (password == null || password.isEmpty()) {
-                        req.getSession().setAttribute("error", "Mật khẩu không được để trống!");
-                        tx.rollback();
-                        resp.sendRedirect(req.getContextPath() + "/admin/users/create");
-                        return;
-                    }
-                    user.setPassword(PasswordUtil.hash(password));
-                    
-                } else {
-                    // CẬP NHẬT
-                    user = em.find(User.class, userId);
-                    if (user == null) {
-                        resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
-                        tx.rollback();
-                        return;
-                    }
-
-                    // CẬP NHẬT: Kiểm tra trùng email (nếu email bị thay đổi)
-                    if (!user.getEmail().equals(email)) {
-                        Long countEmail = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email AND u.id <> :userId", Long.class)
-                            .setParameter("email", email)
-                            .setParameter("userId", userId)
-                            .getSingleResult();
-                        if (countEmail > 0) {
-                            req.getSession().setAttribute("error", "Email đã tồn tại!");
-                            tx.rollback();
-                            resp.sendRedirect(req.getContextPath() + "/admin/users/edit?id=" + userId);
-                            return;
-                        }
-                    }
-                    user.setEmail(email); // Cập nhật email
-                    
-                    // CẬP NHẬT: Kiểm tra trùng SĐT (nếu SĐT bị thay đổi)
-                    if (!user.getPhone().equals(phone)) {
-                         Long countPhone = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.phone = :phone AND u.id <> :userId", Long.class)
-                            .setParameter("phone", phone)
-                            .setParameter("userId", userId)
-                            .getSingleResult();
-                         if (countPhone > 0) {
-                            req.getSession().setAttribute("error", "Số điện thoại đã tồn tại!");
-                            tx.rollback();
-                            resp.sendRedirect(req.getContextPath() + "/admin/users/edit?id=" + userId);
-                            return;
-                         }
-                    }
-                    user.setPhone(phone); // Cập nhật SĐT
-                    
-                    // Cập nhật password nếu có
-                    if (password != null && !password.isEmpty()) {
-                        user.setPassword(PasswordUtil.hash(password));
-                    }
-                }
-                
-                // Cập nhật thông tin chung
-                user.setFullname(fullname);
-                user.setAddress(address);
-                user.setRoleid(roleId);
-                user.setIsActive(isActive);
-                
-                if (userId == null) {
-                    em.persist(user);
-                    req.getSession().setAttribute("success", "Đã tạo người dùng mới thành công!");
-                } else {
-                    em.merge(user);
-                    req.getSession().setAttribute("success", "Đã cập nhật thông tin người dùng!");
-                }
-                
-                tx.commit();
-                
+                handleSaveUser(req, resp);
             } else if (uri.endsWith("/delete")) {
-            	int deleteUserId = Integer.parseInt(req.getParameter("id"));
-                tx.begin();
-                User user = em.find(User.class, deleteUserId);
-                
-                if (user != null) {
-                    User currentUser = (User) req.getSession().getAttribute("currentUser");
-                    if (currentUser != null && currentUser.getId().equals(deleteUserId)) {
-                        req.getSession().setAttribute("error", "Không thể xóa tài khoản đang đăng nhập!");
-                    } else {
-                        user.setIsActive(false); 
-                        em.merge(user); 
-                        req.getSession().setAttribute("success", "Đã vô hiệu hóa người dùng thành công!");
-                    }
-                }
-                tx.commit();
-
+                handleDeleteUser(req, resp);
             } else if (uri.endsWith("/toggle-status")) {
-                int toggleUserId = Integer.parseInt(req.getParameter("id"));
-                tx.begin();
-                User user = em.find(User.class, toggleUserId);
-                
-                if (user != null) {
-                    boolean currentStatus = user.getIsActive() != null ? user.getIsActive() : false;
-                    user.setIsActive(!currentStatus);
-                    em.merge(user);
-                    req.getSession().setAttribute("success", "Đã cập nhật trạng thái hoạt động!");
-                }
-                tx.commit();
+                handleToggleStatus(req, resp);
             }
-
+        } catch (IllegalArgumentException e) {
+            // Lỗi validation từ service
+            req.getSession().setAttribute("error", e.getMessage());
+            
+            // Redirect về form edit nếu có userId
+            String idParam = req.getParameter("id");
+            if (idParam != null && !idParam.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/admin/users/edit?id=" + idParam);
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/users/create");
+            }
         } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
-            logger.error("Error in AdminUserController", e);
+            e.printStackTrace();
             req.getSession().setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
-        } finally {
-            if (em.isOpen()) em.close();
+            resp.sendRedirect(req.getContextPath() + "/admin/users");
         }
+    }
+    
+    // ==================== PRIVATE METHODS ====================
+    
+    private void handleSaveUser(HttpServletRequest req, HttpServletResponse resp) 
+            throws IOException {
+        String idParam = req.getParameter("id");
+        Integer userId = (idParam != null && !idParam.isEmpty()) 
+            ? Integer.parseInt(idParam) 
+            : null;
+        
+        // Lấy thông tin từ form
+        String username = req.getParameter("username");
+        String email = req.getParameter("email");
+        String fullname = req.getParameter("fullname");
+        String phone = req.getParameter("phone");
+        String address = req.getParameter("address");
+        String password = req.getParameter("password");
+        
+        String roleIdParam = req.getParameter("roleid");
+        Integer roleId = (roleIdParam != null && !roleIdParam.isEmpty()) 
+            ? Integer.parseInt(roleIdParam) 
+            : 3;
+        
+        boolean isActive = "on".equals(req.getParameter("isActive"));
+        
+        if (userId == null) {
+            // TẠO MỚI
+            userService.createUser(username, email, password, fullname, 
+                                  phone, address, roleId, isActive);
+            req.getSession().setAttribute("success", "Đã tạo người dùng mới thành công!");
+        } else {
+            // CẬP NHẬT
+            userService.updateUser(userId, email, fullname, phone, address, 
+                                  roleId, isActive, password);
+            req.getSession().setAttribute("success", "Đã cập nhật thông tin người dùng!");
+        }
+        
+        resp.sendRedirect(req.getContextPath() + "/admin/users");
+    }
+    
+    private void handleDeleteUser(HttpServletRequest req, HttpServletResponse resp) 
+            throws IOException {
+        int userId = Integer.parseInt(req.getParameter("id"));
+        User currentUser = (User) req.getSession().getAttribute("currentUser");
+        Integer currentUserId = (currentUser != null) ? currentUser.getId() : null;
+        
+        userService.softDeleteUser(userId, currentUserId);
+        req.getSession().setAttribute("success", "Đã vô hiệu hóa người dùng thành công!");
+        
+        resp.sendRedirect(req.getContextPath() + "/admin/users");
+    }
+    
+    private void handleToggleStatus(HttpServletRequest req, HttpServletResponse resp) 
+            throws IOException {
+        int userId = Integer.parseInt(req.getParameter("id"));
+        
+        userService.toggleUserStatus(userId);
+        req.getSession().setAttribute("success", "Đã cập nhật trạng thái hoạt động!");
         
         resp.sendRedirect(req.getContextPath() + "/admin/users");
     }
