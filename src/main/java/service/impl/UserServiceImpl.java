@@ -3,6 +3,7 @@ package service.impl;
 import config.JpaUtil;
 import dao.impl.UserRepositoryImpl;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 import model.User;
 import service.UserService;
@@ -13,7 +14,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     @Override
-    public boolean register(String username, String rawPassword, String email, String fullname, String phone) {
+    public boolean register(String username, String rawPassword, String email, String fullname, String phone, String code) {
         EntityManager em = JpaUtil.em();
         try {
             var repo = new UserRepositoryImpl(em);
@@ -32,13 +33,45 @@ public class UserServiceImpl implements UserService {
                 u.setPassword(hash);
                 u.setPhone(phone); 
                 u.setRoleid(3);
-                u.setIsActive(true);
+                u.setIsActive(false); // Mặc định chưa kích hoạt
+                u.setCode(code);      // Lưu mã OTP vào DB
                 u.setCreatedDate(LocalDateTime.now());
                 em.persist(u);
                 tx.commit();
                 return true;
             } catch(Exception ex){ if(tx.isActive()) tx.rollback(); throw ex; }
         } finally { em.close(); }
+    }
+
+ // --- Thêm hàm tìm kiếm theo Email (Dùng cho Quên mật khẩu & Verify) ---
+    @Override
+    public User findUserByEmail(String email) {
+        EntityManager em = JpaUtil.em();
+        try {
+            String jpql = "SELECT u FROM User u WHERE u.email = :email";
+            TypedQuery<User> query = em.createQuery(jpql, User.class);
+            query.setParameter("email", email);
+            return query.getResultStream().findFirst().orElse(null);
+        } finally {
+            em.close();
+        }
+    }
+
+    // --- Thêm hàm Update User (Dùng để set Active=true hoặc đổi Pass) ---
+    @Override
+    public void updateUser(User user) {
+        EntityManager em = JpaUtil.em();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+            em.merge(user); // Merge dùng để update
+            trans.commit();
+        } catch (Exception e) {
+            if (trans.isActive()) trans.rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
     }
 
     @Override
@@ -50,10 +83,17 @@ public class UserServiceImpl implements UserService {
             
             if (uopt.isEmpty()) return null;
             User u = uopt.get();
-            if (u.getIsActive() != null && !u.getIsActive()) return null;
+            
+            // Chỉ cho phép login nếu đã Active
+            if (u.getIsActive() != null && !u.getIsActive()) {
+                return null; // Hoặc ném Exception báo "Tài khoản chưa kích hoạt"
+            }
+            
             boolean ok = PasswordUtil.verify(rawPassword, u.getPassword());
             return ok ? u : null;
-        } finally { em.close(); }
+        } finally { 
+            em.close(); 
+        }
     }
 
     @Override

@@ -2,6 +2,7 @@ package controller;
 
 import service.UserService;
 import service.impl.UserServiceImpl;
+import utils.EmailUtil; 
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -23,7 +24,7 @@ public class RegisterController extends HttpServlet {
             throws ServletException, IOException {
         // Nếu đã login, redirect về home
         HttpSession session = req.getSession(false);
-        if (session != null && session.getAttribute("currentUser") != null) {
+        if (session != null && session.getAttribute("account") != null) { // Đã thêm dấu {
             resp.sendRedirect(req.getContextPath() + "/home");
             return;
         }
@@ -44,9 +45,9 @@ public class RegisterController extends HttpServlet {
         String fullname = safe(req.getParameter("fullname"));
         String password = safe(req.getParameter("password"));
         String confirmPassword = safe(req.getParameter("confirmPassword"));
-        String phone    = safe(req.getParameter("phone")); // SĐT giờ là bắt buộc
+        String phone    = safe(req.getParameter("phone"));
 
-        // Validate password confirmation
+        // 1. Validate Password match
         if (!password.equals(confirmPassword)) {
             req.setAttribute("alert", "Mật khẩu xác nhận không khớp!");
             preserveFormData(req, email, username, fullname, phone);
@@ -54,8 +55,8 @@ public class RegisterController extends HttpServlet {
             return;
         }
 
-        // Validate server-side
-        String err = validate(email, username, password, phone); // Thêm phone vào validation
+        // 2. Validate Server-side logic
+        String err = validate(email, username, password, phone);
         if (err != null) {
             req.setAttribute("alert", err);
             preserveFormData(req, email, username, fullname, phone);
@@ -63,13 +64,33 @@ public class RegisterController extends HttpServlet {
             return;
         }
 
-        // Register user
-        boolean success = userService.register(username, password, email, fullname, phone);
+        // 3. Tạo mã OTP ngẫu nhiên (6 số)
+        String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
+
+        // 4. Gọi Service đăng ký (kèm mã code)
+        boolean success = userService.register(username, password, email, fullname, phone, code);
+
         if (success) {
-            req.getSession().setAttribute("success", "Đăng ký thành công! Vui lòng đăng nhập.");
-            resp.sendRedirect(req.getContextPath() + "/login");
+            // 5. Gửi Email (Chạy luồng riêng)
+            new Thread(() -> {
+                String subject = "Kích hoạt tài khoản - AloTra";
+                String body = "Chào " + fullname + ",\n\n"
+                        + "Mã xác thực (OTP) của bạn là: " + code + "\n"
+                        + "Vui lòng nhập mã này để kích hoạt tài khoản.\n\n"
+                        + "Trân trọng, AloTra Team.";
+                EmailUtil.sendEmail(email, subject, body);
+            }).start();
+
+            // 6. Chuyển hướng sang trang nhập OTP verify
+            req.setAttribute("message", "Đăng ký thành công! Vui lòng kiểm tra email để lấy mã OTP.");
+            req.setAttribute("email", email); 
+            req.setAttribute("action", "register"); 
+            
+            // Forward sang trang verify.jsp 
+            req.getRequestDispatcher("/views/auth/verify.jsp").forward(req, resp);
+
         } else {
-            req.setAttribute("alert", "Tài khoản/Email/SĐT đã tồn tại!");
+            req.setAttribute("alert", "Tài khoản, Email hoặc SĐT đã tồn tại!");
             preserveFormData(req, email, username, fullname, phone);
             req.getRequestDispatcher("views/register.jsp").forward(req, resp);
         }
@@ -91,31 +112,23 @@ public class RegisterController extends HttpServlet {
             return "Email/Username/Password không được rỗng!";
         }
         
-        // SĐT là bắt buộc
         if (phone.isEmpty()) {
             return "Số điện thoại là bắt buộc!";
         }
         
-        // Email validation
         if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,63}$")) {
             return "Email không hợp lệ!";
         }
         
-        // Username validation (4-32 chars, alphanumeric + ._-)
         if (!username.matches("^[A-Za-z0-9._-]{4,32}$")) {
             return "Username: 4-32 ký tự (chỉ chữ/số/._-)";
         }
         
-        // Password strength
         if (password.length() < 6) {
             return "Mật khẩu tối thiểu 6 ký tự!";
         }
         
-        if (password.length() > 100) {
-            return "Mật khẩu quá dài!";
-        }
-        
-        // Phone validation (bây giờ là bắt buộc)
+        // Sửa regex cho phép 9-11 số (phù hợp đầu số VN)
         if (!phone.matches("^[0-9]{9,11}$")) {
             return "Số điện thoại: 9-11 chữ số!";
         }
