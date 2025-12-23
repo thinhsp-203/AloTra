@@ -2,6 +2,7 @@ package controller.auth;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
+import utils.EmailUtil;
 import jakarta.servlet.annotation.WebServlet;
 import service.AuthRecoveryService;
 import service.impl.AuthRecoveryServiceImpl;
@@ -100,12 +101,19 @@ public class ForgotResetController extends HttpServlet {
             String token = authRecoveryService.createResetTokenIfEligible(email.trim(), baseUrl);
 
             if (token != null) {
-                String resetLink = baseUrl + "/auth/reset?token=" + token;
-                System.out.println("=== PASSWORD RESET EMAIL ===");
-                System.out.println("To: " + email);
-                System.out.println("Reset link: " + resetLink);
-                System.out.println("Token expires in 1 hour");
-                System.out.println("============================");
+            	String resetLink = "http://localhost:8080/AloTra/auth/reset?token=" + token; 
+            	String subject = "Yêu cầu đặt lại mật khẩu - AloTra";
+
+            	// Soạn nội dung HTML đẹp
+            	String body = "<h3>Xin chào,</h3>"
+            	        + "<p>Bạn vừa yêu cầu đặt lại mật khẩu. Vui lòng nhấn vào link bên dưới:</p>"
+            	        + "<p><a href='" + resetLink + "'>Bấm vào đây để đặt lại mật khẩu</a></p>"
+            	        + "<p><i>Link này chỉ có hiệu lực trong thời gian 5p.</i></p>";
+
+            	// Gửi email trong luồng riêng (cho nhanh web)
+            	new Thread(() -> {
+            	    EmailUtil.sendEmail(email, subject, body);
+            	}).start();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -115,7 +123,7 @@ public class ForgotResetController extends HttpServlet {
         }
         
         // Always show generic message (don't reveal if email exists)
-        req.setAttribute("msg", "Nếu email tồn tại trong hệ thống, hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.");
+        req.setAttribute("msg", "Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.");
         req.getRequestDispatcher("/views/auth/forgot.jsp").forward(req, resp);
     }
     

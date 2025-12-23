@@ -33,8 +33,8 @@ public class UserServiceImpl implements UserService {
                 u.setPassword(hash);
                 u.setPhone(phone); 
                 u.setRoleid(3);
-                u.setIsActive(false); // Mặc định chưa kích hoạt
-                u.setCode(code);      // Lưu mã OTP vào DB
+                u.setIsActive(false); 
+                u.setCode(code);      
                 u.setCreatedDate(LocalDateTime.now());
                 em.persist(u);
                 tx.commit();
