@@ -1,8 +1,9 @@
 package service.impl;
 
 import config.JpaUtil;
-import dao.jpa.UserRepository;
+import dao.impl.UserRepositoryImpl;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 import model.User;
 import service.UserService;
@@ -13,11 +14,10 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     @Override
-    public boolean register(String username, String rawPassword, String email, String fullname, String phone) {
+    public boolean register(String username, String rawPassword, String email, String fullname, String phone, String code) {
         EntityManager em = JpaUtil.em();
         try {
-            var repo = new UserRepository(em);
-            // CẬP NHẬT: Kiểm tra cả 3 trường
+            var repo = new UserRepositoryImpl(em);
             if (repo.existsByEmail(email) || repo.existsByUsername(username)
                 || repo.existsByPhone(phone)) {
                 return false;
@@ -31,9 +31,10 @@ public class UserServiceImpl implements UserService {
                 u.setUsername(username);
                 u.setFullname(fullname);
                 u.setPassword(hash);
-                u.setPhone(phone); // CẬP NHẬT: Lưu SĐT (không cần kiểm tra null)
+                u.setPhone(phone); 
                 u.setRoleid(3);
-                u.setIsActive(true);
+                u.setIsActive(false); 
+                u.setCode(code);      
                 u.setCreatedDate(LocalDateTime.now());
                 em.persist(u);
                 tx.commit();
@@ -42,20 +43,57 @@ public class UserServiceImpl implements UserService {
         } finally { em.close(); }
     }
 
+ // --- Thêm hàm tìm kiếm theo Email (Dùng cho Quên mật khẩu & Verify) ---
+    @Override
+    public User findUserByEmail(String email) {
+        EntityManager em = JpaUtil.em();
+        try {
+            String jpql = "SELECT u FROM User u WHERE u.email = :email";
+            TypedQuery<User> query = em.createQuery(jpql, User.class);
+            query.setParameter("email", email);
+            return query.getResultStream().findFirst().orElse(null);
+        } finally {
+            em.close();
+        }
+    }
+
+    // --- Thêm hàm Update User (Dùng để set Active=true hoặc đổi Pass) ---
+    @Override
+    public void updateUser(User user) {
+        EntityManager em = JpaUtil.em();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+            em.merge(user); // Merge dùng để update
+            trans.commit();
+        } catch (Exception e) {
+            if (trans.isActive()) trans.rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+    }
+
     @Override
     public User login(String usernameOrEmail, String rawPassword) {
         EntityManager em = JpaUtil.em();
         try {
-            var repo = new UserRepository(em);
-            // CẬP NHẬT: Tìm bằng username hoặc email
+            var repo = new UserRepositoryImpl(em);
             var uopt = repo.findByUsernameOrEmail(usernameOrEmail); 
             
             if (uopt.isEmpty()) return null;
             User u = uopt.get();
-            if (u.getIsActive() != null && !u.getIsActive()) return null;
+            
+            // Chỉ cho phép login nếu đã Active
+            if (u.getIsActive() != null && !u.getIsActive()) {
+                return null; // Hoặc ném Exception báo "Tài khoản chưa kích hoạt"
+            }
+            
             boolean ok = PasswordUtil.verify(rawPassword, u.getPassword());
             return ok ? u : null;
-        } finally { em.close(); }
+        } finally { 
+            em.close(); 
+        }
     }
 
     @Override

@@ -1,7 +1,8 @@
 package service.impl;
 
 import config.JpaUtil;
-import dao.jpa.CategoryRepository;
+import dao.CategoryRepository;
+import dao.impl.CategoryRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import model.Category;
 import service.CategoryService;
@@ -13,7 +14,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void insert(Category category) {
         EntityManager em = JpaUtil.em();
         try {
-            new CategoryRepository(em).insert(category);
+            new CategoryRepositoryImpl(em).insert(category);
         } finally {
             em.close();
         }
@@ -23,7 +24,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void edit(Category category) {
         EntityManager em = JpaUtil.em();
         try {
-            new CategoryRepository(em).update(category);
+            new CategoryRepositoryImpl(em).update(category);
         } finally {
             em.close();
         }
@@ -33,7 +34,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void delete(int id) {
         EntityManager em = JpaUtil.em();
         try {
-            new CategoryRepository(em).delete(id);
+            new CategoryRepositoryImpl(em).delete(id);
         } finally {
             em.close();
         }
@@ -43,7 +44,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category get(int id) {
         EntityManager em = JpaUtil.em();
         try {
-            return new CategoryRepository(em).findById(id);
+            return new CategoryRepositoryImpl(em).findById(id);
         } finally {
             em.close();
         }
@@ -53,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category get(String name) {
         EntityManager em = JpaUtil.em();
         try {
-            return new CategoryRepository(em).findByName(name);
+            return new CategoryRepositoryImpl(em).findByName(name);
         } finally {
             em.close();
         }
@@ -63,7 +64,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> getAll() {
         EntityManager em = JpaUtil.em();
         try {
-            return new CategoryRepository(em).findAll();
+            return new CategoryRepositoryImpl(em).findAll();
         } finally {
             em.close();
         }
@@ -73,7 +74,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> search(String keyword) {
         EntityManager em = JpaUtil.em();
         try {
-            return new CategoryRepository(em).search(keyword);
+            return new CategoryRepositoryImpl(em).search(keyword);
         } finally {
             em.close();
         }

@@ -33,13 +33,34 @@ public class User {
   private String phone;
 
   private LocalDateTime createdDate;
-  private Boolean isActive;
 
   @Column(name="address", length=500)
   private String address;
 
   private String resetToken;
   private LocalDateTime tokenExpiry;
+  
+  @Column(name = "code")
+  private String code;
+
+  @Column(name = "is_active")
+  private Boolean isActive; 
+
+  public String getCode() {
+      return code;
+  }
+
+  public void setCode(String code) {
+      this.code = code;
+  }
+
+  public Boolean getIsActive() {
+      return isActive;
+  }
+
+  public void setIsActive(Boolean isActive) {
+      this.isActive = isActive;
+  }
   
   // ⬇️ TRANSIENT METHODS (không lưu DB, chỉ dùng trong JSP)
   @Transient
@@ -59,4 +80,5 @@ public class User {
         .atZone(ZoneId.systemDefault())
         .toInstant());
   }
+
 }

@@ -1,19 +1,23 @@
 package controller.auth;
 
-import config.JpaUtil;
-import dao.jpa.UserRepository;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
+import utils.EmailUtil;
 import jakarta.servlet.annotation.WebServlet;
-import model.User;
-import utils.PasswordUtil;
+import service.AuthRecoveryService;
+import service.impl.AuthRecoveryServiceImpl;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 @WebServlet(urlPatterns = {"/auth/forgot", "/auth/reset"})
 public class ForgotResetController extends HttpServlet {
+
+    private AuthRecoveryService authRecoveryService;
+
+    @Override
+    public void init() throws ServletException {
+        authRecoveryService = new AuthRecoveryServiceImpl();
+    }
 
     // Simple rate limiting: max 5 attempts per 10 minutes per session
     private static boolean allowAttempt(HttpSession session) {
@@ -51,12 +55,9 @@ public class ForgotResetController extends HttpServlet {
                 return; 
             }
             
-            // Check if token is valid
-            try (EntityManager em = JpaUtil.em()) {
-                var uopt = new UserRepository(em).findByResetTokenValid(token);
-                if (uopt.isEmpty()) { 
-                    req.setAttribute("invalid", true); 
-                }
+            boolean valid = authRecoveryService.isValidToken(token);
+            if (!valid) {
+                req.setAttribute("invalid", true);
             }
             
             req.setAttribute("token", token);
@@ -95,44 +96,24 @@ public class ForgotResetController extends HttpServlet {
             return;
         }
         
-        try (EntityManager em = JpaUtil.em()) {
-            var repo = new UserRepository(em);
-            var uopt = repo.findByEmail(email.trim());
-            
-            if (uopt.isPresent()) {
-                var tx = em.getTransaction(); 
-                tx.begin();
-                try {
-                    User u = uopt.get();
-                    
-                    // Check if account is active
-                    if (u.getIsActive() == null || !u.getIsActive()) {
-                        req.setAttribute("error", "Tài khoản đã bị vô hiệu hóa.");
-                        req.getRequestDispatcher("/views/auth/forgot.jsp").forward(req, resp);
-                        return;
-                    }
-                    
-                    String token = PasswordUtil.newUrlToken();
-                    u.setResetToken(token);
-                    u.setTokenExpiry(LocalDateTime.now().plusHours(1)); // 1 hour expiry
-                    em.merge(u);
-                    tx.commit();
+        try {
+            String baseUrl = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath();
+            String token = authRecoveryService.createResetTokenIfEligible(email.trim(), baseUrl);
 
-                    // Mock: Send email (in production, use JavaMail or email service)
-                    String resetLink = req.getScheme() + "://" + req.getServerName() + 
-                                     ":" + req.getServerPort() + req.getContextPath() + 
-                                     "/auth/reset?token=" + token;
-                    
-                    System.out.println("=== PASSWORD RESET EMAIL ===");
-                    System.out.println("To: " + email);
-                    System.out.println("Reset link: " + resetLink);
-                    System.out.println("Token expires in 1 hour");
-                    System.out.println("============================");
-                    
-                } catch(Exception ex) { 
-                    if(tx.isActive()) tx.rollback(); 
-                    throw ex; 
-                }
+            if (token != null) {
+            	String resetLink = "http://localhost:8080/AloTra/auth/reset?token=" + token; 
+            	String subject = "Yêu cầu đặt lại mật khẩu - AloTra";
+
+            	// Soạn nội dung HTML đẹp
+            	String body = "<h3>Xin chào,</h3>"
+            	        + "<p>Bạn vừa yêu cầu đặt lại mật khẩu. Vui lòng nhấn vào link bên dưới:</p>"
+            	        + "<p><a href='" + resetLink + "'>Bấm vào đây để đặt lại mật khẩu</a></p>"
+            	        + "<p><i>Link này chỉ có hiệu lực trong thời gian 5p.</i></p>";
+
+            	// Gửi email trong luồng riêng (cho nhanh web)
+            	new Thread(() -> {
+            	    EmailUtil.sendEmail(email, subject, body);
+            	}).start();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -142,7 +123,7 @@ public class ForgotResetController extends HttpServlet {
         }
         
         // Always show generic message (don't reveal if email exists)
-        req.setAttribute("msg", "Nếu email tồn tại trong hệ thống, hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.");
+        req.setAttribute("msg", "Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.");
         req.getRequestDispatcher("/views/auth/forgot.jsp").forward(req, resp);
     }
     
@@ -171,40 +152,22 @@ public class ForgotResetController extends HttpServlet {
             return;
         }
 
-        try (EntityManager em = JpaUtil.em()) {
-            var repo = new UserRepository(em);
-            var uopt = repo.findByResetTokenValid(token);
-            
-            if (uopt.isEmpty()) {
+        try {
+            boolean ok = authRecoveryService.resetPassword(token, password);
+            if (!ok) {
                 req.setAttribute("token", token);
                 req.setAttribute("invalid", true);
                 req.getRequestDispatcher("/views/auth/reset.jsp").forward(req, resp);
                 return;
             }
-            
-            var tx = em.getTransaction(); 
-            tx.begin();
-            try {
-                User u = uopt.get();
-                u.setPassword(PasswordUtil.hash(password));
-                u.setResetToken(null);
-                u.setTokenExpiry(null);
-                em.merge(u);
-                tx.commit();
-            } catch(Exception ex) { 
-                if(tx.isActive()) tx.rollback(); 
-                throw ex; 
-            }
 
-            // Invalidate session to prevent session fixation
             HttpSession ses = req.getSession(false);
             if (ses != null) ses.invalidate();
 
-            // Redirect to login with success message
             HttpSession newSession = req.getSession(true);
             newSession.setAttribute("success", "Đặt lại mật khẩu thành công! Vui lòng đăng nhập.");
             resp.sendRedirect(req.getContextPath() + "/login");
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             req.setAttribute("token", token);

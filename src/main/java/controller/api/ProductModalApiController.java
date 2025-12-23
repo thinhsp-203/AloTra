@@ -1,7 +1,5 @@
 package controller.api;
 
-import config.JpaUtil;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -10,14 +8,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import model.Product;
 import model.ProductSize;
 import model.Topping;
+import service.ProductQueryService;
+import service.impl.ProductQueryServiceImpl;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @WebServlet(urlPatterns = "/api/product-details")
 public class ProductModalApiController extends HttpServlet {
+
+    private final ProductQueryService productQueryService = new ProductQueryServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -25,59 +26,38 @@ public class ProductModalApiController extends HttpServlet {
 
         try {
             int productId = Integer.parseInt(req.getParameter("id"));
-            EntityManager em = JpaUtil.em();
-            try {
-                Product product = em.find(Product.class, productId);
-                if (product == null || product.getPrice() == null) {
-                    resp.setStatus(404);
-                    resp.getWriter().print("{\"ok\":false, \"message\":\"Sản phẩm không tồn tại hoặc thiếu thông tin giá.\"}");
-                    return;
-                }
-
-                String categoryName = (product.getCategory() != null) ? product.getCategory().getName() : "";
-
-                List<ProductSize> sizes = em.createQuery("SELECT ps FROM ProductSize ps WHERE ps.product.product_id = :pid ORDER BY ps.size_name", ProductSize.class)
-                                            .setParameter("pid", productId)
-                                            .getResultList();
-                
-                if (sizes.isEmpty()) {
-                    ProductSize defaultSize = new ProductSize();
-                    defaultSize.setSize_name("Mặc định");
-                    defaultSize.setPrice_adjustment(java.math.BigDecimal.ZERO);
-                    sizes = Collections.singletonList(defaultSize);
-                }
-
-                // === START FIX: Conditionally load toppings ===
-                List<Topping> toppings = Collections.emptyList();
-                if (categoryName != null && categoryName.toLowerCase().contains("trà")) {
-                    toppings = em.createQuery("SELECT t FROM Topping t WHERE t.isAvailable = true ORDER BY t.topping_name", Topping.class)
-                                               .getResultList();
-                }
-                // === END FIX ===
-
-                String productJson = String.format(
-                    "{\"id\":%d, \"name\":\"%s\", \"basePrice\":%s, \"thumbnail\":\"%s\", \"categoryName\":\"%s\"}",
-                    product.getProduct_id(), escapeJson(product.getProduct_name()), product.getPrice(), escapeJson(product.getThumbnail()), escapeJson(categoryName)
-                );
-
-                String sizesJson = sizes.stream()
-                    .map(s -> String.format("{\"name\":\"%s\", \"priceAdjustment\":%s}", escapeJson(s.getSize_name()), s.getPrice_adjustment()))
-                    .collect(Collectors.joining(","));
-
-                String toppingsJson = toppings.stream()
-                    .map(t -> String.format("{\"id\":%d, \"name\":\"%s\", \"price\":%s}", t.getTopping_id(), escapeJson(t.getTopping_name()), t.getPrice()))
-                    .collect(Collectors.joining(","));
-
-                String finalJson = String.format(
-                    "{\"ok\":true, \"product\":%s, \"sizes\":[%s], \"toppings\":[%s]}",
-                    productJson, sizesJson, toppingsJson
-                );
-
-                resp.getWriter().print(finalJson);
-
-            } finally {
-                if (em.isOpen()) em.close();
+            Product product = productQueryService.getById(productId);
+            if (product == null || product.getPrice() == null) {
+                resp.setStatus(404);
+                resp.getWriter().print("{\"ok\":false, \"message\":\"Sản phẩm không tồn tại hoặc thiếu thông tin giá.\"}");
+                return;
             }
+
+            String categoryName = (product.getCategory() != null) ? product.getCategory().getName() : "";
+
+            List<ProductSize> sizes = productQueryService.getSizes(productId);
+            List<Topping> toppings = productQueryService.getAvailableToppingsForCategory(categoryName);
+
+            String productJson = String.format(
+                "{\"id\":%d, \"name\":\"%s\", \"basePrice\":%s, \"thumbnail\":\"%s\", \"categoryName\":\"%s\"}",
+                product.getProduct_id(), escapeJson(product.getProduct_name()), product.getPrice(), escapeJson(product.getThumbnail()), escapeJson(categoryName)
+            );
+
+            String sizesJson = sizes.stream()
+                .map(s -> String.format("{\"name\":\"%s\", \"priceAdjustment\":%s}", escapeJson(s.getSize_name()), s.getPrice_adjustment()))
+                .collect(Collectors.joining(","));
+
+            String toppingsJson = toppings.stream()
+                .map(t -> String.format("{\"id\":%d, \"name\":\"%s\", \"price\":%s}", t.getTopping_id(), escapeJson(t.getTopping_name()), t.getPrice()))
+                .collect(Collectors.joining(","));
+
+            String finalJson = String.format(
+                "{\"ok\":true, \"product\":%s, \"sizes\":[%s], \"toppings\":[%s]}",
+                productJson, sizesJson, toppingsJson
+            );
+
+            resp.getWriter().print(finalJson);
+
         } catch (Exception e) {
             resp.setStatus(500);
             resp.getWriter().print("{\"ok\":false, \"message\":\"Lỗi máy chủ: " + e.getMessage() + "\"}");
