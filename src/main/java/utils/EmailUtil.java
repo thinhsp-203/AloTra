@@ -19,7 +19,7 @@ public class EmailUtil {
     
     // 2. Mật khẩu ứng dụng (APP PASSWORD) - KHÔNG PHẢI MẬT KHẨU ĐĂNG NHẬP
     // Hướng dẫn lấy: Tài khoản Google -> Bảo mật -> Xác minh 2 bước (Bật) -> Mật khẩu ứng dụng -> Tạo mới
-    private static final String PASSWORD = ""; 
+    private static final String PASSWORD = "xxx xxx xxx xxx"; 
 
     public static boolean sendEmail(String toEmail, String subject, String body) {
         try {
