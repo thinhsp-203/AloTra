@@ -20,9 +20,9 @@
 	 -->
 <properties>
 <property name="jakarta.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
-<property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://VNF-PC001\\SQLEXPRESS:1433;databaseName=AloTra;encrypt=false;trustServerCertificate=true"/>
-<property name="jakarta.persistence.jdbc.user" value="sa"/>
-<property name="jakarta.persistence.jdbc.password" value="PlhAnh22@!"/>
+<property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://DESKTOP-84O1O38:6316;databaseName=AloTra;encrypt=false;trustServerCertificate=true"/>
+<property name="jakarta.persistence.jdbc.user" value="webuser"/>
+<property name="jakarta.persistence.jdbc.password" value="WebUser@123"/>
 <!--  Khuyến nghị thêm dialect cho SQL Server  -->
 <property name="hibernate.dialect" value="org.hibernate.dialect.SQLServerDialect"/>
 <property name="hibernate.hbm2ddl.auto" value="update"/>
