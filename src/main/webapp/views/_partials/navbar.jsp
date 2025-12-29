@@ -283,6 +283,9 @@ try (var em = JpaUtil.em()) {
                     <li class="nav-item">
                         <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" href="#">HỘI VIÊN</a>
+                    </li>
                 </ul>
             </div>
         </div>

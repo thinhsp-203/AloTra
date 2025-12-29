@@ -124,7 +124,7 @@ begin="5">
     <div class="row row-cols-1 row-cols-md-4 g-4">
         <div class="col">
            <div class="card news-card">
-                <img src="https://static.phuclong.com.vn/storage/5/2024/5/3/663467c60361f_dua-game-len-top-100-trung-thuong.jpg" class="card-img-top" alt="News">
+                <img src="${pageContext.request.contextPath}/uploads/products/logo.png" class="card-img-top" alt="News">
                 <div class="card-body">
                     <p class="card-text fw-bold">ĐUA GAME LÊN TOP - 100% TRÚNG THƯỞNG</p>
                 </div>
@@ -132,7 +132,7 @@ begin="5">
         </div>
         <div class="col">
             <div class="card news-card">
-                <img src="https://static.phuclong.com.vn/storage/5/2024/4/26/662b21c4e883f_dam-cuoi-ke-save-the-date-thumbnail.jpg" class="card-img-top" alt="News">
+                <img src="${pageContext.request.contextPath}/uploads/products/logo.png" class="card-img-top" alt="News">
                 <div class="card-body">
                     <p class="card-text fw-bold">ĐÁM CƯỚI KỂ - SAVE THE DATE</p>
                 </div>
@@ -140,7 +140,7 @@ begin="5">
         </div>
         <div class="col">
             <div class="card news-card">
-                <img src="https://static.phuclong.com.vn/storage/5/2024/4/22/6625dff10a300_resize-photo-online.jpg" class="card-img-top" alt="News">
+                <img src="${pageContext.request.contextPath}/uploads/products/logo.png" class="card-img-top" alt="News">
                 <div class="card-body">
                 <p class="card-text fw-bold">ƯU ĐÃI HỘI VIÊN - GIẢM 50% TRÀ SỮA BEST SELLER</p>
                 </div>
@@ -148,7 +148,7 @@ begin="5">
         </div>
          <div class="col">
             <div class="card news-card">
-    <img src="https://static.phuclong.com.vn/storage/5/2023/12/12/teishoku-matcha-thumbnail.jpg" class="card-img-top" alt="News">
+    <img src="${pageContext.request.contextPath}/uploads/products/logo.png" class="card-img-top" alt="News">
                 <div class="card-body">
                     <p class="card-text fw-bold">TEISHOKU MATCHA - BỘ ĐÔI MATCHA ĐẬM VỊ</p>
                 </div>

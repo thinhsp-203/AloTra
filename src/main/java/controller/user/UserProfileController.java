@@ -21,7 +21,7 @@ import java.util.List;
     maxFileSize = 10*1024*1024, 
     maxRequestSize = 50*1024*1024
 )
-@WebServlet(urlPatterns = {"/user/profile", "/user/orders"})
+@WebServlet(urlPatterns = {"/user/profile", "/user/orders", "/user/change-password"})
 public class UserProfileController extends HttpServlet {
     
     /**
@@ -52,6 +52,8 @@ public class UserProfileController extends HttpServlet {
                 showProfile(req, resp, currentUser);
             } else if (uri.endsWith("/orders")) {
                 showOrders(req, resp, currentUser);
+            } else if (uri.endsWith("/change-password")) {
+                req.getRequestDispatcher("/views/user/change_password.jsp").forward(req, resp);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,15 +85,25 @@ public class UserProfileController extends HttpServlet {
             }
         } catch (IllegalArgumentException e) {
             req.setAttribute("error", e.getMessage());
-            User user = profileService.getUserById(currentUser.getId());
-            req.setAttribute("user", user);
-            req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
+            String uri = req.getRequestURI();
+            if (uri != null && uri.endsWith("/change-password")) {
+                req.getRequestDispatcher("/views/user/change_password.jsp").forward(req, resp);
+            } else {
+                User user = profileService.getUserById(currentUser.getId());
+                req.setAttribute("user", user);
+                req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             req.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
-            User user = profileService.getUserById(currentUser.getId());
-            req.setAttribute("user", user);
-            req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
+            String uri = req.getRequestURI();
+            if (uri != null && uri.endsWith("/change-password")) {
+                req.getRequestDispatcher("/views/user/change_password.jsp").forward(req, resp);
+            } else {
+                User user = profileService.getUserById(currentUser.getId());
+                req.setAttribute("user", user);
+                req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
+            }
         }
     }
     
@@ -158,9 +170,7 @@ public class UserProfileController extends HttpServlet {
         profileService.changePassword(currentUser.getId(), oldPassword, newPassword, confirmPassword);
         
         req.setAttribute("success", "Đổi mật khẩu thành công!");
-        User user = profileService.getUserById(currentUser.getId());
-        req.setAttribute("user", user);
-        req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/user/change_password.jsp").forward(req, resp);
     }
     
     private void handleChangeAvatar(HttpServletRequest req, HttpServletResponse resp, User currentUser) 

@@ -56,11 +56,24 @@ body {
     background-color: #fff;
 }
 
+.main-nav .navbar-nav {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.main-nav .nav-item {
+    flex: 1;
+    text-align: center;
+}
+
 .main-nav .nav-link {
     color: #333;
     position: relative;
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+    display: block;
+    width: 100%;
 }
 
 .main-nav .nav-link::after {
@@ -725,34 +738,29 @@ body {
     overflow: hidden;
 }
 
-/* Nút Wishlist (MỚI) */
+/* Nút Wishlist */
 .btn-wishlist {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
     border-radius: 50%;
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
     padding: 0;
-    font-size: 1.1rem;
-    
-    /* Ẩn ban đầu, chỉ hiện khi hover */
-    opacity: 0;
-    transform: translateX(20px);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     transition: all 0.2s ease-in-out;
 }
 
-/* Hiển thị khi hover card */
-.product-card:hover .btn-wishlist {
-    opacity: 1;
-    transform: translateX(0);
+.btn-wishlist:hover {
+    background-color: var(--bs-danger);
+    color: white;
+    border-color: var(--bs-danger);
+    transform: scale(1.1);
 }
 
 /* Trạng thái "đã thích" */
 .btn-wishlist.active {
-    opacity: 1; /* Luôn hiển thị */
-    transform: translateX(0);
     background-color: var(--bs-danger);
     color: white;
     border-color: var(--bs-danger);

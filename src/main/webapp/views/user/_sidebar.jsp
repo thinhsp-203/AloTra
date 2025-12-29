@@ -95,6 +95,11 @@
             </c:if>
         </a>
 
+        <a href="${pageContext.request.contextPath}/user/change-password"
+           class="list-group-item list-group-item-action ${fn:endsWith(pageContext.request.requestURI, '/change-password') ? 'active' : ''}">
+            <i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu
+        </a>
+
         <hr class="my-0">
 
         <a href="${pageContext.request.contextPath}/logout"
