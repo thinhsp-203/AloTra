@@ -337,7 +337,7 @@ document.getElementById('changePasswordForm')?.addEventListener('submit', functi
     }
     if (newPassword.length < 6) {
         e.preventDefault();
-alert('Mật khẩu mới phải có ít nhất 6 ký tự!');
+        alert('Mật khẩu mới phải có ít nhất 6 ký tự!');
         document.getElementById('newPassword').focus();
         return false;
     }

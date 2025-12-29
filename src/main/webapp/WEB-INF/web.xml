@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee 
-         http://xmlns.jcp.org/xml/ns/javaee/web-app_6_0.xsd"
-         version="6.0">
-
+<web-app
+    xmlns="https://jakarta.ee/xml/ns/jakartaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        https://jakarta.ee/xml/ns/jakartaee
+        https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+    version="6.0">
+    
   <display-name>24tx810029_NguyenTanThinh</display-name>
 
   <welcome-file-list>
@@ -30,10 +32,7 @@
 	    <filter-name>sitemesh</filter-name>
 	    <url-pattern>/*</url-pattern>
 	  </filter-mapping>
-	<servlet-mapping>
-	    <servlet-name>HomeController</servlet-name>
-	    <url-pattern>/home</url-pattern>
-	</servlet-mapping>
+	
 	<jsp-config>
     <jsp-property-group>
       <url-pattern>*.jsp</url-pattern>

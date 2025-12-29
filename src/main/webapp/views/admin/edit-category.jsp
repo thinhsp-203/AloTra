@@ -35,18 +35,15 @@
             <div class="mb-2">
               <c:choose>
                 <c:when test="${not empty category.icon}">
-<img src="${pageContext.request.contextPath}/uploads/${category.icon}" 
+                  <img src="${pageContext.request.contextPath}/uploads/${category.icon}" 
                        class="rounded border" 
-                       style="max-width: 200px;
-max-height: 200px; object-fit: cover;"
+                       style="max-width: 200px; max-height: 200px; object-fit: cover;"
                        alt="${category.name}"
                        id="currentImage"/>
                 </c:when>
                 <c:otherwise>
-                  <div 
-class="bg-secondary text-white rounded d-flex align-items-center justify-content-center"
-                       style="width: 200px;
-height: 200px;"
+                  <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center"
+                       style="width: 200px; height: 200px;"
                        id="currentImage">
                     <i class="bi bi-image fs-1"></i>
                   </div>
@@ -60,21 +57,19 @@ height: 200px;"
             <label class="form-label">Chọn ảnh mới (để trống nếu không đổi)</label>
             <input type="file" 
                    class="form-control" 
-        
-           name="icon" 
+                   name="icon" 
                    accept="image/*"
                    id="iconInput"/>
             <div class="form-text">Chỉ chọn file nếu muốn thay đổi ảnh</div>
           </div>
           
           
-<div class="mb-3" id="previewContainer" style="display: none;">
+          <div class="mb-3" id="previewContainer" style="display: none;">
             <label class="form-label">Xem trước ảnh mới</label>
             <div>
               <img id="imagePreview" 
                    class="rounded border" 
-                 
-  style="max-width: 200px; max-height: 200px; object-fit: cover;"
+                   style="max-width: 200px; max-height: 200px; object-fit: cover;"
                    alt="Preview"/>
             </div>
           </div>
@@ -82,16 +77,14 @@ height: 200px;"
           <hr>
           
           <div class="d-flex gap-2">
-          
-  <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary">
               <i class="fas fa-save fa-sm"></i> Cập nhật
             </button>
             <a href="${pageContext.request.contextPath}/admin/category/list" 
                class="btn btn-outline-secondary">
               Hủy
             </a>
-         
- </div>
+          </div>
         </form>
       </div>
     </div>
@@ -106,8 +99,7 @@ height: 200px;"
       </div>
       <div class="card-body">
         <div class="mb-2">
-    
-      <small class="text-muted">ID danh mục</small>
+          <small class="text-muted">ID danh mục</small>
           <div class="fw-bold">${category.id}</div>
         </div>
         <div class="mb-2">
@@ -123,9 +115,9 @@ height: 200px;"
 // Preview ảnh khi chọn file
 document.getElementById('iconInput').addEventListener('change', function(e) {
   const file = e.target.files[0];
-if (file) {
+  if (file) {
     const reader = new FileReader();
-reader.onload = function(e) {
+    reader.onload = function(e) {
       document.getElementById('imagePreview').src = e.target.result;
       document.getElementById('previewContainer').style.display = 'block';
     }

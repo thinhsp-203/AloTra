@@ -34,7 +34,7 @@
         <button class="btn btn-primary w-100" 
                 data-bs-toggle="modal" 
                 data-bs-target="#productModal" 
-         data-product-id="${p.product_id}">
+                data-product-id="${p.product_id}">
             Đặt mua
         </button>
     </div>

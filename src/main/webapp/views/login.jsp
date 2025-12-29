@@ -10,9 +10,7 @@
     border-radius: 0;
   }
   .auth-image-col {
-    background-image: url('https://images.unsplash.com/photo-1572097613329-3c870233b8c3?q=80&w=1887&auto=format&fit=crop');
-    background-size: cover;
-    background-position: center;
+    background-color: #f8f9fa;
     min-height: 300px;
   }
   
@@ -34,8 +32,13 @@
 <div class="container my-5 auth-wrapper">
     <div class="row g-0 justify-content-center auth-row">
         
-        <div class="col-lg-6 d-none d-lg-block auth-image-col">
-            </div>
+        <div class="col-lg-6 d-none d-lg-block auth-image-col d-flex align-items-center justify-content-center p-5">
+            <img src="${pageContext.request.contextPath}/uploads/products/logo.png" 
+                 alt="AloTra Logo" 
+                 class="img-fluid"
+                 style="max-width: 100%; max-height: 100%; object-fit: contain;"
+                 onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/placeholder.png'; console.error('Logo không tải được:', this.src);">
+        </div>
 
         <div class="col-lg-6 col-md-9">
             <div class="card shadow-lg auth-card">

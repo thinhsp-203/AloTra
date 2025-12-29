@@ -127,15 +127,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: #fff;
 }
 
 .product-card .card-img-top {
     transition: transform 0.3s ease;
-    max-height: 180px; 
-    max-width: 100%;
-    object-fit: contain;
-    width: auto;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    min-width: 100%;
+    min-height: 100%;
 }
 
 .product-card:hover .card-img-top {
@@ -559,14 +560,33 @@ body {
     flex-direction: column;
 }
 
+/* Cố định kích thước ảnh trong product-grid-container */
+.product-grid-container .card-img-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    padding: 1rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+}
+
+.product-grid-container .card-img-top {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    min-width: 100%;
+    min-height: 100%;
+    transition: transform 0.3s ease;
+}
+
 /* Fix cho responsive */
 @media (max-width: 768px) {
-    .card-img-container {
+    .card-img-container,
+    .product-grid-container .card-img-container {
         height: 150px;
-    }
-    
-    .product-card .card-img-top {
-        max-height: 130px;
     }
     
     .product-card .card-title {
@@ -576,12 +596,9 @@ body {
 }
 
 @media (max-width: 576px) {
-    .card-img-container {
+    .card-img-container,
+    .product-grid-container .card-img-container {
         height: 120px;
-    }
-    
-    .product-card .card-img-top {
-        max-height: 100px;
     }
 }
 /* === PRODUCT DETAIL PAGE SPECIFIC === */
@@ -743,12 +760,6 @@ body {
 .btn-wishlist.active i::before {
     content: "\f415"; /* Đổi icon sang bi-heart-fill */
 }
-/* CSS cho ảnh banner tự co giãn đẹp */
-#heroCarousel .carousel-item img {
-    height: 550px; /* Đặt một chiều cao cố định cho banner */
-    object-fit: cover; /* Đây là thuộc tính quan trọng: ảnh sẽ tự zoom và cắt để lấp đầy */
-    width: 100%;
-}
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700&display=swap');
 
 body {
@@ -792,31 +803,87 @@ body {
     font-weight: 500;
 }
 /* =============================================== */
-/* === FIX BANNER CAROUSEL ASPECT RATIO === */
+/* === FIX BANNER CAROUSEL - CỐ ĐỊNH KÍCH THƯỚC === */
 /* =============================================== */
 
+#heroCarousel {
+    width: 100%;
+    margin-bottom: 2rem;
+    /* Cố định chiều cao container */
+    height: 400px; /* Desktop: 400px */
+}
+
+/* Responsive cho tablet */
+@media (max-width: 992px) {
+    #heroCarousel {
+        height: 350px;
+    }
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    #heroCarousel {
+        height: 250px;
+    }
+}
+
+/* Responsive cho mobile nhỏ */
+@media (max-width: 576px) {
+    #heroCarousel {
+        height: 200px;
+    }
+}
+
+#heroCarousel .carousel-inner {
+    /* Đảm bảo carousel-inner có chiều cao cố định */
+    height: 100%;
+}
+
 #heroCarousel .carousel-item {
-    /* Đặt tỷ lệ khung hình mong muốn cho banner */
-    /* Ví dụ: 3/1 (rất rộng), 16/9 (HD), 21/9 (Cinematic) */
-    /* Bạn có thể thay đổi số 3 / 1 này cho đến khi ưng ý */
-    aspect-ratio: 16 / 9; 
+    /* Cố định chiều cao banner = 100% của carousel-inner */
+    height: 100%;
+    width: 100%;
     
     /* Đảm bảo item không bị tràn */
     overflow: hidden;
+    position: relative;
 }
 
 #heroCarousel .carousel-item img {
-    /* Quan trọng: Bắt ảnh lấp đầy 100% khung */
+    /* Bắt buộc ảnh phải có kích thước cố định */
     width: 100%;
     height: 100%;
     
-    /* Đây là phép thuật:
-       - 'cover': Phóng to ảnh để lấp đầy, chấp nhận mất một phần ảnh (nhưng không méo).
-       - 'contain': Thu nhỏ ảnh để vừa vặn, chấp nhận có viền đen (nếu tỷ lệ khác).
-       => Dùng 'cover' thường đẹp hơn cho banner.
-    */
-    object-fit: contain; 
+    /* 'cover': Phóng to/thu nhỏ ảnh để lấp đầy khung, cắt phần thừa (không méo) */
+    object-fit: cover;
     
     /* Đảm bảo ảnh được căn giữa */
     object-position: center;
+    
+    /* Đảm bảo ảnh hiển thị đúng */
+    display: block;
+    
+    /* Ngăn ảnh tự điều chỉnh kích thước */
+    min-width: 100%;
+    min-height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+#heroCarousel .carousel-item a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#heroCarousel .carousel-item a img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    min-width: 100%;
+    min-height: 100%;
+    max-width: 100%;
+    max-height: 100%;
 }

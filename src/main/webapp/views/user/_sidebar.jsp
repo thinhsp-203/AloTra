@@ -5,7 +5,7 @@
 <style>
 .user-sidebar {
     background: #f8f9fa;
-border-radius: 12px;
+    border-radius: 12px;
     overflow: hidden;
 }
 
@@ -23,7 +23,7 @@ border-radius: 12px;
 
 .user-sidebar .list-group-item.active {
     background-color: var(--bs-primary);
-border-left-color: var(--bs-primary);
+    border-left-color: var(--bs-primary);
     color: white;
 }
 
@@ -46,7 +46,7 @@ border-left-color: var(--bs-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-margin: 0 auto 1rem;
+    margin: 0 auto 1rem;
     font-size: 2rem;
     color: var(--bs-primary);
     border: 3px solid white;
@@ -62,8 +62,7 @@ margin: 0 auto 1rem;
                          alt="Avatar" class="img-fluid rounded-circle" 
                          style="width: 100%; height: 100%; object-fit: cover;">
                 </c:when>
-      
-          <c:otherwise>
+                <c:otherwise>
                     <i class="bi bi-person-circle"></i>
                 </c:otherwise>
             </c:choose>
@@ -79,20 +78,17 @@ margin: 0 auto 1rem;
         </a>
 
         <a href="${pageContext.request.contextPath}/user/orders"
-           class="list-group-item list-group-item-action ${fn:endsWith(pageContext.request.requestURI, '/orders') ?
-'active' : ''}">
+           class="list-group-item list-group-item-action ${fn:endsWith(pageContext.request.requestURI, '/orders') ? 'active' : ''}">
             <i class="bi bi-receipt me-2"></i> Đơn Mua
         </a>
 
         <a href="${pageContext.request.contextPath}/user/wishlist"
-           class="list-group-item list-group-item-action ${fn:endsWith(pageContext.request.requestURI, '/wishlist') ?
-'active' : ''}">
+           class="list-group-item list-group-item-action ${fn:endsWith(pageContext.request.requestURI, '/wishlist') ? 'active' : ''}">
             <i class="bi bi-heart me-2"></i> Yêu Thích
         </a>
 
         <a href="${pageContext.request.contextPath}/user/notifications"
-           class="list-group-item list-group-item-action ${fn:endsWith(pageContext.request.requestURI, '/notifications') ?
-'active' : ''}">
+           class="list-group-item list-group-item-action ${fn:endsWith(pageContext.request.requestURI, '/notifications') ? 'active' : ''}">
             <i class="bi bi-bell me-2"></i> Thông Báo
             <c:if test="${not empty unreadNotifications && unreadNotifications > 0}">
                 <span class="badge bg-danger float-end">${unreadNotifications}</span>
@@ -102,8 +98,7 @@ margin: 0 auto 1rem;
         <hr class="my-0">
 
         <a href="${pageContext.request.contextPath}/logout"
-     
-      class="list-group-item list-group-item-action text-danger">
+           class="list-group-item list-group-item-action text-danger">
             <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
         </a>
     </div>

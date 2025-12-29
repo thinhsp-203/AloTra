@@ -42,10 +42,8 @@
         <c:forEach var="item" items="${details}">
                 <tr>
                   <td>${item.product_name}</td>
-                  <td>${empty item.size_name ?
-'-' : item.size_name}</td>
-                  <td>${empty item.toppings ?
-'-' : item.toppings}</td>
+                  <td>${empty item.size_name ? '-' : item.size_name}</td>
+                  <td>${empty item.toppings ? '-' : item.toppings}</td>
                   <td>${item.quantity}</td>
                   <td><fmt:formatNumber value="${item.price}" pattern="#,##0₫"/></td>
                   <td class="fw-bold">

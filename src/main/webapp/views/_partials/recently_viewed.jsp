@@ -68,5 +68,3 @@
     </div>
   </section>
 </c:if>
-
-<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>

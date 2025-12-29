@@ -68,9 +68,7 @@ class="form-label">Email <span class="text-danger">*</span></label>
       
                   <div class="col-md-6">
                             <label class="form-label">
-                                Mật khẩu 
-                  
-              <c:if test="${empty user}"><span class="text-danger">*</span></c:if>
+                                Mật khẩu <c:if test="${empty user}"><span class="text-danger">*</span></c:if>
                             </label>
                             <input type="password" class="form-control" name="password" 
                        

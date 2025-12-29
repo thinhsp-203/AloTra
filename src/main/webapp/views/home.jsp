@@ -134,8 +134,7 @@ begin="5">
             <div class="card news-card">
                 <img src="https://static.phuclong.com.vn/storage/5/2024/4/26/662b21c4e883f_dam-cuoi-ke-save-the-date-thumbnail.jpg" class="card-img-top" alt="News">
                 <div class="card-body">
-                    <p class="card-text fw-bold">ĐÁM CƯỚI KỂ - SAVE 
-THE DATE</p>
+                    <p class="card-text fw-bold">ĐÁM CƯỚI KỂ - SAVE THE DATE</p>
                 </div>
             </div>
         </div>
