@@ -87,6 +87,11 @@
             <i class="bi bi-heart me-2"></i> Yêu Thích
         </a>
 
+        <a href="${pageContext.request.contextPath}/user/loyalty"
+           class="list-group-item list-group-item-action ${fn:contains(pageContext.request.requestURI, '/loyalty') || fn:contains(pageContext.request.requestURI, '/rewards') || fn:contains(pageContext.request.requestURI, '/point-history') ? 'active' : ''}">
+            <i class="bi bi-star-fill me-2"></i> Hội Viên
+        </a>
+
         <a href="${pageContext.request.contextPath}/user/notifications"
            class="list-group-item list-group-item-action ${fn:endsWith(pageContext.request.requestURI, '/notifications') ? 'active' : ''}">
             <i class="bi bi-bell me-2"></i> Thông Báo

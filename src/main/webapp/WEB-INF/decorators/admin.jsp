@@ -134,6 +134,13 @@
         </li>
 
         <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/rewards">
+                <i class="fas fa-fw fa-gift"></i>
+                <span>Quà tặng Hội viên</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
             <a class="nav-link" href="${pageContext.request.contextPath}/admin/settings">
                 <i class="fas fa-fw fa-cog"></i>
                 <span>Cài đặt</span>

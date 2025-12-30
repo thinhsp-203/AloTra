@@ -1,3 +1,12 @@
+// Hàm hiển thị modal yêu cầu đăng nhập (toàn cục)
+function showLoginRequiredModal() {
+    const loginModalEl = document.getElementById('loginRequiredModal');
+    if (loginModalEl) {
+        const loginModal = new bootstrap.Modal(loginModalEl);
+        loginModal.show();
+    }
+}
+
 (function () {
     'use strict';
 
@@ -139,7 +148,15 @@
 					        </div>
 					        <div class="col-md-7">
 					            <div style="max-height: calc(80vh - 250px); overflow-y: auto; padding-right: 10px;">
-					                <h4 id="modalProductName">${escapeHtml(data.product.name)}</h4>
+					                <div class="d-flex justify-content-between align-items-start mb-2">
+					                    <h4 id="modalProductName">${escapeHtml(data.product.name)}</h4>
+					                    <button class="btn btn-outline-danger btn-sm btn-wishlist ms-2" 
+					                            data-product-id="${data.product.id}"
+					                            title="Thêm vào yêu thích"
+					                            type="button">
+					                        <i class="bi bi-heart"></i>
+					                    </button>
+					                </div>
 					                <p class="h5 text-primary fw-bold mb-4" id="modalBasePrice" data-price="${data.product.basePrice}">
 					                    ${currencyFormatter.format(data.product.basePrice)}
 					                </p>
@@ -210,7 +227,8 @@
                 return; 
             }
             if (data && data.redirect) { 
-                window.location.href = data.redirect; 
+                // Thay vì redirect ngay, hiển thị modal yêu cầu đăng nhập
+                showLoginRequiredModal();
                 return; 
             }
             if (data && data.ok) {
@@ -372,6 +390,22 @@
             item.classList.add('animate__animated', 'animate__fadeIn');
         });
         button.style.display = 'none';
+    }
+    
+    // Function để show thêm sản phẩm ở trang product list (theo logic của trang home)
+    window.showMoreProducts = function(button) {
+        const container = document.getElementById('productsContainer');
+        const items = container.querySelectorAll('.hidden-product-item');
+        items.forEach(item => {
+            item.style.display = 'block';
+            item.classList.add('animate__animated', 'animate__fadeIn');
+        });
+        button.style.display = 'none';
+        
+        // Update wishlist hearts sau khi show thêm sản phẩm
+        if (typeof updateWishlistHearts === 'function') {
+            updateWishlistHearts();
+        }
     }
 
     // --- INITIALIZATION ---
@@ -720,23 +754,34 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // 1. Tô màu các nút đã "thích" khi tải trang
     function updateWishlistHearts() {
-        fetch(`${contextPath}/api/wishlist/ids`)
+        const contextPathForWishlist = document.body.dataset.contextPath || '';
+        fetch(`${contextPathForWishlist}/api/wishlist/ids`)
             .then(resp => resp.json())
             .then(data => {
                 const wishlistIds = data.wishlistIds || [];
-                if (wishlistIds.length > 0) {
-                    document.querySelectorAll('.btn-wishlist').forEach(btn => {
-                        const productId = btn.dataset.productId;
-                        if (wishlistIds.includes(parseInt(productId))) {
-                            btn.classList.add('active');
-                        } else {
-                            btn.classList.remove('active');
+                document.querySelectorAll('.btn-wishlist').forEach(btn => {
+                    const productId = btn.dataset.productId;
+                    const icon = btn.querySelector('i');
+                    if (productId && wishlistIds.includes(parseInt(productId))) {
+                        btn.classList.add('active');
+                        if (icon && icon.classList.contains('bi-heart')) {
+                            icon.classList.remove('bi-heart');
+                            icon.classList.add('bi-heart-fill');
                         }
-                    });
-                }
+                    } else {
+                        btn.classList.remove('active');
+                        if (icon && icon.classList.contains('bi-heart-fill')) {
+                            icon.classList.remove('bi-heart-fill');
+                            icon.classList.add('bi-heart');
+                        }
+                    }
+                });
             })
             .catch(err => console.error("Lỗi khi lấy ID wishlist:", err));
     }
+    
+    // Export hàm ra global scope để có thể gọi từ jQuery
+    window.updateWishlistHearts = updateWishlistHearts;
     
     updateWishlistHearts(); // Chạy khi tải trang
 
@@ -751,6 +796,10 @@ document.addEventListener("DOMContentLoaded", function() {
             e.stopPropagation(); // Ngăn các sự kiện khác
             
             const productId = wishlistBtn.dataset.productId;
+            if (!productId) {
+                console.error("Product ID không tồn tại");
+                return;
+            }
             
             fetch(`${contextPath}/api/wishlist/toggle?productId=${productId}`, {
                 method: 'POST',
@@ -758,30 +807,50 @@ document.addEventListener("DOMContentLoaded", function() {
                     'Accept': 'application/json'
                 }
             })
-            .then(resp => {
-                if (resp.status === 401) { // Lỗi chưa đăng nhập
-                    window.location.href = `${contextPath}/login`;
-                    return null;
+            .then(resp => resp.json().then(data => ({ status: resp.status, data: data })))
+            .then(result => {
+                // Kiểm tra status code 401 hoặc error về đăng nhập
+                if (result.status === 401 || (result.data.status === 'error' && result.data.message && result.data.message.includes('đăng nhập'))) {
+                    showLoginRequiredModal();
+                    return;
                 }
-                return resp.json();
-            })
-            .then(data => {
-                if (data) {
-                    console.log(data.message);
-                    if (data.status === 'added') {
-                        wishlistBtn.classList.add('active');
-                    } else if (data.status === 'removed') {
-                        wishlistBtn.classList.remove('active');
-                        
-                        // Nếu đang ở trang wishlist, xóa card
-                        const card = wishlistBtn.closest('.col');
-                        if (card && window.location.pathname.includes('/user/wishlist')) {
-                            card.remove();
+                
+                // Xử lý thành công
+                const data = result.data;
+                console.log(data.message);
+                
+                // Update tất cả các nút wishlist có cùng productId (trên card, modal, detail page)
+                const allWishlistBtns = document.querySelectorAll(`.btn-wishlist[data-product-id="${productId}"]`);
+                
+                if (data.status === 'added') {
+                    allWishlistBtns.forEach(btn => {
+                        btn.classList.add('active');
+                        const icon = btn.querySelector('i');
+                        if (icon && icon.classList.contains('bi-heart')) {
+                            icon.classList.remove('bi-heart');
+                            icon.classList.add('bi-heart-fill');
                         }
+                    });
+                } else if (data.status === 'removed') {
+                    allWishlistBtns.forEach(btn => {
+                        btn.classList.remove('active');
+                        const icon = btn.querySelector('i');
+                        if (icon && icon.classList.contains('bi-heart-fill')) {
+                            icon.classList.remove('bi-heart-fill');
+                            icon.classList.add('bi-heart');
+                        }
+                    });
+                    
+                    // Nếu đang ở trang wishlist, xóa card
+                    const card = wishlistBtn.closest('.col');
+                    if (card && window.location.pathname.includes('/user/wishlist')) {
+                        card.remove();
                     }
                 }
             })
-            .catch(err => console.error("Lỗi toggle wishlist:", err));
+            .catch(err => {
+                console.error("Lỗi toggle wishlist:", err);
+            });
         }
     });
 

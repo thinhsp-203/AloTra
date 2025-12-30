@@ -5,7 +5,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import service.LoyaltyService;
 import service.OrderService;
+import service.impl.LoyaltyServiceImpl;
 import service.impl.OrderServiceImpl;
 import service.impl.VNPayService;
 
@@ -17,10 +19,12 @@ import java.util.Map;
 public class PaymentCallbackController extends HttpServlet {
 
     private OrderService orderService;
+    private LoyaltyService loyaltyService;
 
     @Override
     public void init() throws ServletException {
         orderService = new OrderServiceImpl();
+        loyaltyService = new LoyaltyServiceImpl();
     }
     
     @Override
@@ -99,8 +103,46 @@ public class PaymentCallbackController extends HttpServlet {
             req.getSession().removeAttribute("CART");
 
             if ("Đã thanh toán".equals(paymentStatus)) {
-                req.getSession().setAttribute("orderSuccess",
-                    "Thanh toán thành công! Đơn hàng #" + orderId + " đã được xác nhận.");
+                // Tích điểm cho user sau khi thanh toán thành công
+                try {
+                    jakarta.persistence.EntityManager em = config.JpaUtil.em();
+                    try {
+                        model.Orders order = em.find(model.Orders.class, orderId);
+                        if (order != null && order.getUser() != null) {
+                            int pointsEarned = loyaltyService.earnPointsFromOrder(order.getUser(), order.getTotal_amount(), orderId);
+                            if (pointsEarned > 0) {
+                                // Refresh user trong session
+                                jakarta.servlet.http.HttpSession session = req.getSession();
+                                model.User currentUser = (model.User) session.getAttribute("currentUser");
+                                if (currentUser != null && currentUser.getId().equals(order.getUser().getId())) {
+                                    jakarta.persistence.EntityManager refreshEm = config.JpaUtil.em();
+                                    try {
+                                        model.User refreshedUser = refreshEm.find(model.User.class, currentUser.getId());
+                                        if (refreshedUser != null) {
+                                            session.setAttribute("currentUser", refreshedUser);
+                                        }
+                                    } finally {
+                                        refreshEm.close();
+                                    }
+                                }
+                                req.getSession().setAttribute("orderSuccess",
+                                    "Thanh toán thành công! Đơn hàng #" + orderId + " đã được xác nhận. Bạn đã nhận được " + pointsEarned + " điểm tích lũy.");
+                            } else {
+                                req.getSession().setAttribute("orderSuccess",
+                                    "Thanh toán thành công! Đơn hàng #" + orderId + " đã được xác nhận.");
+                            }
+                        } else {
+                            req.getSession().setAttribute("orderSuccess",
+                                "Thanh toán thành công! Đơn hàng #" + orderId + " đã được xác nhận.");
+                        }
+                    } finally {
+                        em.close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    req.getSession().setAttribute("orderSuccess",
+                        "Thanh toán thành công! Đơn hàng #" + orderId + " đã được xác nhận.");
+                }
             }
 
             resp.sendRedirect(req.getContextPath() + "/user/orders");

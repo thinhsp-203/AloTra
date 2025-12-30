@@ -8,7 +8,9 @@ import java.util.*;
 import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import model.*;
+import service.LoyaltyService;
 import service.OrderService;
+import service.impl.LoyaltyServiceImpl;
 import service.impl.OrderServiceImpl;
 import service.impl.VNPayService;
 
@@ -17,11 +19,13 @@ public class CheckoutController extends HttpServlet {
 
     // SỬA 1: Khai báo repository ở đây (stateless)
     private OrderService orderService;
+    private LoyaltyService loyaltyService;
 
     // SỬA 2: Thêm hàm init()
     @Override
     public void init() throws ServletException {
         orderService = new OrderServiceImpl();
+        loyaltyService = new LoyaltyServiceImpl();
     }
 
     @SuppressWarnings("unchecked")
@@ -127,9 +131,34 @@ public class CheckoutController extends HttpServlet {
             }
 
             // COD payment - success (Logic này OK)
+            // Tích điểm cho user
+            try {
+                int pointsEarned = loyaltyService.earnPointsFromOrder(currentUser, order.getTotal_amount(), order.getOrder_id());
+                if (pointsEarned > 0) {
+                    // Refresh user trong session để cập nhật điểm
+                    jakarta.persistence.EntityManager em = JpaUtil.em();
+                    try {
+                        User refreshedUser = em.find(User.class, currentUser.getId());
+                        if (refreshedUser != null) {
+                            session.setAttribute("currentUser", refreshedUser);
+                        }
+                    } finally {
+                        em.close();
+                    }
+                    session.setAttribute("orderSuccess",
+                            "Đơn hàng #" + order.getOrder_id() + " đã được đặt thành công! Bạn đã nhận được " + pointsEarned + " điểm tích lũy.");
+                } else {
+                    session.setAttribute("orderSuccess",
+                            "Đơn hàng #" + order.getOrder_id() + " đã được đặt thành công! Bạn sẽ thanh toán khi nhận hàng.");
+                }
+            } catch (Exception e) {
+                // Nếu tích điểm lỗi, vẫn cho đặt hàng thành công
+                e.printStackTrace();
+                session.setAttribute("orderSuccess",
+                        "Đơn hàng #" + order.getOrder_id() + " đã được đặt thành công! Bạn sẽ thanh toán khi nhận hàng.");
+            }
+            
             session.removeAttribute("CART");
-            session.setAttribute("orderSuccess",
-                    "Đơn hàng #" + order.getOrder_id() + " đã được đặt thành công! Bạn sẽ thanh toán khi nhận hàng.");
             resp.sendRedirect(req.getContextPath() + "/user/orders");
 
         } catch (Exception e) {

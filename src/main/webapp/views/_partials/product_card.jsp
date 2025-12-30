@@ -25,7 +25,7 @@
                 <button class="btn btn-outline-danger btn-sm btn-wishlist" 
                         data-product-id="${p.product_id}"
                         title="Thêm vào yêu thích"
-                        onclick="event.preventDefault(); event.stopPropagation();">
+                        type="button">
                     <i class="bi bi-heart"></i>
                 </button>
             </div>

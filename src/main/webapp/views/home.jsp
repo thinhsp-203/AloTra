@@ -19,6 +19,8 @@
         <div class="carousel-inner">
             <c:forEach items="${banners}" var="b" varStatus="status">
                 <div class="carousel-item ${status.index == 0 ? 'active' : ''}">
+                    <%-- Overlay mờ để tăng contrast --%>
+                    <div class="carousel-overlay"></div>
                     
                     <%-- Tạo thẻ <img> với logic src chính xác --%>
                     <c:set var="imgTag">
@@ -33,16 +35,27 @@
                         </c:choose>
                     </c:set>
 
-                    <c:choose>
-                        <c:when test="${not empty b.linkUrl}">
-                            <a href="${b.linkUrl}" target="_blank">
-                                ${imgTag}
-                            </a>
-                        </c:when>
-                        <c:otherwise>
-                            ${imgTag}
-                        </c:otherwise>
-                    </c:choose>
+                    ${imgTag}
+                    
+                    <%-- Caption với text và CTA --%>
+                    <div class="carousel-caption d-flex flex-column justify-content-center align-items-center">
+                        <h2 class="carousel-title mb-3">Khám phá hương vị tuyệt vời</h2>
+                        <p class="carousel-subtitle mb-4">Sản phẩm chất lượng, giá cả hợp lý</p>
+                        <c:choose>
+                            <c:when test="${not empty b.linkUrl}">
+                                <a href="${b.linkUrl}" class="carousel-cta-btn">
+                                    <i class="bi bi-arrow-right me-2"></i>
+                                    Xem ngay
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="${pageContext.request.contextPath}/products" class="carousel-cta-btn">
+                                    <i class="bi bi-arrow-right me-2"></i>
+                                    Xem sản phẩm
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
                     
                 </div>
             </c:forEach>

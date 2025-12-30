@@ -40,13 +40,14 @@ public class ProductsListController extends HttpServlet {
             cateId = Integer.parseInt(cateIdParam);
         }
 
+        // Load 18 sản phẩm từ đầu (hiển thị 6, ẩn 12), theo logic của trang home
         List<Product> products = productQueryService.findProducts(
             cateId, 
             keyword, 
             sortBy, 
             priceRange,
             0,
-            -1
+            18
         );
         
         req.setAttribute("products", products);

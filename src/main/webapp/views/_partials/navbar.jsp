@@ -134,6 +134,13 @@ try (var em = JpaUtil.em()) {
     background: transparent;
     border: none;
     color: #6c757d;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+    pointer-events: none;
+}
+
+.search-form:focus-within .input-group-text {
+    color: var(--bs-primary);
 }
 </style>
 
@@ -153,13 +160,13 @@ try (var em = JpaUtil.em()) {
                 <div class="search-autocomplete-container">
                     <form action="${pageContext.request.contextPath}/products" method="get" class="search-form position-relative">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-              <input class="form-control" 
-                     type="search" 
-                     name="q" 
-                     id="searchInput"
-                     placeholder="Bạn muốn mua gì..." 
-                     value="${param.q}"
-                     autocomplete="off">
+                        <input class="form-control" 
+                               type="search" 
+                               name="q" 
+                               id="searchInput"
+                               placeholder="Bạn muốn mua gì..." 
+                               value="${param.q}"
+                               autocomplete="off">
                     </form>
                     <div class="search-suggestions" id="searchSuggestions">
                         <div class="suggestions-header">
@@ -265,19 +272,6 @@ try (var em = JpaUtil.em()) {
                                                 </c:if>
                                             </c:forEach>
                                         </div>
-                                        <div class="col-lg-4 col-md-12">
-                                            <div class="p-3">
-                                                <c:choose>
-                                                    <c:when test="${not empty siteSettings.MENU_BANNER_URL}">
-                                                        <img src="${siteSettings.MENU_BANNER_URL}" class="img-fluid rounded" alt="Promo">
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <img src="https://static.phuclong.com.vn/storage/5/2024/5/2/663305417df89_bsttraxanhtraicayvuongtronvinangluong.jpg" 
-                                                             class="img-fluid rounded" alt="Promo">
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -295,7 +289,8 @@ try (var em = JpaUtil.em()) {
                         <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-bold" href="#">HỘI VIÊN</a>
+                        <a class="nav-link fw-bold ${fn:contains(currentPath, '/user/loyalty') || fn:contains(currentPath, '/user/rewards') ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/user/loyalty">HỘI VIÊN</a>
                     </li>
                 </ul>
             </div>
