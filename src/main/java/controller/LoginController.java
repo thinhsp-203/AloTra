@@ -28,6 +28,13 @@ public class LoginController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/home");
             return;
         }
+        
+        // Xử lý alert từ query parameter
+        String alertParam = req.getParameter("alert");
+        if (alertParam != null && !alertParam.isEmpty()) {
+            req.setAttribute("alert", alertParam);
+        }
+        
         req.getRequestDispatcher("views/login.jsp").forward(req, resp);
     }
 

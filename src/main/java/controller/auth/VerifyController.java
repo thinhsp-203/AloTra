@@ -6,7 +6,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import model.User;
 import service.UserService;
 import service.impl.UserServiceImpl;
@@ -37,30 +36,28 @@ public class VerifyController extends HttpServlet {
         if (user != null) {
             // 2. So sánh mã OTP (Lấy mã đã lưu trong DB ra so với mã nhập vào)
             if (user.getCode() != null && user.getCode().equals(inputCode)) {
+                // Khi OTP khớp, kích hoạt tài khoản và xóa mã OTP
+                user.setIsActive(true);
+                user.setCode(null); // Xóa OTP sau khi dùng
+                userService.updateUser(user); // Lưu lại
                 
                 // --- TRƯỜNG HỢP 1: KÍCH HOẠT TÀI KHOẢN ---
                 if ("register".equals(action)) {
-                	user.setIsActive(true);
-                    user.setCode(null); // Xóa OTP sau khi dùng
-                    userService.updateUser(user); // Lưu lại
-                    
-                    req.setAttribute("alert", "Kích hoạt thành công! Vui lòng đăng nhập.");
-                    req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
+                    // Chuyển về trang login
+                    resp.sendRedirect(req.getContextPath() + "/login?alert=" + 
+                        java.net.URLEncoder.encode("Kích hoạt thành công! Vui lòng đăng nhập.", "UTF-8"));
                 } 
                 
                 // --- TRƯỜNG HỢP 2: QUÊN MẬT KHẨU ---
                 else if ("forgot".equals(action)) {
-                    // Chuyển sang trang đặt lại mật khẩu mới
-                    // Lưu email vào session để trang đổi mật khẩu biết đang đổi cho ai
-                    HttpSession session = req.getSession();
-                    session.setAttribute("emailReset", email);
-                    
-                    resp.sendRedirect(req.getContextPath() + "/views/auth/reset.jsp");
+                    // Chuyển về trang login
+                    resp.sendRedirect(req.getContextPath() + "/login?alert=" + 
+                        java.net.URLEncoder.encode("Xác thực OTP thành công! Vui lòng đăng nhập.", "UTF-8"));
                 }
 
             } else {
                 // Mã OTP sai
-                req.setAttribute("error", "Mã xác thực không đúng!");
+                req.setAttribute("error", "OTP không hợp lệ");
                 req.setAttribute("email", email); // Giữ lại email để không phải nhập lại
                 req.setAttribute("action", action);
                 req.getRequestDispatcher("/views/auth/verify.jsp").forward(req, resp);

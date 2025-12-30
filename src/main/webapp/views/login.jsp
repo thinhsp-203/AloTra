@@ -60,10 +60,20 @@
         
             
                     <c:if test="${not empty alert}">
-                        <div class="alert alert-danger alert-dismissible fade show">
-                            <i class="bi bi-exclamation-triangle"></i> ${alert}
-                       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
+                        <c:choose>
+                            <c:when test="${alert.contains('thành công') or alert.contains('success')}">
+                                <div class="alert alert-success alert-dismissible fade show">
+                                    <i class="bi bi-check-circle"></i> ${alert}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <i class="bi bi-exclamation-triangle"></i> ${alert}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
                     </c:if>
 
                     <form action="login" method="post">

@@ -3,7 +3,7 @@
 
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-md-5 col-lg-4">
+        <div class="col-md-6 col-lg-5">
             <div class="card shadow-lg border-0">
                 <div class="card-body p-4">
                     <div class="text-center mb-4">
@@ -29,10 +29,15 @@
                     <form method="post" action="${pageContext.request.contextPath}/auth/forgot">
                         <div class="mb-3">
                             <label class="form-label">Email đăng ký</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" class="form-control" name="email" 
-                                       placeholder="example@email.com" required autofocus />
+                            <div class="form-icon-group">
+                                <i class="bi bi-envelope form-icon"></i>
+                                <input type="email" 
+                                       class="form-control" 
+                                       name="email" 
+                                       placeholder="example@email.com" 
+                                       required 
+                                       autofocus 
+                                       style="width: 100%;">
                             </div>
                         </div>
                         

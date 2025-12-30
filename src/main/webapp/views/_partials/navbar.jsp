@@ -226,11 +226,17 @@ try (var em = JpaUtil.em()) {
         <div class="container">
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav mx-auto">
+                    <c:set var="requestURI" value="${pageContext.request.requestURI}" />
+                    <c:set var="contextPath" value="${pageContext.request.contextPath}" />
+                    <c:set var="currentPath" value="${fn:replace(requestURI, contextPath, '')}" />
+                    
                    <li class="nav-item">
-                        <a class="nav-link fw-bold" href="${pageContext.request.contextPath}/home">TRANG CHỦ</a>
+                        <a class="nav-link fw-bold ${fn:endsWith(currentPath, '/home') || fn:endsWith(currentPath, '/') || currentPath == '' ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/home">TRANG CHỦ</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link fw-bold dropdown-toggle" href="${pageContext.request.contextPath}/products" id="menuDropdown">
+                        <a class="nav-link fw-bold dropdown-toggle ${fn:contains(currentPath, '/products') || fn:contains(currentPath, '/p?id=') ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/products" id="menuDropdown">
                             MENU
                         </a>
                         <c:if test="${not empty navbarCategories}">
@@ -278,10 +284,12 @@ try (var em = JpaUtil.em()) {
                         </c:if>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-bold" href="${pageContext.request.contextPath}/promotions">KHUYẾN MÃI</a>
+                        <a class="nav-link fw-bold ${fn:contains(currentPath, '/promotions') ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/promotions">KHUYẾN MÃI</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-bold" href="${pageContext.request.contextPath}/stores">DANH SÁCH CỬA HÀNG</a>
+                        <a class="nav-link fw-bold ${fn:contains(currentPath, '/stores') ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/stores">DANH SÁCH CỬA HÀNG</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
