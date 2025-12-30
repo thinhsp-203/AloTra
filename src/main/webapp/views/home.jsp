@@ -116,46 +116,44 @@ begin="5">
     </div>
 </c:if>
 
+<c:if test="${not empty promotions}">
 <div class="container mb-5">
     <div class="text-center mb-4">
         <h2 class="h4">Tin tức & Khuyến mãi</h2>
         <p class="text-muted">Tin tức & Khuyến mãi của Phúc Long</p>
     </div>
     <div class="row row-cols-1 row-cols-md-4 g-4">
-        <div class="col">
-           <div class="card news-card">
-                <img src="${pageContext.request.contextPath}/uploads/products/logo.png" class="card-img-top" alt="News">
-                <div class="card-body">
-                    <p class="card-text fw-bold">ĐUA GAME LÊN TOP - 100% TRÚNG THƯỞNG</p>
-                </div>
-      </div>
-        </div>
-        <div class="col">
-            <div class="card news-card">
-                <img src="${pageContext.request.contextPath}/uploads/products/logo.png" class="card-img-top" alt="News">
-                <div class="card-body">
-                    <p class="card-text fw-bold">ĐÁM CƯỚI KỂ - SAVE THE DATE</p>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="card news-card">
-                <img src="${pageContext.request.contextPath}/uploads/products/logo.png" class="card-img-top" alt="News">
-                <div class="card-body">
-                <p class="card-text fw-bold">ƯU ĐÃI HỘI VIÊN - GIẢM 50% TRÀ SỮA BEST SELLER</p>
-                </div>
-            </div>
-        </div>
-         <div class="col">
-            <div class="card news-card">
-    <img src="${pageContext.request.contextPath}/uploads/products/logo.png" class="card-img-top" alt="News">
-                <div class="card-body">
-                    <p class="card-text fw-bold">TEISHOKU MATCHA - BỘ ĐÔI MATCHA ĐẬM VỊ</p>
+        <c:forEach items="${promotions}" var="promo" varStatus="status" begin="0" end="3">
+            <div class="col">
+                <div class="card news-card" style="cursor: pointer; transition: transform 0.3s ease;" 
+                     onclick="window.location.href='${pageContext.request.contextPath}/promotions?id=${promo.id}'"
+                     onmouseover="this.style.transform='translateY(-5px)'"
+                     onmouseout="this.style.transform='translateY(0)'">
+                    <div style="height: 200px; overflow: hidden;">
+                        <c:choose>
+                            <c:when test="${fn:startsWith(promo.imageUrl, 'http')}">
+                                <img src="${promo.imageUrl}" class="card-img-top" alt="${promo.title}" 
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            </c:when>
+                            <c:otherwise>
+                                <img src="${pageContext.request.contextPath}/uploads/${promo.imageUrl}" 
+                                     class="card-img-top" alt="${promo.title}"
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text fw-bold">${promo.title}</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </c:forEach>
+    </div>
+    <div class="text-center mt-4">
+        <a href="${pageContext.request.contextPath}/promotions" class="btn btn-outline-primary">Xem tất cả khuyến mãi</a>
     </div>
 </div>
+</c:if>
 
 <div class="container-fluid bg-light py-5">
     <div class="container text-center">

@@ -120,6 +120,13 @@
         </li>
 
         <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/promotions">
+                <i class="fas fa-fw fa-percent"></i>
+                <span>Khuyến mãi</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
             <a class="nav-link" href="${pageContext.request.contextPath}/admin/settings">
                 <i class="fas fa-fw fa-cog"></i>
                 <span>Cài đặt</span>

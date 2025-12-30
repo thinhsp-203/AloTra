@@ -278,7 +278,7 @@ try (var em = JpaUtil.em()) {
                         </c:if>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-bold" href="#">KHUYẾN MÃI</a>
+                        <a class="nav-link fw-bold" href="${pageContext.request.contextPath}/promotions">KHUYẾN MÃI</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
