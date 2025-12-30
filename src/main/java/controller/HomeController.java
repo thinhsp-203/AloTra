@@ -27,6 +27,7 @@ public class HomeController extends HttpServlet {
         req.setAttribute("categories", catalogService.getAllCategories());
         req.setAttribute("banners", catalogService.getActiveBanners());
         req.setAttribute("promotions", catalogService.getActivePromotions(4));
+        req.setAttribute("stores", catalogService.getActiveStores(4));
         req.getRequestDispatcher("/views/home.jsp").forward(req, resp);
     }
 }

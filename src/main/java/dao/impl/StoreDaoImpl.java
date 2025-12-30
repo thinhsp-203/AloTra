@@ -32,8 +32,7 @@ public class StoreDaoImpl implements StoreDao {
             TypedQuery<Store> query = em.createQuery(
                 "SELECT s FROM Store s WHERE s.isActive = true " +
                 "AND (LOWER(s.address) LIKE :keyword " +
-                "OR LOWER(s.district) LIKE :keyword " +
-                "OR LOWER(s.city) LIKE :keyword " +
+                "OR LOWER(s.ward) LIKE :keyword " +
                 "OR LOWER(s.province) LIKE :keyword " +
                 "OR LOWER(s.store_name) LIKE :keyword) " +
                 "ORDER BY s.store_name",
@@ -61,10 +60,10 @@ public class StoreDaoImpl implements StoreDao {
         EntityManager em = JpaUtil.em();
         try {
             TypedQuery<Store> query = em.createQuery(
-                "SELECT s FROM Store s WHERE s.isActive = true AND LOWER(s.city) = LOWER(:city) ORDER BY s.store_name",
+                "SELECT s FROM Store s WHERE s.isActive = true AND LOWER(s.province) = LOWER(:province) ORDER BY s.store_name",
                 Store.class
             );
-            query.setParameter("city", city);
+            query.setParameter("province", city);
             return query.getResultList();
         } finally {
             em.close();
@@ -76,10 +75,10 @@ public class StoreDaoImpl implements StoreDao {
         EntityManager em = JpaUtil.em();
         try {
             TypedQuery<Store> query = em.createQuery(
-                "SELECT s FROM Store s WHERE s.isActive = true AND LOWER(s.district) = LOWER(:district) ORDER BY s.store_name",
+                "SELECT s FROM Store s WHERE s.isActive = true AND LOWER(s.ward) = LOWER(:ward) ORDER BY s.store_name",
                 Store.class
             );
-            query.setParameter("district", district);
+            query.setParameter("ward", district);
             return query.getResultList();
         } finally {
             em.close();

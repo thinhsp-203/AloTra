@@ -281,6 +281,9 @@ try (var em = JpaUtil.em()) {
                         <a class="nav-link fw-bold" href="${pageContext.request.contextPath}/promotions">KHUYẾN MÃI</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link fw-bold" href="${pageContext.request.contextPath}/stores">DANH SÁCH CỬA HÀNG</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
                     </li>
                     <li class="nav-item">

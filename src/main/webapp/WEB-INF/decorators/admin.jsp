@@ -127,6 +127,13 @@
         </li>
 
         <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/stores">
+                <i class="fas fa-fw fa-store"></i>
+                <span>Cửa hàng</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
             <a class="nav-link" href="${pageContext.request.contextPath}/admin/settings">
                 <i class="fas fa-fw fa-cog"></i>
                 <span>Cài đặt</span>

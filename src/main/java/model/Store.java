@@ -13,31 +13,28 @@ public class Store {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer store_id;
 
-    @Column(nullable = false, length = 200)
+    @Column(nullable = false, columnDefinition = "NVARCHAR(200)")
     private String store_name;
 
-    @Column(length = 500)
+    @Column(columnDefinition = "NVARCHAR(500)")
     private String address;
 
-    @Column(length = 20)
+    @Column(columnDefinition = "NVARCHAR(20)")
     private String phone;
 
-    @Column(length = 100)
+    @Column(columnDefinition = "NVARCHAR(100)")
     private String email;
 
-    @Column(length = 200)
-    private String district;
+    @Column(columnDefinition = "NVARCHAR(200)")
+    private String ward; // Xã/Phường
 
-    @Column(length = 200)
-    private String city;
+    @Column(columnDefinition = "NVARCHAR(200)")
+    private String province; // Tỉnh/Thành phố
 
-    @Column(length = 200)
-    private String province;
+    @Column(columnDefinition = "NVARCHAR(MAX)")
+    private String mapIframe; // Iframe embed code từ Google Maps
 
-    private Double latitude;
-    private Double longitude;
-
-    @Column(length = 50)
+    @Column(columnDefinition = "NVARCHAR(50)")
     private String opening_hours;
 
     private Boolean isActive;

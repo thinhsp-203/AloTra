@@ -4,6 +4,7 @@ import model.Banner;
 import model.Category;
 import model.Product;
 import model.Promotion;
+import model.Store;
 
 import java.util.List;
 
@@ -13,5 +14,6 @@ public interface CatalogService {
     List<Category> getAllCategories();
     List<Banner> getActiveBanners();
     List<Promotion> getActivePromotions(int limit);
+    List<Store> getActiveStores(int limit);
 }
 

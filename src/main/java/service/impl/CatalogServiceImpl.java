@@ -4,16 +4,19 @@ import config.JpaUtil;
 import dao.BannerRepository;
 import dao.PromotionRepository;
 import dao.ProductDao;
+import dao.StoreDao;
 import dao.impl.BannerRepositoryImpl;
 import dao.impl.PromotionRepositoryImpl;
 import dao.impl.CategoryRepositoryImpl;
 import dao.impl.ProductDaoImpl;
+import dao.impl.StoreDaoImpl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import model.Banner;
 import model.Category;
 import model.Product;
 import model.Promotion;
+import model.Store;
 import service.CatalogService;
 
 import java.util.List;
@@ -23,6 +26,7 @@ public class CatalogServiceImpl implements CatalogService {
     private final ProductDao productDao = new ProductDaoImpl();
     private final BannerRepository bannerRepository = new BannerRepositoryImpl();
     private final PromotionRepository promotionRepository = new PromotionRepositoryImpl();
+    private final StoreDao storeDao = new StoreDaoImpl();
 
     @Override
     public List<Product> getFeaturedProducts(int limit) {
@@ -69,6 +73,15 @@ public class CatalogServiceImpl implements CatalogService {
         } finally {
             em.close();
         }
+    }
+
+    @Override
+    public List<Store> getActiveStores(int limit) {
+        List<Store> allStores = storeDao.findAll();
+        if (limit > 0 && allStores.size() > limit) {
+            return allStores.subList(0, limit);
+        }
+        return allStores;
     }
 }
 
