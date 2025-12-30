@@ -63,7 +63,12 @@
 <%-- Best Sellers --%>
 <c:if test="${not empty featured}">
     <div class="container text-center mb-5">
-        <h2 class="h4 mb-4">BEST SELLERS - TRÀ THƠM CHẤT LƯỢNG</h2>
+        <div class="section-title-wrapper">
+            <h2 class="section-title">
+                <i class="bi bi-star-fill"></i>
+                BEST SELLERS - TRÀ THƠM CHẤT LƯỢNG
+            </h2>
+        </div>
    <div class="product-grid-container">
             <div class="row row-cols-2 row-cols-md-5 g-3">
               <c:forEach var="product" items="${featured}" varStatus="status" begin="0" end="4">
@@ -93,7 +98,12 @@
 <%-- Newest Products --%>
 <c:if test="${not empty newest}">
      <div class="container text-center mb-5">
-        <h2 class="h4 mb-4">SẢN PHẨM MỚI</h2>
+        <div class="section-title-wrapper">
+            <h2 class="section-title">
+                <i class="bi bi-sparkles"></i>
+                SẢN PHẨM MỚI
+            </h2>
+        </div>
         <div class="row row-cols-2 row-cols-md-5 g-3">
       <%-- Hiển thị 5 sản phẩm đầu tiên --%>
           <c:forEach var="product" items="${newest}" end="4">
@@ -118,9 +128,12 @@ begin="5">
 
 <c:if test="${not empty promotions}">
 <div class="container mb-5">
-    <div class="text-center mb-4">
-        <h2 class="h4">Tin tức & Khuyến mãi</h2>
-        <p class="text-muted">Tin tức & Khuyến mãi của AloTra</p>
+    <div class="section-title-wrapper">
+        <h2 class="section-title">
+            <i class="bi bi-megaphone-fill"></i>
+            Tin tức & Khuyến mãi
+        </h2>
+        <p class="text-muted mt-3">Tin tức & Khuyến mãi của AloTra</p>
     </div>
     <div class="row row-cols-1 row-cols-md-4 g-4">
         <c:forEach items="${promotions}" var="promo" varStatus="status" begin="0" end="3">
@@ -157,9 +170,12 @@ begin="5">
 
 <c:if test="${not empty stores}">
 <div class="container mb-5">
-    <div class="text-center mb-4">
-        <h2 class="h4">Hệ thống cửa hàng</h2>
-        <p class="text-muted">Các cửa hàng AloTra</p>
+    <div class="section-title-wrapper">
+        <h2 class="section-title">
+            <i class="bi bi-shop"></i>
+            Hệ thống cửa hàng
+        </h2>
+        <p class="text-muted mt-3">Các cửa hàng AloTra</p>
     </div>
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
         <c:forEach items="${stores}" var="store" begin="0" end="3">
