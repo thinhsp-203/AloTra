@@ -35,8 +35,7 @@
                   name="icon" 
                    accept="image/*"
                    id="iconInput"/>
-            <div class="form-text">Định dạng: JPG, PNG.
-Kích thước đề xuất: 200x200px</div>
+            <div class="form-text">Định dạng: JPG, PNG. Kích thước đề xuất: 200x200px</div>
           </div>
           
           <div class="mb-3" id="previewContainer" style="display: none;">
@@ -88,9 +87,9 @@ alt="Preview"/>
 // Preview ảnh khi chọn file
 document.getElementById('iconInput').addEventListener('change', function(e) {
   const file = e.target.files[0];
-if (file) {
+  if (file) {
     const reader = new FileReader();
-reader.onload = function(e) {
+    reader.onload = function(e) {
       document.getElementById('imagePreview').src = e.target.result;
       document.getElementById('previewContainer').style.display = 'block';
     }

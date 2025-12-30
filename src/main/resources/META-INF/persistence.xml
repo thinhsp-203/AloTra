@@ -1,27 +1,19 @@
-<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence">
-  <persistence-unit name="AloTra" transaction-type="RESOURCE_LOCAL">
-   		<class>model.User</class>
-        <class>model.Category</class>
-        <class>model.Product</class>
-        <class>model.Supplier</class>
-        <class>model.Orders</class>
-        <class>model.OrderDetail</class>
-        <class>model.PaymentConfig</class>
-        <class>model.ProductSize</class>
-        <class>model.Topping</class>
-        <class>model.Voucher</class>
-        
-        <class>model.WishlistItem</class>
-        <class>model.Settings</class>
-        <class>model.Review</class>
-    <properties>
-      <property name="jakarta.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
-      <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://DESKTOP-84O1O38:6316;databaseName=AloTra;encrypt=false;trustServerCertificate=true"/>
-      <property name="jakarta.persistence.jdbc.user" value="webuser"/>
-      <property name="jakarta.persistence.jdbc.password" value="WebUser@123"/>
-      <property name="hibernate.hbm2ddl.auto" value="update"/>
-      <property name="hibernate.show_sql" value="false"/>
-      <property name="hibernate.format_sql" value="true"/>
-    </properties>
-  </persistence-unit>
+
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.0" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+<persistence-unit name="AloTra" transaction-type="RESOURCE_LOCAL">
+
+<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+<properties>
+<property name="jakarta.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+<property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://VNF-PC001\\SQLEXPRESS:1433;databaseName=AloTra;encrypt=false;trustServerCertificate=true"/>
+<property name="jakarta.persistence.jdbc.user" value="sa"/>
+<property name="jakarta.persistence.jdbc.password" value="PlhAnh22@!"/>
+<!--  Khuyến nghị thêm dialect cho SQL Server  -->
+<property name="hibernate.dialect" value="org.hibernate.dialect.SQLServerDialect"/>
+<property name="hibernate.hbm2ddl.auto" value="update"/>
+<property name="hibernate.show_sql" value="false"/>
+<property name="hibernate.format_sql" value="true"/>
+</properties>
+</persistence-unit>
 </persistence>

@@ -4,13 +4,6 @@
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <div class="card h-100 product-card">
-    
-    <button class="btn btn-outline-danger btn-sm btn-wishlist" 
-            data-product-id="${p.product_id}"
-            title="Thêm vào yêu thích">
-        <i class="bi bi-heart"></i>
-    </button>
-    
     <a href="${pageContext.request.contextPath}/p?id=${p.product_id}" class="card-link text-decoration-none text-dark">
         <div class="card-img-container">
             <c:set var="thumbnailSrc" value="${p.thumbnail}"/>
@@ -25,16 +18,24 @@
         </div>
         <div class="card-body d-flex flex-column text-center">
             <h6 class="card-title">${p.product_name}</h6>
-            <p class="card-text fw-bold text-primary mt-auto">
-            <fmt:formatNumber value="${p.price}" pattern="#,##0"/> đ
-            </p>
+            <div class="d-flex align-items-center justify-content-center gap-2 mt-auto">
+                <p class="card-text fw-bold text-primary mb-0">
+                    <fmt:formatNumber value="${p.price}" pattern="#,##0"/> đ
+                </p>
+                <button class="btn btn-outline-danger btn-sm btn-wishlist" 
+                        data-product-id="${p.product_id}"
+                        title="Thêm vào yêu thích"
+                        onclick="event.preventDefault(); event.stopPropagation();">
+                    <i class="bi bi-heart"></i>
+                </button>
+            </div>
         </div>
     </a>
     <div class="card-footer bg-transparent border-0 pb-3">
         <button class="btn btn-primary w-100" 
                 data-bs-toggle="modal" 
                 data-bs-target="#productModal" 
-         data-product-id="${p.product_id}">
+                data-product-id="${p.product_id}">
             Đặt mua
         </button>
     </div>

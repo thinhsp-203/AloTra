@@ -112,8 +112,7 @@
                   </td>
                   <td class="text-center">
                     <c:choose>
-                      <c:when test="${p.stock == null ||
-p.stock == 0}">
+                      <c:when test="${p.stock == null || p.stock == 0}">
                         <span class="badge text-bg-danger">Hết hàng</span>
                       </c:when>
                       <c:when test="${p.stock < 10}">
@@ -144,18 +143,15 @@ p.stock == 0}">
                     </c:choose>
                   </td>
                   <td class="text-center">
-                    <div class="btn-group btn-group-sm" 
-role="group">
+                    <div class="btn-group btn-group-sm" role="group">
                       <a href="${pageContext.request.contextPath}/p?id=${p.product_id}" 
                          class="btn btn-outline-info" 
                          title="Xem chi tiết"
-                      
-   target="_blank">
+                         target="_blank">
                         <i class="fas fa-eye"></i>
                       </a>
                       <a href="${pageContext.request.contextPath}/admin/products/edit?id=${p.product_id}" 
-                         
-class="btn btn-outline-primary" 
+                         class="btn btn-outline-primary" 
                          title="Chỉnh sửa">
                         <i class="fas fa-pencil-alt"></i>
                       </a>

@@ -10,9 +10,7 @@
     border-radius: 0;
   }
   .auth-image-col {
-    background-image: url('https://images.unsplash.com/photo-1557870198-a68b5a0ada42?q=80&w=1887&auto=format&fit=crop');
-    background-size: cover;
-    background-position: center;
+    background-color: #f8f9fa;
     min-height: 300px;
   }
   
@@ -145,8 +143,7 @@
                                       required>
                                 </div>
                                 <small class="form-text text-danger d-none" id="passwordMismatch">
-                                    Mật khẩu 
-không khớp!
+                                    Mật khẩu không khớp!
                                 </small>
                             </div>
                         </div>
@@ -170,8 +167,7 @@ không khớp!
                     
                     <div class="text-center">
                         <hr class="my-3">
-                        <p class="text-muted small mb-2">Đã có 
-tài khoản?</p>
+                        <p class="text-muted small mb-2">Đã có tài khoản?</p>
                         <a href="login" class="btn btn-outline-secondary w-100">
                             <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
                         </a>
@@ -180,8 +176,13 @@ tài khoản?</p>
             </div>
         </div>
 
-        <div class="col-lg-6 d-none d-lg-block auth-image-col">
-            </div>
+        <div class="col-lg-6 d-none d-lg-block auth-image-col d-flex align-items-center justify-content-center p-5">
+            <img src="${pageContext.request.contextPath}/uploads/products/logo_app.png" 
+                 alt="AloTra Logo" 
+                 class="img-fluid"
+                 style="max-width: 100%; max-height: 100%; object-fit: contain;"
+                 onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/placeholder.png'; console.error('Logo không tải được:', this.src);">
+        </div>
 
     </div>
 </div>
@@ -262,8 +263,7 @@ document.getElementById('registerForm')?.addEventListener('submit', function(e) 
     
     if (password.length < 6) {
         e.preventDefault();
-        alert('Mật khẩu phải có ít nhất 6 ký 
-tự!');
+        alert('Mật khẩu phải có ít nhất 6 ký tự!');
         return false;
     }
     

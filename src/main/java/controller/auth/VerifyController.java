@@ -11,7 +11,7 @@ import model.User;
 import service.UserService;
 import service.impl.UserServiceImpl;
 
-@WebServlet(urlPatterns = { "/verify-otp" })
+@WebServlet(urlPatterns = {"/verify-otp"})
 public class VerifyController extends HttpServlet {
 
     UserService userService = new UserServiceImpl();
@@ -55,7 +55,7 @@ public class VerifyController extends HttpServlet {
                     HttpSession session = req.getSession();
                     session.setAttribute("emailReset", email);
                     
-                    resp.sendRedirect(req.getContextPath() + "/views/auth/new-password.jsp");
+                    resp.sendRedirect(req.getContextPath() + "/views/auth/reset.jsp");
                 }
 
             } else {

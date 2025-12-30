@@ -52,8 +52,7 @@
             <c:forEach var="s" items="${stock}">
               <tr><td>${s[0]}</td><td>${s[1]}</td></tr>
             </c:forEach>
-          
-</tbody>
+          </tbody>
         </table>
       </div>
     </div>

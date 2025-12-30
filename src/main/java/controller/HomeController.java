@@ -7,8 +7,7 @@ import java.io.IOException;
 import service.CatalogService;
 import service.impl.CatalogServiceImpl;
 
-@WebServlet(name = "HomeController",
-urlPatterns = {"/home", "/trang-chu", ""})
+@WebServlet(name = "HomeController", urlPatterns = {"/home", "/trang-chu", ""})
 public class HomeController extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
@@ -27,6 +26,8 @@ public class HomeController extends HttpServlet {
         req.setAttribute("newest",   catalogService.getNewestProducts(8));
         req.setAttribute("categories", catalogService.getAllCategories());
         req.setAttribute("banners", catalogService.getActiveBanners());
+        req.setAttribute("promotions", catalogService.getActivePromotions(4));
+        req.setAttribute("stores", catalogService.getActiveStores(4));
         req.getRequestDispatcher("/views/home.jsp").forward(req, resp);
     }
 }

@@ -14,7 +14,7 @@ import service.ReorderService;
 import service.impl.ReorderServiceImpl;
 
 @WebServlet(urlPatterns = "/user/reorder")
-public class ReorderController extends HttpServlet {
+public class ReOrderController extends HttpServlet {
     
     /**
 	 * 

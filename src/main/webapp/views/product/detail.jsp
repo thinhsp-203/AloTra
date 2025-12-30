@@ -32,7 +32,7 @@
             <div class="d-flex align-items-center mb-2 avg-rating">
                 <c:if test="${not empty totalReviews}">
                     <strong class="text-primary fs-5 me-2"><fmt:formatNumber value="${avgRating}" maxFractionDigits="1"/>/5</strong>
-                    <div classa="d-inline-block">
+                    <div class="d-inline-block">
                         <c:forEach begin="1" end="5" var="i">
                            <span class="star ${i <= (avgRating + 0.25) ? 'filled' : ''}"><i class="bi bi-star-fill"></i></span>
                         </c:forEach>

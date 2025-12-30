@@ -12,10 +12,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.InvalidPathException;
-import java.nio.file.Paths;
 
 
-@WebServlet(urlPatterns = {"/uploads/*"}) // Sửa URL mapping cho thân thiện hơn
+@WebServlet(urlPatterns = {"/uploads/*"})
 public class DownloadImageController extends HttpServlet {
 
     /**
@@ -36,13 +35,23 @@ public class DownloadImageController extends HttpServlet {
 
         File file;
         try {
-             // SỬA LỖI: Tạo đường dẫn file an toàn từ Constant.UPLOAD_DIRECTORY
-            String safePath = Paths.get(Constant.UPLOAD_DIRECTORY, fileName).toFile().getAbsolutePath();
+            // Lấy đường dẫn thực của thư mục uploads từ webapp
+            String uploadBasePath = getServletContext().getRealPath("/" + Constant.UPLOAD_DIRECTORY);
+            if (uploadBasePath == null) {
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Upload directory not found");
+                return;
+            }
+            
+            // Tạo đường dẫn file an toàn
+            File uploadBaseDir = new File(uploadBasePath);
+            File targetFile = new File(uploadBaseDir, fileName);
+            String safePath = targetFile.getCanonicalPath();
+            String baseCanonicalPath = uploadBaseDir.getCanonicalPath();
             
             // Ngăn chặn tấn công "Path Traversal" (../)
-            if (!safePath.startsWith(new File(Constant.UPLOAD_DIRECTORY).getAbsolutePath())) {
-                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found (Invalid Path)");
-                 return;
+            if (!safePath.startsWith(baseCanonicalPath)) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found (Invalid Path)");
+                return;
             }
             
             file = new File(safePath);

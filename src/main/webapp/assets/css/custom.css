@@ -52,32 +52,94 @@ body {
     box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
 }
 
+/* === HEADER TOP SECTION === */
+header .container.py-2 {
+    background: linear-gradient(135deg, rgba(0, 102, 51, 0.05) 0%, rgba(0, 102, 51, 0.02) 100%);
+    border-bottom: 1px solid rgba(0, 102, 51, 0.1);
+}
+
+header .container.py-2 .row.align-items-center {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 102, 51, 0.08);
+    margin: 0.25rem 0;
+}
+
 .main-nav {
-    background-color: #fff;
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #004d26 100%);
+    box-shadow: 0 2px 10px rgba(0, 102, 51, 0.2);
+}
+
+.main-nav .navbar-nav {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.main-nav .nav-item {
+    flex: 1;
+    text-align: center;
+    position: relative;
 }
 
 .main-nav .nav-link {
-    color: #333;
+    color: white;
     position: relative;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding: 1rem 1.5rem;
+    display: block;
+    width: 100%;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    border-radius: 0;
+}
+
+.main-nav .nav-link:hover {
+    color: #ffd700;
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.main-nav .nav-link.active {
+    color: #ffd700;
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
 .main-nav .nav-link::after {
     content: '';
     position: absolute;
-    bottom: -2px;
+    bottom: 0;
     left: 50%;
     transform: translateX(-50%);
     width: 0;
     height: 3px;
-    background: var(--bs-primary);
+    background: #ffd700;
     transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 .main-nav .nav-link:hover::after,
 .main-nav .nav-link.active::after {
-    width: 80%;
+    width: 60%;
+}
+
+.main-nav .nav-link.dropdown-toggle::after {
+    display: inline-block;
+    margin-left: 0.5rem;
+    vertical-align: 0.255em;
+    content: "";
+    border-top: 0.3em solid;
+    border-right: 0.3em solid transparent;
+    border-bottom: 0;
+    border-left: 0.3em solid transparent;
+    color: white;
+}
+
+.main-nav .nav-link.dropdown-toggle:hover::after {
+    color: #ffd700;
 }
 
 .dropdown-menu.megamenu {
@@ -127,15 +189,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: #fff;
 }
 
 .product-card .card-img-top {
     transition: transform 0.3s ease;
-    max-height: 180px; 
-    max-width: 100%;
-    object-fit: contain;
-    width: auto;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    min-width: 100%;
+    min-height: 100%;
 }
 
 .product-card:hover .card-img-top {
@@ -225,6 +288,91 @@ body {
 }
 .hero-search-form .btn {
     border-radius: 99px;
+}
+
+/* === STORE SEARCH FORM === */
+.store-search-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+    transition: box-shadow 0.3s ease;
+    gap: 0.5rem;
+    width: 100%;
+    flex-wrap: nowrap;
+}
+
+.store-search-wrapper:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.store-search-input {
+    flex: 1 1 auto;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0.75rem 0;
+    font-size: 1.1rem;
+    color: #333;
+    min-width: 0;
+    width: auto;
+}
+
+.store-search-input::placeholder {
+    color: #999;
+}
+
+.store-search-input:focus {
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+.store-search-btn {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    margin-left: 0;
+}
+
+.store-search-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 102, 51, 0.3);
+}
+
+.store-search-btn i {
+    font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .store-search-wrapper {
+        padding: 0.5rem 0.5rem 0.5rem 1.25rem;
+    }
+    
+    .store-search-input {
+        font-size: 1rem;
+        padding: 0.65rem 0;
+    }
+    
+    .store-search-btn {
+        width: 45px;
+        height: 45px;
+        margin-left: 0;
+    }
+    
+    .store-search-btn i {
+        font-size: 1.1rem;
+    }
 }
 
 /* === PRODUCT DETAIL PAGE STYLES === */
@@ -559,14 +707,33 @@ body {
     flex-direction: column;
 }
 
+/* Cố định kích thước ảnh trong product-grid-container */
+.product-grid-container .card-img-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    padding: 1rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+}
+
+.product-grid-container .card-img-top {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    min-width: 100%;
+    min-height: 100%;
+    transition: transform 0.3s ease;
+}
+
 /* Fix cho responsive */
 @media (max-width: 768px) {
-    .card-img-container {
+    .card-img-container,
+    .product-grid-container .card-img-container {
         height: 150px;
-    }
-    
-    .product-card .card-img-top {
-        max-height: 130px;
     }
     
     .product-card .card-title {
@@ -576,12 +743,9 @@ body {
 }
 
 @media (max-width: 576px) {
-    .card-img-container {
+    .card-img-container,
+    .product-grid-container .card-img-container {
         height: 120px;
-    }
-    
-    .product-card .card-img-top {
-        max-height: 100px;
     }
 }
 /* === PRODUCT DETAIL PAGE SPECIFIC === */
@@ -708,46 +872,35 @@ body {
     overflow: hidden;
 }
 
-/* Nút Wishlist (MỚI) */
+/* Nút Wishlist */
 .btn-wishlist {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
     border-radius: 50%;
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
     padding: 0;
-    font-size: 1.1rem;
-    
-    /* Ẩn ban đầu, chỉ hiện khi hover */
-    opacity: 0;
-    transform: translateX(20px);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     transition: all 0.2s ease-in-out;
 }
 
-/* Hiển thị khi hover card */
-.product-card:hover .btn-wishlist {
-    opacity: 1;
-    transform: translateX(0);
+.btn-wishlist:hover {
+    background-color: var(--bs-danger);
+    color: white;
+    border-color: var(--bs-danger);
+    transform: scale(1.1);
 }
 
 /* Trạng thái "đã thích" */
 .btn-wishlist.active {
-    opacity: 1; /* Luôn hiển thị */
-    transform: translateX(0);
     background-color: var(--bs-danger);
     color: white;
     border-color: var(--bs-danger);
 }
 .btn-wishlist.active i::before {
     content: "\f415"; /* Đổi icon sang bi-heart-fill */
-}
-/* CSS cho ảnh banner tự co giãn đẹp */
-#heroCarousel .carousel-item img {
-    height: 550px; /* Đặt một chiều cao cố định cho banner */
-    object-fit: cover; /* Đây là thuộc tính quan trọng: ảnh sẽ tự zoom và cắt để lấp đầy */
-    width: 100%;
 }
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700&display=swap');
 
@@ -792,31 +945,133 @@ body {
     font-weight: 500;
 }
 /* =============================================== */
-/* === FIX BANNER CAROUSEL ASPECT RATIO === */
+/* === FIX BANNER CAROUSEL - CỐ ĐỊNH KÍCH THƯỚC === */
 /* =============================================== */
 
+#heroCarousel {
+    width: 100%;
+    margin-bottom: 2rem;
+    /* Cố định chiều cao container */
+    height: 400px; /* Desktop: 400px */
+}
+
+/* Responsive cho tablet */
+@media (max-width: 992px) {
+    #heroCarousel {
+        height: 350px;
+    }
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    #heroCarousel {
+        height: 250px;
+    }
+}
+
+/* Responsive cho mobile nhỏ */
+@media (max-width: 576px) {
+    #heroCarousel {
+        height: 200px;
+    }
+}
+
+#heroCarousel .carousel-inner {
+    /* Đảm bảo carousel-inner có chiều cao cố định */
+    height: 100%;
+}
+
 #heroCarousel .carousel-item {
-    /* Đặt tỷ lệ khung hình mong muốn cho banner */
-    /* Ví dụ: 3/1 (rất rộng), 16/9 (HD), 21/9 (Cinematic) */
-    /* Bạn có thể thay đổi số 3 / 1 này cho đến khi ưng ý */
-    aspect-ratio: 16 / 9; 
+    /* Cố định chiều cao banner = 100% của carousel-inner */
+    height: 100%;
+    width: 100%;
     
     /* Đảm bảo item không bị tràn */
     overflow: hidden;
+    position: relative;
 }
 
 #heroCarousel .carousel-item img {
-    /* Quan trọng: Bắt ảnh lấp đầy 100% khung */
+    /* Bắt buộc ảnh phải có kích thước cố định */
     width: 100%;
     height: 100%;
     
-    /* Đây là phép thuật:
-       - 'cover': Phóng to ảnh để lấp đầy, chấp nhận mất một phần ảnh (nhưng không méo).
-       - 'contain': Thu nhỏ ảnh để vừa vặn, chấp nhận có viền đen (nếu tỷ lệ khác).
-       => Dùng 'cover' thường đẹp hơn cho banner.
-    */
-    object-fit: contain; 
+    /* 'cover': Phóng to/thu nhỏ ảnh để lấp đầy khung, cắt phần thừa (không méo) */
+    object-fit: cover;
     
     /* Đảm bảo ảnh được căn giữa */
     object-position: center;
+    
+    /* Đảm bảo ảnh hiển thị đúng */
+    display: block;
+    
+    /* Ngăn ảnh tự điều chỉnh kích thước */
+    min-width: 100%;
+    min-height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* === SECTION TITLES === */
+.section-title {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #004d26 100%);
+    color: white;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0, 102, 51, 0.2);
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: 0.5px;
+}
+
+.section-title i {
+    font-size: 1.75rem;
+    color: #ffd700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.section-title-wrapper {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.section-title-wrapper::before,
+.section-title-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--bs-primary), transparent);
+}
+
+.section-title-wrapper::before {
+    left: 0;
+}
+
+.section-title-wrapper::after {
+    right: 0;
+}
+
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 1.25rem;
+        padding: 0.6rem 1.5rem;
+        gap: 0.75rem;
+    }
+    
+    .section-title i {
+        font-size: 1.5rem;
+    }
+    
+    .section-title-wrapper::before,
+    .section-title-wrapper::after {
+        width: 20%;
+    }
 }

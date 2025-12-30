@@ -34,8 +34,7 @@
             <th style="width: 60px;">#</th>
             <th style="width: 100px;">Icon</th>
             <th>Tên danh mục</th>
-            <th class="text-center" style="width: 150px;">Thao 
-tác</th>
+            <th class="text-center" style="width: 150px;">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -43,15 +42,13 @@ tác</th>
             <c:when test="${empty cateList}">
               <tr>
                 <td colspan="4" class="text-center text-muted py-4">
-                
-  <i class="bi bi-inbox fs-3"></i>
+                  <i class="bi bi-inbox fs-3"></i>
                   <p class="mb-0 mt-2">Chưa có danh mục nào</p>
                 </td>
               </tr>
             </c:when>
             <c:otherwise>
-              <c:forEach items="${cateList}" var="cate" 
-varStatus="st">
+              <c:forEach items="${cateList}" var="cate" varStatus="st">
                 <tr>
                   <td><strong>${st.index + 1}</strong></td>
                   <td>
@@ -59,15 +56,12 @@ varStatus="st">
                       <c:when test="${not empty cate.icon}">
                        <img src="${pageContext.request.contextPath}/uploads/${cate.icon}" 
                              class="rounded" 
-                             style="width: 60px;
-height: 60px; object-fit: cover;"
+                             style="width: 60px; height: 60px; object-fit: cover;"
                              alt="${cate.name}"/>
                       </c:when>
                       <c:otherwise>
-                        
-<div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center"
-                             style="width: 60px;
-height: 60px;">
+                        <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center"
+                             style="width: 60px; height: 60px;">
                           <i class="bi bi-image fs-4"></i>
                         </div>
                       </c:otherwise>
@@ -83,8 +77,7 @@ height: 60px;">
                     <div class="btn-group btn-group-sm" role="group">
                       <a href="${pageContext.request.contextPath}/admin/category/edit?id=${cate.id}" 
                          class="btn btn-outline-primary" 
-              
-           title="Chỉnh sửa">
+                         title="Chỉnh sửa">
                         <i class="fas fa-pencil-alt"></i>
                       </a>
                       
