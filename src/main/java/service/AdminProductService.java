@@ -28,14 +28,16 @@ public interface AdminProductService {
      * @param product Entity Product
      * @param thumbnailFile File upload từ form (có thể null)
      * @param thumbnailUrl URL ảnh từ text input (có thể null)
+     * @param servletContext ServletContext để lấy đường dẫn upload
      * @throws IllegalArgumentException nếu cả 2 đều null hoặc dữ liệu không hợp lệ
      */
-    void saveProduct(Product product, Part thumbnailFile, String thumbnailUrl);
+    void saveProduct(Product product, Part thumbnailFile, String thumbnailUrl, jakarta.servlet.ServletContext servletContext);
     
     /**
      * Xóa sản phẩm (Soft delete: set isActive = false)
+     * @param servletContext ServletContext để xóa file ảnh
      */
-    void deleteProduct(int id);
+    void deleteProduct(int id, jakarta.servlet.ServletContext servletContext);
     
     /**
      * Lấy dữ liệu cho form (Categories, Suppliers)

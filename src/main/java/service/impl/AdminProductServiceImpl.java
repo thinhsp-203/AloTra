@@ -36,12 +36,12 @@ public class AdminProductServiceImpl implements AdminProductService {
     }
     
     @Override
-    public void saveProduct(Product product, Part thumbnailFile, String thumbnailUrl) {
+    public void saveProduct(Product product, Part thumbnailFile, String thumbnailUrl, jakarta.servlet.ServletContext servletContext) {
         // 1. VALIDATION
         validateProduct(product);
         
         // 2. XỬ LÝ ẢNH
-        String finalThumbnail = handleThumbnailUpload(product, thumbnailFile, thumbnailUrl);
+        String finalThumbnail = handleThumbnailUpload(product, thumbnailFile, thumbnailUrl, servletContext);
         if (finalThumbnail != null) {
             product.setThumbnail(finalThumbnail);
         }
@@ -57,7 +57,7 @@ public class AdminProductServiceImpl implements AdminProductService {
     }
     
     @Override
-    public void deleteProduct(int id) {
+    public void deleteProduct(int id, jakarta.servlet.ServletContext servletContext) {
         Product p = productDao.findById(id);
         if (p == null) {
             throw new IllegalArgumentException("Sản phẩm không tồn tại!");
@@ -69,7 +69,7 @@ public class AdminProductServiceImpl implements AdminProductService {
         productDao.update(p);
         
         // (Tùy chọn) Xóa file ảnh
-        deleteProductImage(p.getThumbnail());
+        deleteProductImage(p.getThumbnail(), servletContext);
     }
     
     @Override
@@ -115,7 +115,7 @@ public class AdminProductServiceImpl implements AdminProductService {
      * Xử lý upload thumbnail (ưu tiên file upload)
      * @return Tên file mới (hoặc URL), hoặc null nếu không có thay đổi
      */
-    private String handleThumbnailUpload(Product product, Part thumbnailFile, String thumbnailUrl) {
+    private String handleThumbnailUpload(Product product, Part thumbnailFile, String thumbnailUrl, jakarta.servlet.ServletContext servletContext) {
         try {
             String originalFileName = (thumbnailFile != null) 
                 ? Paths.get(thumbnailFile.getSubmittedFileName()).getFileName().toString() 
@@ -130,19 +130,18 @@ public class AdminProductServiceImpl implements AdminProductService {
                 }
                 String finalFileName = "product-" + UUID.randomUUID().toString() + extension;
                 
-                // Tạo thư mục nếu chưa có
-                String uploadDirPhysical = Paths.get(Constant.UPLOAD_DIRECTORY, PRODUCT_SUBDIR)
-                    .toFile().getAbsolutePath();
-                File uploadDir = new File(uploadDirPhysical);
-                if (!uploadDir.exists()) uploadDir.mkdirs();
+                // Lưu file vào thư mục uploads/products
+                String uploadPath = Constant.getUploadPath(servletContext);
+                File productsDir = new File(uploadPath, PRODUCT_SUBDIR);
+                if (!productsDir.exists()) productsDir.mkdirs();
                 
-                File fileToSave = new File(uploadDirPhysical, finalFileName);
+                File fileToSave = new File(productsDir, finalFileName);
                 
                 // Xóa ảnh cũ nếu tồn tại
                 if (product.getThumbnail() != null && 
                     !product.getThumbnail().isEmpty() && 
                     !product.getThumbnail().startsWith("http")) {
-                    deleteProductImage(product.getThumbnail());
+                    deleteProductImage(product.getThumbnail(), servletContext);
                 }
                 
                 // Lưu file mới
@@ -169,16 +168,17 @@ public class AdminProductServiceImpl implements AdminProductService {
     /**
      * Xóa file ảnh sản phẩm
      */
-    private void deleteProductImage(String thumbnailPath) {
+    private void deleteProductImage(String thumbnailPath, jakarta.servlet.ServletContext servletContext) {
         if (thumbnailPath == null || thumbnailPath.isEmpty() || thumbnailPath.startsWith("http")) {
             return;
         }
         
         try {
+            // thumbnailPath có thể là "products/filename" hoặc chỉ "filename"
             String fileName = Paths.get(thumbnailPath).getFileName().toString();
-            String uploadDirPhysical = Paths.get(Constant.UPLOAD_DIRECTORY, PRODUCT_SUBDIR)
-                .toFile().getAbsolutePath();
-            File oldFile = new File(uploadDirPhysical, fileName);
+            String uploadPath = Constant.getUploadPath(servletContext);
+            File productsDir = new File(uploadPath, PRODUCT_SUBDIR);
+            File oldFile = new File(productsDir, fileName);
             if (oldFile.exists()) {
                 oldFile.delete();
             }

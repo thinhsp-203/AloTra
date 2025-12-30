@@ -15,11 +15,11 @@ public class EmailUtil {
 
     // ================= CẤU HÌNH GMAIL ================= //
     // 1. Email của bạn (dùng để gửi đi)
-    private static final String FROM_EMAIL = "@gmail.com"; 
+    private static final String FROM_EMAIL = "hoang.anhe173@gmail.com"; 
     
     // 2. Mật khẩu ứng dụng (APP PASSWORD) - KHÔNG PHẢI MẬT KHẨU ĐĂNG NHẬP
     // Hướng dẫn lấy: Tài khoản Google -> Bảo mật -> Xác minh 2 bước (Bật) -> Mật khẩu ứng dụng -> Tạo mới
-    private static final String PASSWORD = ""; 
+    private static final String PASSWORD = "yyyt yhku glio vazj"; 
 
     public static boolean sendEmail(String toEmail, String subject, String body) {
         try {

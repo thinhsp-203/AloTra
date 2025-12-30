@@ -43,11 +43,12 @@ public class CategoryAddController extends HttpServlet {
       }
       finalFileName = "category-" + UUID.randomUUID().toString() + extension;
       
-      // SỬA LỖI: Lưu file vào đường dẫn tuyệt đối
-      File uploadDir = new File(Constant.UPLOAD_DIRECTORY);
-      if (!uploadDir.exists()) uploadDir.mkdirs();
+      // Lưu file vào thư mục uploads/categories
+      String uploadPath = Constant.getUploadPath(req.getServletContext());
+      File categoriesDir = new File(uploadPath, "categories");
+      if (!categoriesDir.exists()) categoriesDir.mkdirs();
       
-      File fileToSave = new File(uploadDir, finalFileName);
+      File fileToSave = new File(categoriesDir, finalFileName);
       
       try (InputStream input = part.getInputStream()) {
           Files.copy(input, fileToSave.toPath());

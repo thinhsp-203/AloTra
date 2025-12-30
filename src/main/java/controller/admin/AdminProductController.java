@@ -166,7 +166,7 @@ public class AdminProductController extends HttpServlet {
             String thumbnailUrl = req.getParameter("thumbnailUrl");
             
             // 4. GỌI SERVICE XỬ LÝ
-            productService.saveProduct(product, thumbnailFile, thumbnailUrl);
+            productService.saveProduct(product, thumbnailFile, thumbnailUrl, req.getServletContext());
             
             req.getSession().setAttribute("success", "Đã lưu sản phẩm thành công!");
             
@@ -184,7 +184,7 @@ public class AdminProductController extends HttpServlet {
             throws IOException {
         try {
             int id = Integer.parseInt(req.getParameter("id"));
-            productService.deleteProduct(id);
+            productService.deleteProduct(id, req.getServletContext());
             req.getSession().setAttribute("success", "Đã xóa sản phẩm!");
         } catch (IllegalArgumentException e) {
             req.getSession().setAttribute("error", e.getMessage());

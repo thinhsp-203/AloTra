@@ -58,11 +58,12 @@ public class CategoryEditController extends HttpServlet {
       }
       finalFileName = "category-" + UUID.randomUUID().toString() + extension;
       
-      // SỬA LỖI: Lưu file vào đường dẫn tuyệt đối
-      File uploadDir = new File(Constant.UPLOAD_DIRECTORY);
-      if (!uploadDir.exists()) uploadDir.mkdirs();
+      // Lưu file vào thư mục uploads/categories
+      String uploadPath = Constant.getUploadPath(req.getServletContext());
+      File categoriesDir = new File(uploadPath, "categories");
+      if (!categoriesDir.exists()) categoriesDir.mkdirs();
       
-      File fileToSave = new File(uploadDir, finalFileName);
+      File fileToSave = new File(categoriesDir, finalFileName);
       
       try (InputStream input = part.getInputStream()) {
           Files.copy(input, fileToSave.toPath());
@@ -70,7 +71,7 @@ public class CategoryEditController extends HttpServlet {
       
       // (Tùy chọn: Xóa file ảnh cũ nếu tồn tại)
       if (old.getIcon() != null && !old.getIcon().isEmpty()) {
-          File oldFile = new File(uploadDir, old.getIcon());
+          File oldFile = new File(categoriesDir, old.getIcon());
           if (oldFile.exists()) {
               oldFile.delete();
           }

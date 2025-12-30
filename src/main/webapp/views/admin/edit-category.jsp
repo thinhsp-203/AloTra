@@ -35,18 +35,19 @@
             <div class="mb-2">
               <c:choose>
                 <c:when test="${not empty category.icon}">
-                  <img src="${pageContext.request.contextPath}/uploads/${category.icon}" 
+                  <img src="${pageContext.request.contextPath}/uploads/categories/${category.icon}" 
+                       class="rounded border" 
+                       style="max-width: 200px; max-height: 200px; object-fit: cover;"
+                       alt="${category.name}"
+                       id="currentImage"
+                       onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/uploads/categories/default.png';"/>
+                </c:when>
+                <c:otherwise>
+                  <img src="${pageContext.request.contextPath}/uploads/categories/default.png" 
                        class="rounded border" 
                        style="max-width: 200px; max-height: 200px; object-fit: cover;"
                        alt="${category.name}"
                        id="currentImage"/>
-                </c:when>
-                <c:otherwise>
-                  <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center"
-                       style="width: 200px; height: 200px;"
-                       id="currentImage">
-                    <i class="bi bi-image fs-1"></i>
-                  </div>
                 </c:otherwise>
               </c:choose>
      
