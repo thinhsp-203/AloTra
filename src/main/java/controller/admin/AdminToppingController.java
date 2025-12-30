@@ -13,13 +13,13 @@ import service.AdminToppingService;
 import service.impl.AdminToppingServiceImpl;
 
 @WebServlet(urlPatterns = {
-	    "/admin/toppings",
-	    "/admin/toppings/create",
-	    "/admin/toppings/edit",
-	    "/admin/toppings/save",
-	    "/admin/toppings/delete"
-	})
-	public class AdminToppingController extends HttpServlet {
+    "/admin/toppings",
+    "/admin/toppings/create",
+    "/admin/toppings/edit",
+    "/admin/toppings/save",
+    "/admin/toppings/delete"
+})
+public class AdminToppingController extends HttpServlet {
 	    
 	    /**
 	 * 

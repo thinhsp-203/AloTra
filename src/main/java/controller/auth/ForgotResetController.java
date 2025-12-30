@@ -1,9 +1,9 @@
 package controller.auth;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import utils.EmailUtil;
-import jakarta.servlet.annotation.WebServlet;
 import service.AuthRecoveryService;
 import service.impl.AuthRecoveryServiceImpl;
 

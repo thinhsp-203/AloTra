@@ -11,7 +11,7 @@ import model.User;
 import service.UserService;
 import service.impl.UserServiceImpl;
 
-@WebServlet(urlPatterns = { "/verify-otp" })
+@WebServlet(urlPatterns = {"/verify-otp"})
 public class VerifyController extends HttpServlet {
 
     UserService userService = new UserServiceImpl();

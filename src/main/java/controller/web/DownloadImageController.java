@@ -14,7 +14,7 @@ import java.io.OutputStream;
 import java.nio.file.InvalidPathException;
 
 
-@WebServlet(urlPatterns = {"/uploads/*"}) // Sửa URL mapping cho thân thiện hơn
+@WebServlet(urlPatterns = {"/uploads/*"})
 public class DownloadImageController extends HttpServlet {
 
     /**

@@ -14,13 +14,13 @@ import service.AdminVoucherService;
 import service.impl.AdminVoucherServiceImpl;
 
 @WebServlet(urlPatterns = {
-	    "/admin/vouchers",
-	    "/admin/vouchers/create",
-	    "/admin/vouchers/edit",
-	    "/admin/vouchers/save",
-	    "/admin/vouchers/delete"
-	})
-	public class AdminVoucherController extends HttpServlet {
+    "/admin/vouchers",
+    "/admin/vouchers/create",
+    "/admin/vouchers/edit",
+    "/admin/vouchers/save",
+    "/admin/vouchers/delete"
+})
+public class AdminVoucherController extends HttpServlet {
 	    
 	    /**
 	 * 

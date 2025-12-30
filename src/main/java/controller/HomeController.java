@@ -7,8 +7,7 @@ import java.io.IOException;
 import service.CatalogService;
 import service.impl.CatalogServiceImpl;
 
-@WebServlet(name = "HomeController",
-urlPatterns = {"/home", "/trang-chu", ""})
+@WebServlet(name = "HomeController", urlPatterns = {"/home", "/trang-chu", ""})
 public class HomeController extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
