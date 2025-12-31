@@ -60,7 +60,8 @@
                 <c:when test="${not empty sessionScope.currentUser.avatar}">
                     <img src="${pageContext.request.contextPath}/uploads/${sessionScope.currentUser.avatar}" 
                          alt="Avatar" class="img-fluid rounded-circle" 
-                         style="width: 100%; height: 100%; object-fit: cover;">
+                         style="width: 100%; height: 100%; object-fit: cover;"
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/200/006633/FFFFFF?text=${fn:substring(sessionScope.currentUser.username, 0, 1)}';">
                 </c:when>
                 <c:otherwise>
                     <i class="bi bi-person-circle"></i>

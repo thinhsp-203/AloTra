@@ -43,7 +43,16 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     public Orders getOrderDetails(int orderId) {
         EntityManager em = JpaUtil.em();
         try {
-            return em.find(Orders.class, orderId);
+            // Sử dụng JOIN FETCH để eager load orderDetails và product
+            jakarta.persistence.TypedQuery<Orders> query = em.createQuery(
+                "SELECT DISTINCT o FROM Orders o " +
+                "LEFT JOIN FETCH o.orderDetails od " +
+                "LEFT JOIN FETCH od.product " +
+                "WHERE o.order_id = :orderId",
+                Orders.class
+            );
+            query.setParameter("orderId", orderId);
+            return query.getResultStream().findFirst().orElse(null);
         } finally {
             em.close();
         }

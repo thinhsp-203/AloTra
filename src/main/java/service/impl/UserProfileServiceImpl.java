@@ -123,7 +123,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
     
     @Override
-    public void changeAvatar(int userId, Part avatarFile) {
+    public void changeAvatar(int userId, Part avatarFile, jakarta.servlet.ServletContext servletContext) {
         if (avatarFile == null || avatarFile.getSize() == 0) {
             throw new IllegalArgumentException("Vui lòng chọn một file ảnh!");
         }
@@ -148,13 +148,27 @@ public class UserProfileServiceImpl implements UserProfileService {
             
             String finalFileName = "user-" + userId + "-" + UUID.randomUUID().toString() + extension;
             
-            File uploadDir = new File(Constant.UPLOAD_DIRECTORY);
-            if (!uploadDir.exists()) uploadDir.mkdirs();
-            File fileToSave = new File(uploadDir, finalFileName);
+            // Lưu file vào thư mục uploads/users
+            String uploadPath = Constant.getUploadPath(servletContext);
+            File usersDir = new File(uploadPath, "users");
+            if (!usersDir.exists()) usersDir.mkdirs();
+            File fileToSave = new File(usersDir, finalFileName);
             
             // Xóa avatar cũ
-            if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
-                File oldFile = new File(uploadDir, user.getAvatar());
+            if (user.getAvatar() != null && !user.getAvatar().isEmpty() && !user.getAvatar().startsWith("http")) {
+                String oldAvatarPath = user.getAvatar();
+                File oldFile;
+                
+                if (oldAvatarPath.startsWith("users/")) {
+                    // Avatar cũ ở uploads/users/
+                    String oldFileName = oldAvatarPath.substring(6); // Bỏ "users/" prefix
+                    oldFile = new File(usersDir, oldFileName);
+                } else {
+                    // Avatar cũ ở uploads/ (tương thích ngược)
+                    File uploadDir = new File(uploadPath);
+                    oldFile = new File(uploadDir, oldAvatarPath);
+                }
+                
                 if (oldFile.exists()) {
                     oldFile.delete();
                 }
@@ -162,11 +176,11 @@ public class UserProfileServiceImpl implements UserProfileService {
             
             // Lưu file mới
             try (InputStream input = avatarFile.getInputStream()) {
-                Files.copy(input, fileToSave.toPath());
+                Files.copy(input, fileToSave.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             }
             
-            // Cập nhật DB
-            user.setAvatar(finalFileName);
+            // Cập nhật DB - lưu với prefix "users/"
+            user.setAvatar("users/" + finalFileName);
             em.merge(user);
             
             em.getTransaction().commit();

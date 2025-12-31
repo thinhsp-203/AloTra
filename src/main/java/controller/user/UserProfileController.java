@@ -177,7 +177,7 @@ public class UserProfileController extends HttpServlet {
             throws ServletException, IOException {
         Part avatarFile = req.getPart("avatar");
         
-        profileService.changeAvatar(currentUser.getId(), avatarFile);
+        profileService.changeAvatar(currentUser.getId(), avatarFile, req.getServletContext());
         
         // Update session
         User updatedUser = profileService.getUserById(currentUser.getId());
