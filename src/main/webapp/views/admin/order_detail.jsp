@@ -1,163 +1,395 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core"%>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt"%>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions"%>
 
-<h1 class="h3 mb-4 text-gray-800">Chi tiết đơn hàng
-	#${order.order_id}</h1>
+<%-- Header with Order ID --%>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">
+            <i class="fas fa-receipt text-primary me-2"></i>Chi tiết đơn hàng #${order.order_id}
+        </h1>
+        <p class="text-muted mb-0">
+            <i class="far fa-calendar me-1"></i>
+            Ngày đặt: <fmt:formatDate value="${order.createdDateAsDate}" pattern="dd/MM/yyyy HH:mm"/>
+        </p>
+    </div>
+    <a href="${pageContext.request.contextPath}/admin/orders" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+    </a>
+</div>
 
-<div class="row">
-	<div class="col-lg-8">
-		<div class="card shadow mb-4">
-			<div class="card-header py-3">
-				<h6 class="m-0 font-weight-bold text-primary">Thông tin khách
-					hàng</h6>
-			</div>
-			<div class="card-body">
-				<div class="row">
-					<div class="col-6 mb-2">
-						<strong>Họ và tên:</strong> ${order.fullname}
-					</div>
-					<div class="col-6 mb-2">
-						<strong>Số điện thoại:</strong> ${order.phone}
-					</div>
-					<div class="col-12 mb-2">
-						<strong>Địa chỉ:</strong> ${order.address}
-					</div>
-					<c:if test="${not empty order.note}">
-						<div class="col-12">
-							<strong>Ghi chú:</strong> <em>${order.note}</em>
-						</div>
-					</c:if>
-				</div>
-			</div>
-		</div>
+<%-- Alert Messages --%>
+<c:if test="${not empty sessionScope.success}">
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle me-2"></i><strong>Thành công!</strong> ${sessionScope.success}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <c:remove var="success" scope="session"/>
+</c:if>
+<c:if test="${not empty sessionScope.error}">
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i><strong>Lỗi!</strong> ${sessionScope.error}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <c:remove var="error" scope="session"/>
+</c:if>
 
-		<div class="card shadow mb-4">
-			<div class="card-header py-3">
-				<h6 class="m-0 font-weight-bold text-primary">Sản phẩm đã đặt</h6>
-			</div>
-			<div class="card-body p-0">
-				<div class="table-responsive">
-					<table class="table table-sm mb-0">
-						<thead>
-							<tr>
-								<th>Sản phẩm</th>
-								<th>Size</th>
-								<th>Topping</th>
-								<th>Số lượng</th>
-								<th>Đơn giá</th>
-								<th>Thành tiền</th>
-							</tr>
-						</thead>
-						<tbody>
-							<c:forEach var="item" items="${details}">
-								<tr>
-									<td>${item.product_name}</td>
-									<td>${empty item.size_name ? '-' : item.size_name}</td>
-									<td>${empty item.toppings ? '-' : item.toppings}</td>
-									<td>${item.quantity}</td>
-									<td><fmt:formatNumber value="${item.price}"
-											pattern="#,##0 '₫'" /></td>
-									<td class="fw-bold"><fmt:formatNumber
-											value="${item.price * item.quantity}" pattern="#,##0 '₫'" />
-									</td>
-								</tr>
-							</c:forEach>
-						</tbody>
-						<tfoot class="table-light">
-							<tr>
-								<th colspan="5" class="text-end">Tổng cộng:</th>
-								<th class="text-primary"><fmt:formatNumber
-										value="${order.total_amount}" pattern="#,##0 '₫'" /></th>
-							</tr>
-						</tfoot>
-					</table>
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="row g-4">
+    <%-- Left Column: Customer Info & Products --%>
+    <div class="col-lg-8">
+        <%-- Customer Information Card --%>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-gradient-primary text-white py-3" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-user-circle me-2"></i>Thông tin khách hàng
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user text-primary me-5" style="font-size: 1.2rem; width: 28px; text-align: center; flex-shrink: 0;"></i>
+                            <div class="fs-5">
+                                <strong>Họ và tên:</strong> ${order.fullname}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-phone text-success me-5" style="font-size: 1.2rem; width: 28px; text-align: center; flex-shrink: 0;"></i>
+                            <div class="fs-5">
+                                <strong>Số điện thoại:</strong> ${order.phone}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-map-marker-alt text-warning me-5" style="font-size: 1.2rem; width: 28px; text-align: center; flex-shrink: 0; padding-top: 2px;"></i>
+                            <div class="flex-grow-1 fs-5">
+                                <strong>Địa chỉ giao hàng:</strong> ${order.address}
+                            </div>
+                        </div>
+                    </div>
+                    <c:if test="${not empty order.note}">
+                        <div class="col-12">
+                            <div class="d-flex align-items-start p-3 bg-info bg-opacity-10 rounded border-start border-info border-3">
+                                <i class="fas fa-sticky-note text-info me-5" style="font-size: 1.2rem; width: 28px; text-align: center; flex-shrink: 0; padding-top: 2px;"></i>
+                                <div class="flex-grow-1 fs-5">
+                                    <strong>Ghi chú đặc biệt:</strong> <em class="text-dark">${order.note}</em>
+                                </div>
+                            </div>
+                        </div>
+                    </c:if>
+                </div>
+            </div>
+        </div>
 
-	<div class="col-lg-4">
-		<div class="card shadow mb-4">
-			<div class="card-header py-3">
-				<h6 class="m-0 font-weight-bold text-primary">Trạng thái đơn
-					hàng</h6>
-			</div>
-			<div class="card-body">
-				<form method="post"
-					action="${pageContext.request.contextPath}/admin/orders">
-					<input type="hidden" name="action" value="updateStatus"> <input
-						type="hidden" name="orderId" value="${order.order_id}">
+        <%-- Order Items Card --%>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-utensils me-2"></i>Sản phẩm đã đặt
+                    <span class="ms-2">${fn:length(details)} món</span>
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4" style="width: 5%;">#</th>
+                                <th>Sản phẩm</th>
+                                <th style="width: 100px;" class="text-center">Size</th>
+                                <th style="width: 180px;">Topping</th>
+                                <th style="width: 100px;" class="text-center">Số lượng</th>
+                                <th style="width: 130px;" class="text-end">Đơn giá</th>
+                                <th style="width: 140px;" class="text-end pe-4">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="item" items="${details}" varStatus="loop">
+                                <tr class="border-bottom">
+                                    <td class="ps-4">
+                                        ${loop.index + 1}
+                                    </td>
+                                    <td>
+                                        <strong>${item.product_name}</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <c:choose>
+                                            <c:when test="${not empty item.size_name}">
+                                                ${item.size_name}
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-muted">-</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${not empty item.toppings}">
+                                                <small class="text-muted">${item.toppings}</small>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-muted">-</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="text-center">
+                                        ${item.quantity}
+                                    </td>
+                                    <td class="text-end">
+                                        <fmt:formatNumber value="${item.price}" pattern="#,##0₫"/>
+                                    </td>
+                                    <td class="text-end fw-bold text-success pe-4">
+                                        <fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0₫"/>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="6" class="text-end fw-bold ps-4">
+                                    <span class="fs-5">Tổng cộng:</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <span class="fs-4 fw-bold text-success">
+                                        <fmt:formatNumber value="${order.total_amount}" pattern="#,##0₫"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-					<div class="mb-3">
-						<label class="form-label">Trạng thái hiện tại</label> <select
-							class="form-select" name="status">
-							<option value="Chờ xác nhận"
-								${order.order_status eq 'Chờ xác nhận' ? 'selected' : ''}>Chờ
-								xác nhận</option>
-							<option value="Đang chuẩn bị"
-								${order.order_status eq 'Đang chuẩn bị' ? 'selected' : ''}>Đang
-								chuẩn bị</option>
-							<option value="Đang giao"
-								${order.order_status eq 'Đang giao' ? 'selected' : ''}>Đang
-								giao</option>
-							<option value="Hoàn thành"
-								${order.order_status eq 'Hoàn thành' ? 'selected' : ''}>Hoàn
-								thành</option>
-							<option value="Đã hủy"
-								${order.order_status eq 'Đã hủy' ? 'selected' : ''}>Đã
-								hủy</option>
-						</select>
-					</div>
-					<button type="submit" class="btn btn-primary w-100">Cập
-						nhật trạng thái</button>
-				</form>
-			</div>
-		</div>
+    <%-- Right Column: Status & Payment --%>
+    <div class="col-lg-4">
+        <%-- Order Status Card --%>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-tasks me-2"></i>Trạng thái đơn hàng
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold mb-3">Trạng thái hiện tại</label>
+                    <c:choose>
+                        <c:when test="${order.order_status eq 'Chờ xác nhận'}">
+                            <div class="alert alert-secondary mb-0 text-center py-3">
+                                <i class="fas fa-hourglass-half fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.order_status}</div>
+                            </div>
+                        </c:when>
+                        <c:when test="${order.order_status eq 'Đang chuẩn bị'}">
+                            <div class="alert alert-info mb-0 text-center py-3">
+                                <i class="fas fa-utensils fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.order_status}</div>
+                            </div>
+                        </c:when>
+                        <c:when test="${order.order_status eq 'Đang giao'}">
+                            <div class="alert alert-primary mb-0 text-center py-3">
+                                <i class="fas fa-motorcycle fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.order_status}</div>
+                            </div>
+                        </c:when>
+                        <c:when test="${order.order_status eq 'Hoàn thành'}">
+                            <div class="alert alert-success mb-0 text-center py-3">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.order_status}</div>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="alert alert-danger mb-0 text-center py-3">
+                                <i class="fas fa-times-circle fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.order_status}</div>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+                
+                <c:choose>
+                    <c:when test="${order.order_status eq 'Đã hủy'}">
+                        <div class="alert alert-warning border-warning">
+                            <i class="fas fa-lock me-2"></i>
+                            <strong>Đơn hàng đã bị hủy</strong>
+                            <p class="mb-0 mt-2 small">Không thể cập nhật trạng thái cho đơn hàng đã hủy.</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Trạng thái (chỉ xem)</label>
+                            <select class="form-select" disabled>
+                                <option value="Đã hủy" selected>Đã hủy</option>
+                            </select>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <form method="post" action="${pageContext.request.contextPath}/admin/orders">
+                            <input type="hidden" name="action" value="updateStatus">
+                            <input type="hidden" name="orderId" value="${order.order_id}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Cập nhật trạng thái</label>
+                                <select class="form-select form-select-lg" name="status" required>
+                                    <option value="Chờ xác nhận" ${order.order_status eq 'Chờ xác nhận' ? 'selected' : ''}>
+                                        Chờ xác nhận
+                                    </option>
+                                    <option value="Đang chuẩn bị" ${order.order_status eq 'Đang chuẩn bị' ? 'selected' : ''}>
+                                        Đang chuẩn bị
+                                    </option>
+                                    <option value="Đang giao" ${order.order_status eq 'Đang giao' ? 'selected' : ''}>
+                                        Đang giao
+                                    </option>
+                                    <option value="Hoàn thành" ${order.order_status eq 'Hoàn thành' ? 'selected' : ''}>
+                                        Hoàn thành
+                                    </option>
+                                    <option value="Đã hủy" ${order.order_status eq 'Đã hủy' ? 'selected' : ''}>
+                                        Đã hủy
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                <i class="fas fa-save me-2"></i>Cập nhật trạng thái
+                            </button>
+                        </form>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
 
-		<div class="card shadow mb-4">
-			<div class="card-header py-3">
-				<h6 class="m-0 font-weight-bold text-primary">Thanh toán</h6>
-			</div>
-			<div class="card-body">
-				<form method="post"
-					action="${pageContext.request.contextPath}/admin/orders">
-					<input type="hidden" name="action" value="updatePayment"> <input
-						type="hidden" name="orderId" value="${order.order_id}">
+        <%-- Payment Information Card --%>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-money-bill-wave me-2"></i>Thông tin thanh toán
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold mb-2">Phương thức thanh toán</label>
+                    <div>
+                        <c:choose>
+                            <c:when test="${order.payment_method eq 'COD'}">
+                                <span class="badge bg-secondary fs-6 px-3 py-2">
+                                    <i class="fas fa-money-bill me-2"></i>Thanh toán khi nhận hàng (COD)
+                                </span>
+                            </c:when>
+                            <c:when test="${order.payment_method eq 'Online'}">
+                                <span class="badge bg-primary fs-6 px-3 py-2">
+                                    <i class="fas fa-credit-card me-2"></i>Thanh toán online
+                                </span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge bg-secondary fs-6 px-3 py-2">${order.payment_method}</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-semibold mb-2">Trạng thái thanh toán</label>
+                    <c:choose>
+                        <c:when test="${order.payment_status eq 'Đã thanh toán'}">
+                            <div class="alert alert-success mb-0 text-center py-3">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.payment_status}</div>
+                            </div>
+                        </c:when>
+                        <c:when test="${order.payment_status eq 'Đã hoàn tiền'}">
+                            <div class="alert alert-info mb-0 text-center py-3">
+                                <i class="fas fa-undo fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.payment_status}</div>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="alert alert-warning mb-0 text-center py-3">
+                                <i class="fas fa-clock fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.payment_status}</div>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+                
+                <c:choose>
+                    <c:when test="${order.order_status eq 'Đã hủy'}">
+                        <div class="alert alert-warning border-warning">
+                            <i class="fas fa-lock me-2"></i>
+                            <strong>Đơn hàng đã bị hủy</strong>
+                            <p class="mb-0 mt-2 small">Không thể cập nhật trạng thái thanh toán cho đơn hàng đã hủy.</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Trạng thái (chỉ xem)</label>
+                            <select class="form-select form-select-lg" disabled>
+                                <option value="${order.payment_status}" selected>${order.payment_status}</option>
+                            </select>
+                            <div class="form-text mt-2">
+                                <c:if test="${order.payment_method eq 'Online' && order.payment_status eq 'Đã thanh toán'}">
+                                    <i class="fas fa-info-circle text-info me-1"></i>
+                                    Đơn hàng đã thanh toán online, trạng thái đã được tự động chuyển sang "Đã hoàn tiền" khi hủy.
+                                </c:if>
+                                <c:if test="${order.payment_method eq 'COD'}">
+                                    <i class="fas fa-info-circle text-info me-1"></i>
+                                    Đơn hàng COD đã hủy, trạng thái là "Chưa thanh toán" vì chưa thu tiền.
+                                </c:if>
+                            </div>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <form method="post" action="${pageContext.request.contextPath}/admin/orders">
+                            <input type="hidden" name="action" value="updatePayment">
+                            <input type="hidden" name="orderId" value="${order.order_id}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Cập nhật trạng thái thanh toán</label>
+                                <select class="form-select form-select-lg" name="paymentStatus" required>
+                                    <option value="Chưa thanh toán" 
+                                            ${order.payment_status eq 'Chưa thanh toán' ? 'selected' : ''}>
+                                        Chưa thanh toán
+                                    </option>
+                                    <option value="Đã thanh toán" 
+                                            ${order.payment_status eq 'Đã thanh toán' ? 'selected' : ''}>
+                                        Đã thanh toán
+                                    </option>
+                                    <c:if test="${order.payment_method eq 'Online'}">
+                                        <option value="Đã hoàn tiền" 
+                                                ${order.payment_status eq 'Đã hoàn tiền' ? 'selected' : ''}>
+                                            Đã hoàn tiền
+                                        </option>
+                                    </c:if>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success w-100 btn-lg">
+                                <i class="fas fa-save me-2"></i>Cập nhật thanh toán
+                            </button>
+                        </form>
+                    </c:otherwise>
+                </c:choose>
 
-					<div class="mb-2">
-						<strong>Phương thức:</strong> ${order.payment_method}
-					</div>
-					<div class="mb-3">
-						<label class="form-label">Trạng thái thanh toán</label> <select
-							class="form-select" name="paymentStatus">
-							<option value="Chưa thanh toán"
-								${order.payment_status eq 'Chưa thanh toán' ? 'selected' : ''}>Chưa
-								thanh toán</option>
-							<option value="Đã thanh toán"
-								${order.payment_status eq 'Đã thanh toán' ? 'selected' : ''}>Đã
-								thanh toán</option>
-						</select>
-					</div>
-					<button type="submit" class="btn btn-success w-100">Cập
-						nhật thanh toán</button>
-				</form>
+                <hr class="my-4">
 
-				<hr class="my-3">
-
-				<div class="small text-muted">
-					<div>
-						<strong>Ngày đặt:</strong>
-						<fmt:formatDate value="${order.createdDateAsDate}"
-							pattern="dd/MM/yyyy HH:mm" />
-					</div>
-					<div>
-						<strong>Cập nhật:</strong>
-						<fmt:formatDate value="${order.updatedDateAsDate}"
-							pattern="dd/MM/yyyy HH:mm" />
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                <div class="small text-muted">
+                    <div class="mb-3 d-flex align-items-center">
+                        <i class="fas fa-calendar-alt text-primary me-5" style="width: 28px; text-align: center; flex-shrink: 0;"></i>
+                        <div>
+                            <div class="fw-semibold">Ngày đặt</div>
+                            <div><fmt:formatDate value="${order.createdDateAsDate}" pattern="dd/MM/yyyy HH:mm"/></div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-edit text-primary me-5" style="width: 28px; text-align: center; flex-shrink: 0;"></i>
+                        <div>
+                            <div class="fw-semibold">Cập nhật lần cuối</div>
+                            <div><fmt:formatDate value="${order.updatedDateAsDate}" pattern="dd/MM/yyyy HH:mm"/></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

@@ -65,13 +65,47 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             em.getTransaction().begin();
             
             Orders order = em.find(Orders.class, orderId);
-            if (order != null) {
-                order.setOrder_status(newStatus);
-                order.setUpdatedDate(LocalDateTime.now());
-                em.merge(order);
+            if (order == null) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Đơn hàng không tồn tại!");
             }
             
+            // Không cho phép cập nhật nếu đơn hàng đã hủy
+            if ("Đã hủy".equals(order.getOrder_status())) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Không thể cập nhật đơn hàng đã bị hủy!");
+            }
+            
+            String oldStatus = order.getOrder_status();
+            order.setOrder_status(newStatus);
+            order.setUpdatedDate(LocalDateTime.now());
+            
+            // Logic: Khi đơn hàng bị hủy, tự động cập nhật payment_status
+            if ("Đã hủy".equals(newStatus) && !"Đã hủy".equals(oldStatus)) {
+                String currentPaymentStatus = order.getPayment_status();
+                
+                // Chỉ cập nhật nếu chưa phải "Đã hoàn tiền" (tránh ghi đè)
+                if (!"Đã hoàn tiền".equals(currentPaymentStatus)) {
+                    // Nếu đơn hàng đã thanh toán online → cần hoàn tiền
+                    if ("Đã thanh toán".equals(currentPaymentStatus) && 
+                        "Online".equals(order.getPayment_method())) {
+                        order.setPayment_status("Đã hoàn tiền");
+                    }
+                    // Nếu là COD hoặc chưa thanh toán → giữ "Chưa thanh toán"
+                    else if ("COD".equals(order.getPayment_method()) || 
+                             "Chưa thanh toán".equals(currentPaymentStatus)) {
+                        order.setPayment_status("Chưa thanh toán");
+                    }
+                }
+            }
+            
+            em.merge(order);
             em.getTransaction().commit();
+        } catch (IllegalArgumentException e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e; // Re-throw để controller xử lý
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -89,13 +123,33 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             em.getTransaction().begin();
             
             Orders order = em.find(Orders.class, orderId);
-            if (order != null) {
-                order.setPayment_status(paymentStatus);
-                order.setUpdatedDate(LocalDateTime.now());
-                em.merge(order);
+            if (order == null) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Đơn hàng không tồn tại!");
             }
             
+            // Không cho phép cập nhật nếu đơn hàng đã hủy
+            if ("Đã hủy".equals(order.getOrder_status())) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Không thể cập nhật thanh toán cho đơn hàng đã bị hủy!");
+            }
+            
+            // Logic: Không cho phép đặt "Đã thanh toán" nếu đơn hàng đã bị hủy (double check)
+            if ("Đã hủy".equals(order.getOrder_status()) && "Đã thanh toán".equals(paymentStatus)) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Không thể đặt 'Đã thanh toán' cho đơn hàng đã bị hủy.");
+            }
+            
+            order.setPayment_status(paymentStatus);
+            order.setUpdatedDate(LocalDateTime.now());
+            em.merge(order);
+            
             em.getTransaction().commit();
+        } catch (IllegalArgumentException e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e; // Re-throw để controller xử lý
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();

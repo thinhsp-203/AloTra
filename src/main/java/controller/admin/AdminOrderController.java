@@ -76,18 +76,23 @@ public class AdminOrderController extends HttpServlet {
             if ("updateStatus".equals(action)) {
                 String newStatus = req.getParameter("status");
                 orderService.updateOrderStatus(orderId, newStatus);
+                req.getSession().setAttribute("success", "Đã cập nhật trạng thái đơn hàng thành công!");
                 
             } else if ("updatePayment".equals(action)) {
                 String paymentStatus = req.getParameter("paymentStatus");
                 orderService.updatePaymentStatus(orderId, paymentStatus);
+                req.getSession().setAttribute("success", "Đã cập nhật trạng thái thanh toán thành công!");
             }
             
             resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
             
+        } catch (IllegalArgumentException e) {
+            req.getSession().setAttribute("error", e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                "Error updating order: " + e.getMessage());
+            req.getSession().setAttribute("error", "Lỗi: " + e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
         }
     }
 }
