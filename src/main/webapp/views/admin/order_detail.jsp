@@ -186,10 +186,10 @@
                                 <div class="fw-bold">${order.order_status}</div>
                             </div>
                         </c:when>
-                        <c:when test="${order.order_status eq 'Đang chuẩn bị'}">
+                        <c:when test="${order.order_status eq 'Đang chuẩn bị' || order.order_status eq 'Đang xử lý'}">
                             <div class="alert alert-info mb-0 text-center py-3">
                                 <i class="fas fa-utensils fa-2x mb-2"></i>
-                                <div class="fw-bold">${order.order_status}</div>
+                                <div class="fw-bold">Đang chuẩn bị</div>
                             </div>
                         </c:when>
                         <c:when test="${order.order_status eq 'Đang giao'}">
@@ -220,6 +220,13 @@
                             <strong>Đơn hàng đã bị hủy</strong>
                             <p class="mb-0 mt-2 small">Không thể cập nhật trạng thái cho đơn hàng đã hủy.</p>
                         </div>
+                        <c:if test="${not empty order.cancellation_reason}">
+                            <div class="alert alert-danger border-danger mb-3">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Lý do hủy đơn:</strong>
+                                <p class="mb-0 mt-2">${order.cancellation_reason}</p>
+                            </div>
+                        </c:if>
                         <div class="mb-3">
                             <label class="form-label">Trạng thái (chỉ xem)</label>
                             <select class="form-select" disabled>
@@ -227,7 +234,32 @@
                             </select>
                         </div>
                     </c:when>
+                    <c:when test="${order.order_status eq 'Chờ xác nhận'}">
+                        <%-- Đơn hàng chờ xác nhận: Hiển thị buttons Nhận đơn và Hủy đơn --%>
+                        <div class="alert alert-info border-info mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Đơn hàng đang chờ xác nhận</strong>
+                            <p class="mb-0 mt-2 small">Vui lòng nhận đơn hoặc hủy đơn hàng này.</p>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <form method="post" action="${pageContext.request.contextPath}/admin/orders" class="mb-2">
+                                <input type="hidden" name="action" value="acceptOrder">
+                                <input type="hidden" name="orderId" value="${order.order_id}">
+                                <button type="submit" class="btn btn-success w-100 btn-lg" 
+                                        onclick="return confirm('Bạn có chắc chắn muốn nhận đơn hàng này? Đơn hàng sẽ chuyển sang trạng thái \"Đang chuẩn bị\".');">
+                                    <i class="fas fa-check-circle me-2"></i>Nhận đơn
+                                </button>
+                            </form>
+                            
+                            <button type="button" class="btn btn-danger w-100 btn-lg" 
+                                    onclick="openCancelModal()">
+                                <i class="fas fa-times-circle me-2"></i>Hủy đơn
+                            </button>
+                        </div>
+                    </c:when>
                     <c:otherwise>
+                        <%-- Đơn hàng đã được nhận: Cho phép cập nhật trạng thái --%>
                         <form method="post" action="${pageContext.request.contextPath}/admin/orders">
                             <input type="hidden" name="action" value="updateStatus">
                             <input type="hidden" name="orderId" value="${order.order_id}">
@@ -235,10 +267,7 @@
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Cập nhật trạng thái</label>
                                 <select class="form-select form-select-lg" name="status" required>
-                                    <option value="Chờ xác nhận" ${order.order_status eq 'Chờ xác nhận' ? 'selected' : ''}>
-                                        Chờ xác nhận
-                                    </option>
-                                    <option value="Đang chuẩn bị" ${order.order_status eq 'Đang chuẩn bị' ? 'selected' : ''}>
+                                    <option value="Đang chuẩn bị" ${order.order_status eq 'Đang chuẩn bị' || order.order_status eq 'Đang xử lý' ? 'selected' : ''}>
                                         Đang chuẩn bị
                                     </option>
                                     <option value="Đang giao" ${order.order_status eq 'Đang giao' ? 'selected' : ''}>
@@ -247,10 +276,11 @@
                                     <option value="Hoàn thành" ${order.order_status eq 'Hoàn thành' ? 'selected' : ''}>
                                         Hoàn thành
                                     </option>
-                                    <option value="Đã hủy" ${order.order_status eq 'Đã hủy' ? 'selected' : ''}>
-                                        Đã hủy
-                                    </option>
                                 </select>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Đơn hàng đã được nhận, bạn có thể cập nhật trạng thái theo quy trình.
+                                </div>
                             </div>
                             
                             <button type="submit" class="btn btn-primary w-100 btn-lg">
@@ -393,3 +423,62 @@
         </div>
     </div>
 </div>
+
+<%-- Modal Hủy đơn hàng --%>
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelOrderModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận hủy đơn hàng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="${pageContext.request.contextPath}/admin/orders" id="cancelOrderForm">
+                <input type="hidden" name="action" value="cancelOrder">
+                <input type="hidden" name="orderId" value="${order.order_id}">
+                <div class="modal-body">
+                    <div class="alert alert-warning mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Lưu ý:</strong> Hành động này không thể hoàn tác!
+                    </div>
+                    <div class="mb-3">
+                        <label for="cancellationReason" class="form-label fw-semibold">
+                            <i class="fas fa-comment-alt me-2"></i>Lý do hủy đơn <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="cancellationReason" name="cancellationReason" 
+                                  rows="4" placeholder="Vui lòng nhập lý do hủy đơn hàng này..." required></textarea>
+                        <div class="form-text">Vui lòng cung cấp lý do rõ ràng để khách hàng hiểu rõ về việc hủy đơn.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Hủy
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-check me-2"></i>Xác nhận hủy đơn
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCancelModal() {
+        const modal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+        modal.show();
+    }
+    
+    // Reset form khi modal đóng
+    document.addEventListener('DOMContentLoaded', function() {
+        const cancelOrderModal = document.getElementById('cancelOrderModal');
+        const cancelOrderForm = document.getElementById('cancelOrderForm');
+        
+        if (cancelOrderModal && cancelOrderForm) {
+            cancelOrderModal.addEventListener('hidden.bs.modal', function () {
+                cancelOrderForm.reset();
+            });
+        }
+    });
+</script>

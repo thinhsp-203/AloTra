@@ -17,13 +17,13 @@ public class AboutUs {
     @Column(name = "id")
     private Integer id;
     
-    @Column(name = "title", nullable = false, length = 500)
+    @Column(name = "title", nullable = false, columnDefinition = "NVARCHAR(500)")
     private String title;
     
     @Column(name = "content", columnDefinition = "NVARCHAR(MAX)")
     private String content;
     
-    @Column(name = "image", length = 500)
+    @Column(name = "image", columnDefinition = "NVARCHAR(500)")
     private String image;
     
     @Column(name = "isActive")

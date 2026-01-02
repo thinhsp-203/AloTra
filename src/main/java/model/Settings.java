@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter @Setter
 public class Settings {
     @Id
-    @Column(name = "setting_key", length = 50)
+    @Column(name = "setting_key", columnDefinition = "NVARCHAR(50)")
     private String key; // Ví dụ: "LOGO_URL", "BANNER_URL"
 
     @Column(name = "setting_value", columnDefinition = "NVARCHAR(MAX)")

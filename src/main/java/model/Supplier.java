@@ -12,14 +12,19 @@ public class Supplier {
   @GeneratedValue(strategy=GenerationType.IDENTITY)
   private Integer supplier_id;
 
-  @Column(nullable=false, length=200)
+  @Column(nullable=false, columnDefinition="NVARCHAR(200)")
   private String supplier_name;
 
+  @Column(columnDefinition="NVARCHAR(100)")
   private String contact_name;
+  
+  @Column(columnDefinition="NVARCHAR(20)")
   private String phone;
+  
+  @Column(columnDefinition="NVARCHAR(100)")
   private String email;
 
-  @Column(name="address", length=500)
+  @Column(name="address", columnDefinition="NVARCHAR(500)")
   private String address;
 
   private Boolean isActive;

@@ -18,7 +18,7 @@ public class ProductSize {
   @JoinColumn(name="product_id", nullable=false)
   private Product product;
 
-  @Column(nullable=false, length=20)
+  @Column(nullable=false, columnDefinition="NVARCHAR(20)")
   private String size_name; // S/M/L
 
   @Column(precision=18, scale=2)

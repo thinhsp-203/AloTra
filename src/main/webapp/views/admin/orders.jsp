@@ -168,9 +168,13 @@
                                                     <i class="fas fa-hourglass-half me-2"></i>${order.order_status}
                                                 </span>
                                             </c:when>
-                                            <c:when test="${order.order_status eq 'Đang chuẩn bị'}">
-                                                <span class="badge text-bg-info px-3 py-2">
-                                                    <i class="fas fa-utensils me-2"></i>${order.order_status}
+                                            <c:when test="${order.order_status eq 'Đang chuẩn bị' || order.order_status eq 'Đang xử lý'}">
+                                                <span class="badge text-bg-info px-3 py-2 text-white">
+                                                    <i class="fas fa-utensils me-2"></i>
+                                                    <c:choose>
+                                                        <c:when test="${order.order_status eq 'Đang xử lý'}">Đang chuẩn bị</c:when>
+                                                        <c:otherwise>${order.order_status}</c:otherwise>
+                                                    </c:choose>
                                                 </span>
                                             </c:when>
                                             <c:when test="${order.order_status eq 'Đang giao'}">

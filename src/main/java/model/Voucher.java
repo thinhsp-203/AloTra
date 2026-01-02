@@ -17,12 +17,13 @@ public class Voucher {
   @GeneratedValue(strategy=GenerationType.IDENTITY)
   private Integer voucher_id; // Tên cũ là "id", model của bạn là "voucher_id"
 
-  @Column(nullable=false, length=50, unique=true)
+  @Column(nullable=false, columnDefinition="NVARCHAR(50)", unique=true)
   private String code;
 
-  @Column(name="description", length=500)
+  @Column(name="description", columnDefinition="NVARCHAR(500)")
   private String description;
 
+  @Column(columnDefinition="NVARCHAR(20)")
   private String discount_type; // Percent | Fixed
 
   @Column(nullable=false, precision=18, scale=2)

@@ -16,12 +16,14 @@
 	<span class="text-muted"><c:out value="${todayFormatted}"/></span>
 </div>
 
-<!-- ========== CẢNH BÁO TỒN KHO THẤP ========== -->
-<c:if test="${not empty stats.lowStock && fn:length(stats.lowStock) > 0}">
+<!-- ========== CẢNH BÁO ĐƠN HÀNG CHỜ XÁC NHẬN ========== -->
+<c:if test="${stats.pendingOrders > 0}">
 	<div class="alert alert-warning alert-dismissible fade show" role="alert">
 		<i class="fas fa-exclamation-triangle me-2"></i>
-		<strong>Cảnh báo tồn kho thấp:</strong>
-		Có <strong>${fn:length(stats.lowStock)}</strong> sản phẩm sắp hết hàng.
+		<strong>Có <strong class="text-danger">${stats.pendingOrders}</strong> đơn hàng đang chờ xác nhận.</strong>
+		<a href="${pageContext.request.contextPath}/admin/orders?status=Chờ xác nhận" class="alert-link ms-2">
+			Xem ngay <i class="fas fa-arrow-right ms-1"></i>
+		</a>
 		<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 	</div>
 </c:if>
@@ -308,10 +310,10 @@
 	</div>
 </div>
 
-<!-- ========== ĐƠN HÀNG MỚI NHẤT & CẢNH BÁO TỒN KHO ========== -->
+<!-- ========== ĐƠN HÀNG MỚI NHẤT ========== -->
 <div class="row mb-4">
 	<!-- Đơn hàng mới nhất -->
-	<div class="col-xl-8 col-lg-7 mb-4">
+	<div class="col-12 mb-4">
 		<div class="card shadow mb-4">
 			<div class="card-header py-3">
 				<h6 class="m-0 font-weight-bold text-primary">
@@ -373,57 +375,6 @@
 									<tr>
 										<td colspan="5" class="text-center text-muted py-3">
 											<i class="fas fa-inbox me-2"></i>Chưa có đơn hàng nào
-										</td>
-									</tr>
-								</c:otherwise>
-							</c:choose>
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Cảnh báo tồn kho thấp -->
-	<div class="col-xl-4 col-lg-5 mb-4">
-		<div class="card shadow mb-4 border-left-danger">
-			<div class="card-header py-3 bg-danger text-white">
-				<h6 class="m-0 font-weight-bold">
-					<i class="fas fa-exclamation-triangle me-2"></i>Cảnh báo tồn kho
-				</h6>
-			</div>
-			<div class="card-body p-0">
-				<div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-					<table class="table table-sm table-hover mb-0">
-						<thead class="table-light sticky-top">
-							<tr>
-								<th>Sản phẩm</th>
-								<th class="text-end">Tồn kho</th>
-							</tr>
-						</thead>
-						<tbody>
-							<c:choose>
-								<c:when test="${not empty stats.lowStock && fn:length(stats.lowStock) > 0}">
-									<c:forEach var="item" items="${stats.lowStock}">
-										<tr>
-											<td>${item[0]}</td>
-											<td class="text-end">
-												<c:choose>
-													<c:when test="${item[1] < 5}">
-														<span class="badge bg-danger">${item[1]}</span>
-													</c:when>
-													<c:otherwise>
-														<span class="badge bg-warning">${item[1]}</span>
-													</c:otherwise>
-												</c:choose>
-											</td>
-										</tr>
-									</c:forEach>
-								</c:when>
-								<c:otherwise>
-									<tr>
-										<td colspan="2" class="text-center text-muted py-3">
-											<i class="fas fa-check-circle me-2 text-success"></i>Tất cả sản phẩm đủ hàng
 										</td>
 									</tr>
 								</c:otherwise>

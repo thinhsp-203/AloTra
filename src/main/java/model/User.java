@@ -25,22 +25,28 @@ public class User {
   @Column(nullable=false, length=100, name="password")
   private String password;
 
+  @Column(columnDefinition="NVARCHAR(100)")
   private String fullname;
+  
+  @Column(columnDefinition="NVARCHAR(500)")
   private String avatar;
+  
   private Integer roleid;
 
-  @Column(length=20, unique=true)
+  @Column(columnDefinition="NVARCHAR(20)", unique=true)
   private String phone;
 
   private LocalDateTime createdDate;
 
-  @Column(name="address", length=500)
+  @Column(name="address", columnDefinition="NVARCHAR(500)")
   private String address;
 
+  @Column(columnDefinition="NVARCHAR(255)")
   private String resetToken;
+  
   private LocalDateTime tokenExpiry;
   
-  @Column(name = "code")
+  @Column(name = "code", columnDefinition="NVARCHAR(10)")
   private String code;
 
   @Column(name = "is_active")
