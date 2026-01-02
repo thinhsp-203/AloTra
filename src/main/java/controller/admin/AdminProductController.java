@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import model.Category;
 import model.Product;
-import model.Supplier;
 import service.AdminProductService;
 import service.impl.AdminProductServiceImpl;
 
@@ -110,12 +109,11 @@ public class AdminProductController extends HttpServlet {
             product = new Product();
         }
         
-        // Lấy dữ liệu cho form (Categories & Suppliers)
+        // Lấy dữ liệu cho form (Categories)
         Map<String, List<?>> formData = productService.getFormData();
         
         req.setAttribute("p", product);
         req.setAttribute("categories", formData.get("categories"));
-        req.setAttribute("suppliers", formData.get("suppliers"));
         
         req.getRequestDispatcher("/views/admin/product_form.jsp").forward(req, resp);
     }
@@ -149,14 +147,10 @@ public class AdminProductController extends HttpServlet {
                 ? 0 
                 : Integer.parseInt(stockParam));
             
-            // Category & Supplier
+            // Category
             Category category = new Category();
             category.setId(Integer.parseInt(req.getParameter("cate_id")));
             product.setCategory(category);
-            
-            Supplier supplier = new Supplier();
-            supplier.setSupplier_id(Integer.parseInt(req.getParameter("supplier_id")));
-            product.setSupplier(supplier);
             
             product.setIsActive(req.getParameter("isActive") != null);
             product.setIsFeatured(req.getParameter("isFeatured") != null);

@@ -11,6 +11,7 @@
 
     <link href="${pageContext.request.contextPath}/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/assets/css/custom.css" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -141,9 +142,9 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/settings">
-                <i class="fas fa-fw fa-cog"></i>
-                <span>Cài đặt</span>
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/about">
+                <i class="fas fa-fw fa-info-circle"></i>
+                <span>Về chúng tôi</span>
             </a>
         </li>
     </c:if>
@@ -151,7 +152,7 @@
 </ul>
 
 <!-- ================= CONTENT ================= -->
-<div id="content-wrapper" class="d-flex flex-column">
+<div id="content-wrapper" class="d-flex flex-column" style="margin-left: 0 !important;">
 <div id="content">
 
 <!-- TOPBAR -->

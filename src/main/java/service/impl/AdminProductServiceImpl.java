@@ -7,7 +7,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.Part;
 import model.Category;
 import model.Product;
-import model.Supplier;
 import service.AdminProductService;
 import utils.Constant;
 
@@ -77,11 +76,9 @@ public class AdminProductServiceImpl implements AdminProductService {
         EntityManager em = JpaUtil.em();
         try {
             List<Category> categories = em.createQuery("SELECT c FROM Category c", Category.class).getResultList();
-            List<Supplier> suppliers = em.createQuery("SELECT s FROM Supplier s", Supplier.class).getResultList();
             
             Map<String, List<?>> data = new HashMap<>();
             data.put("categories", categories);
-            data.put("suppliers", suppliers);
             return data;
         } finally {
             em.close();
@@ -104,10 +101,6 @@ public class AdminProductServiceImpl implements AdminProductService {
         
         if (product.getCategory() == null) {
             throw new IllegalArgumentException("Vui lòng chọn danh mục!");
-        }
-        
-        if (product.getSupplier() == null) {
-            throw new IllegalArgumentException("Vui lòng chọn nhà cung cấp!");
         }
     }
     

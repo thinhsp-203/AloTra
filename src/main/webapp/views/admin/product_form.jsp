@@ -159,19 +159,6 @@
                             </c:forEach>
                         </select>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Nhà cung cấp</label>
-                        <select class="form-select" name="supplier_id">
-                            <option value="">-- Chọn nhà cung cấp --</option>
-                            <c:forEach var="s" items="${suppliers}">
-                                <option value="${s.supplier_id}" 
-                                        ${p.supplier != null && p.supplier.supplier_id == s.supplier_id ? 'selected' : ''}>
-                                    ${s.supplier_name}
-                                </option>
-                            </c:forEach>
-                        </select>
-                    </div>
                 </div>
             </div>
             

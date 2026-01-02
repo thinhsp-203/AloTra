@@ -4,7 +4,7 @@
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <div class="container-fluid">
-    <h1 class="h3 mb-2 text-gray-800">Quản lý Banner</h1>
+    <h1 class="h3 mb-2 text-gray-800">Quản lý Banner & Logo</h1>
 
     <%-- Thông báo (nếu có) --%>
     <c:if test="${not empty sessionScope.success}">
@@ -22,9 +22,73 @@
       <c:remove var="error" scope="session"/>
     </c:if>
 
+    <%-- Cài đặt Logo --%>
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Thêm Banner Mới</h6>
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-image"></i> Cài đặt Logo Website
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="${pageContext.request.contextPath}/admin/banners">
+                <input type="hidden" name="action" value="updateLogo">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label for="logoUrl" class="form-label">Logo URL</label>
+                            <input type="text" class="form-control" id="logoUrl" name="LOGO_URL" 
+                                   value="${siteSettings.LOGO_URL}" 
+                                   placeholder="https://.../logo.png hoặc /uploads/logo.png">
+                            <div class="form-text">Dán link ảnh logo. Sẽ hiển thị ở góc trên bên trái (navbar).</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Xem trước Logo</label>
+                        <div class="border rounded p-3 bg-light text-center">
+                            <c:choose>
+                                <c:when test="${not empty siteSettings.LOGO_URL}">
+                                    <img src="${siteSettings.LOGO_URL}" 
+                                         alt="Logo" 
+                                         id="logoPreview"
+                                         style="max-height: 80px; max-width: 100%; object-fit: contain;">
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="text-muted py-3" id="logoPreview">Chưa có logo</div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save fa-sm"></i> Lưu Logo
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    // Preview logo khi nhập URL
+    document.getElementById('logoUrl')?.addEventListener('input', function(e) {
+        const url = this.value.trim();
+        const preview = document.getElementById('logoPreview');
+        if (url && preview) {
+            if (url.startsWith('http') || url.startsWith('/')) {
+                preview.innerHTML = `<img src="${url}" alt="Logo" style="max-height: 80px; max-width: 100%; object-fit: contain;">`;
+            }
+        } else {
+            preview.innerHTML = '<div class="text-muted py-3">Chưa có logo</div>';
+        }
+    });
+    </script>
+
+    <hr class="my-4">
+
+    <%-- Quản lý Banner --%>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-images"></i> Thêm Banner Mới
+            </h6>
         </div>
         <div class="card-body">
             <form action="${pageContext.request.contextPath}/admin/banners" method="POST" enctype="multipart/form-data">
@@ -59,14 +123,15 @@
                         <button type="submit" class="btn btn-primary w-100 mt-4">Thêm</button>
                     </div>
                 </div>
-        </div>
             </form>
         </div>
     </div>
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Danh sách Banner</h6>
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list"></i> Danh sách Banner
+            </h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">

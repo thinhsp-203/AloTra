@@ -40,8 +40,8 @@ public interface AdminProductService {
     void deleteProduct(int id, jakarta.servlet.ServletContext servletContext);
     
     /**
-     * Lấy dữ liệu cho form (Categories, Suppliers)
-     * @return Map với key "categories" và "suppliers"
+     * Lấy dữ liệu cho form (Categories)
+     * @return Map với key "categories"
      */
     Map<String, List<?>> getFormData();
 }

@@ -1244,3 +1244,136 @@ body {
         width: 20%;
     }
 }
+
+/* === ADMIN SIDEBAR - KÍCH THƯỚC MENU TỐI ƯU === */
+@media (min-width: 768px) {
+    .sidebar {
+        width: 200px !important; /* Giảm xuống 200px để gọn hơn */
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    }
+    
+    .sidebar .nav-item .nav-link {
+        width: 200px !important;
+        padding: 0.9rem 1rem !important; /* Giảm padding */
+        line-height: 1.5 !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .sidebar .nav-item .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    
+    .sidebar .nav-item .nav-link i {
+        font-size: 0.9rem !important; /* Giảm icon */
+        margin-right: 0.5rem !important;
+        width: 1.2rem !important;
+        text-align: center !important;
+    }
+    
+    .sidebar .nav-item .nav-link span {
+        font-size: 0.8rem !important; /* Giảm text xuống 0.8rem */
+        font-weight: 500 !important;
+        letter-spacing: 0.15px !important;
+        line-height: 1.4 !important;
+    }
+    
+    .sidebar .nav-item.active .nav-link {
+        font-weight: 600 !important;
+        background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    .sidebar .sidebar-heading {
+        font-size: 0.7rem !important; /* Giảm heading */
+        padding: 0.7rem 1rem 0.4rem !important;
+        margin-top: 0.75rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+        opacity: 0.9 !important;
+    }
+    
+    .sidebar .sidebar-brand {
+        padding: 1.1rem 1rem !important; /* Giảm padding brand */
+        height: auto !important;
+        min-height: 3.8rem !important;
+    }
+    
+    .sidebar .sidebar-brand .sidebar-brand-icon i {
+        font-size: 1.85rem !important; /* Giảm icon brand */
+    }
+    
+    .sidebar .sidebar-brand .sidebar-brand-text {
+        font-size: 0.9rem !important; /* Giảm text brand */
+        font-weight: 700 !important;
+        letter-spacing: 0.3px !important;
+    }
+    
+    .sidebar hr.sidebar-divider {
+        margin: 0.75rem 1rem !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    /* Adjust content wrapper margin when sidebar is smaller - override sb-admin-2.css */
+    /* Tăng specificity tối đa để override mọi rule khác */
+    html body#page-top #wrapper #content-wrapper,
+    html body #wrapper #content-wrapper,
+    body#page-top #wrapper #content-wrapper,
+    body #wrapper #content-wrapper,
+    body #content-wrapper {
+        margin-left: 0 !important;
+    }
+    
+    /* Giảm padding của container-fluid để content gần sidebar hơn - override sb-admin-2.css */
+    /* Tăng specificity để override rule trong sb-admin-2.css dòng 9809-9817 */
+    body#page-top #wrapper #content-wrapper #content .container-fluid,
+    body #wrapper #content-wrapper #content .container-fluid,
+    body #content-wrapper #content .container-fluid,
+    body #content-wrapper .container-fluid {
+        padding-left: 0.75rem !important;
+        padding-right: 1rem !important;
+    }
+    
+    /* Giảm padding top của content để gần topbar hơn */
+    body #content-wrapper #content {
+        padding-top: 0 !important;
+    }
+    
+    body.toggled #content-wrapper {
+        margin-left: 0 !important;
+    }
+    
+    body.toggled #content-wrapper .container-fluid {
+        padding-left: 1.5rem !important;
+    }
+}
+
+/* Mobile sidebar remains small */
+@media (max-width: 767px) {
+    .sidebar {
+        width: 6.5rem !important;
+    }
+}
+
+/* Adjust toggled sidebar width */
+.sidebar.toggled {
+    width: 0 !important;
+    overflow: hidden;
+}
+
+/* Force override margin-left for content-wrapper - placed at end for maximum priority */
+@media (min-width: 768px) {
+    html body#page-top #wrapper #content-wrapper,
+    html body #wrapper #content-wrapper,
+    body#page-top #wrapper #content-wrapper,
+    body #wrapper #content-wrapper,
+    body #content-wrapper {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+    }
+}
+
+/* Force override using attribute selector for even higher specificity */
+div#content-wrapper.d-flex.flex-column {
+    margin-left: 0 !important;
+}

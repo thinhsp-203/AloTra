@@ -11,7 +11,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import model.Banner;
 import service.AdminBannerService;
+import service.AdminSettingsService;
 import service.impl.AdminBannerServiceImpl;
+import service.impl.AdminSettingsServiceImpl;
 
 @WebServlet(urlPatterns = "/admin/banners")
 @MultipartConfig
@@ -22,16 +24,20 @@ public class AdminBannerController extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 1L;
 	private AdminBannerService bannerService;
+	private AdminSettingsService settingsService;
     
     @Override
     public void init() throws ServletException {
         bannerService = new AdminBannerServiceImpl();
+        settingsService = new AdminSettingsServiceImpl();
     }
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
         throws ServletException, IOException {
         req.setAttribute("banners", bannerService.getAllBanners());
+        // Load site settings để hiển thị logo hiện tại
+        req.setAttribute("siteSettings", settingsService.getAllSettings());
         req.getRequestDispatcher("/views/admin/banners.jsp").forward(req, resp);
     }
     
@@ -41,7 +47,18 @@ public class AdminBannerController extends HttpServlet {
         String action = req.getParameter("action");
         
         try {
-            if ("delete".equals(action)) {
+            if ("updateLogo".equals(action)) {
+                // Cập nhật logo
+                var settings = new java.util.HashMap<String, String>();
+                settings.put("LOGO_URL", req.getParameter("LOGO_URL"));
+                settingsService.updateSettings(settings);
+                
+                // Reload application scope
+                config.AppContextListener.loadSiteSettings(req.getServletContext());
+                
+                req.getSession().setAttribute("success", "Đã cập nhật logo!");
+                
+            } else if ("delete".equals(action)) {
                 int id = Integer.parseInt(req.getParameter("id"));
                 bannerService.deleteBanner(id);
                 

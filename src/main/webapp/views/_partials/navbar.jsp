@@ -286,7 +286,8 @@ try (var em = JpaUtil.em()) {
                            href="${pageContext.request.contextPath}/stores">DANH SÁCH CỬA HÀNG</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
+                        <a class="nav-link fw-bold ${fn:contains(currentPath, '/about') || fn:contains(currentPath, '/ve-chung-toi') ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/about">VỀ CHÚNG TÔI</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link fw-bold ${fn:contains(currentPath, '/user/loyalty') || fn:contains(currentPath, '/user/rewards') ? 'active' : ''}" 

@@ -49,7 +49,6 @@ public class AdminAuthorizationFilter implements Filter {
 
             if (uri.contains("/admin/users") ||
                 uri.contains("/admin/reports") ||
-                uri.contains("/admin/settings") ||
                 uri.contains("/admin/vouchers") ||
                 uri.contains("/admin/payment-config")) {
 

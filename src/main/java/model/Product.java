@@ -37,9 +37,6 @@ public class Product {
   @JoinColumn(name="cate_id", referencedColumnName="cate_id") // Sửa tại đây
   private Category category;
 
-  @ManyToOne @JoinColumn(name="supplier_id")
-  private Supplier supplier;
-
   private Integer views;
 
   @Column(precision=3, scale=2)

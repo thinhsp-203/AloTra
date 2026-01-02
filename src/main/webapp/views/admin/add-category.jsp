@@ -30,21 +30,25 @@
           
           <div class="mb-3">
             <label class="form-label">Ảnh đại diện</label>
-            <input type="file" 
-                   class="form-control" 
-                  name="icon" 
-                   accept="image/*"
-                   id="iconInput"/>
-            <div class="form-text">Định dạng: JPG, PNG. Kích thước đề xuất: 200x200px</div>
-          </div>
-          
-          <div class="mb-3" id="previewContainer" style="display: none;">
-            <label class="form-label">Xem trước</label>
-            <div>
-              <img id="imagePreview" 
-            class="rounded border" 
-                   style="max-width: 200px; max-height: 200px; object-fit: cover;"
-alt="Preview"/>
+            <div class="row">
+              <div class="col-md-5 mb-3">
+                <label class="form-label">Xem trước</label>
+                <div class="border rounded p-3 bg-light text-center">
+                  <img id="imagePreview" 
+                       src="https://via.placeholder.com/200x200?text=Chưa+có+ảnh"
+                       class="img-fluid rounded border" 
+                       style="max-width: 100%; max-height: 200px; object-fit: cover;"
+                       alt="Preview"/>
+                </div>
+              </div>
+              <div class="col-md-7">
+                <input type="file" 
+                       class="form-control mb-2" 
+                       name="icon" 
+                       accept="image/*"
+                       id="iconInput"/>
+                <div class="form-text">Định dạng: JPG, PNG. Kích thước đề xuất: 200x200px</div>
+              </div>
             </div>
           </div>
           
@@ -84,18 +88,16 @@ alt="Preview"/>
 </div>
 
 <script>
-// Preview ảnh khi chọn file
-document.getElementById('iconInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      document.getElementById('imagePreview').src = e.target.result;
-      document.getElementById('previewContainer').style.display = 'block';
+// Script preview ảnh khi chọn file
+document.getElementById('iconInput')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('imagePreview');
+    if (file && preview) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
-    reader.readAsDataURL(file);
-} else {
-    document.getElementById('previewContainer').style.display = 'none';
-  }
 });
 </script>
