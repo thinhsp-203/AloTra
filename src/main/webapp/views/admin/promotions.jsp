@@ -3,194 +3,243 @@
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
-<div class="container-fluid">
-    <h1 class="h3 mb-2 text-gray-800">Quản lý Khuyến mãi</h1>
+<%-- Header --%>
+<div class="d-flex justify-content-between align-items-center mb-4" style="margin-right: 20px;">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">
+            <i class="fas fa-gift text-primary" style="margin-right: 10px;"></i>Quản lý Khuyến mãi
+        </h1>
+        <p class="text-muted mb-0">Quản lý các chương trình khuyến mãi của cửa hàng</p>
+    </div>
+</div>
 
-    <%-- Thông báo (nếu có) --%>
-    <c:if test="${not empty sessionScope.success}">
-      <div class="alert alert-success alert-dismissible fade show">
-          ${sessionScope.success}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-      <c:remove var="success" scope="session"/>
-    </c:if>
-    <c:if test="${not empty sessionScope.error}">
-      <div class="alert alert-danger alert-dismissible fade show">
-           ${sessionScope.error}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-      <c:remove var="error" scope="session"/>
-    </c:if>
+<%-- Alert Messages --%>
+<c:if test="${not empty sessionScope.success}">
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle" style="margin-right: 10px;"></i><strong>Thành công!</strong> ${sessionScope.success}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <c:remove var="success" scope="session"/>
+</c:if>
+<c:if test="${not empty sessionScope.error}">
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-exclamation-circle" style="margin-right: 10px;"></i><strong>Lỗi!</strong> ${sessionScope.error}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <c:remove var="error" scope="session"/>
+</c:if>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">
-                <c:choose>
-                    <c:when test="${not empty promotion}">Chỉnh sửa Khuyến mãi</c:when>
-                    <c:otherwise>Thêm Khuyến mãi Mới</c:otherwise>
-                </c:choose>
-            </h6>
-        </div>
-        <div class="card-body">
-            <form action="${pageContext.request.contextPath}/admin/promotions" method="POST" enctype="multipart/form-data">
-                <c:if test="${not empty promotion}">
-                    <input type="hidden" name="action" value="edit">
-                    <input type="hidden" name="id" value="${promotion.id}">
-                </c:if>
-                <c:if test="${empty promotion}">
-                    <input type="hidden" name="action" value="add">
-                </c:if>
-                
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="title" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="title" name="title" 
-                               value="${promotion.title}" required>
-                    </div>
+<%-- Promotion Form Card --%>
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-info-circle" style="margin-right: 10px;"></i>
+            <c:choose>
+                <c:when test="${not empty promotion}">Chỉnh sửa Khuyến mãi</c:when>
+                <c:otherwise>Thêm Khuyến mãi Mới</c:otherwise>
+            </c:choose>
+        </h6>
+    </div>
+    <div class="card-body p-4">
+        <form action="${pageContext.request.contextPath}/admin/promotions" method="POST" enctype="multipart/form-data">
+            <c:if test="${not empty promotion}">
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="id" value="${promotion.id}">
+            </c:if>
+            <c:if test="${empty promotion}">
+                <input type="hidden" name="action" value="add">
+            </c:if>
+            
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label for="title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="title" name="title" 
+                           value="${promotion.title}" required>
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="description" class="form-label">Mô tả ngắn</label>
-                        <textarea class="form-control" id="description" name="description" rows="2">${promotion.description}</textarea>
-                    </div>
+                <div class="col-md-12">
+                    <label for="description" class="form-label fw-semibold">Mô tả ngắn</label>
+                    <textarea class="form-control" id="description" name="description" rows="2">${promotion.description}</textarea>
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="content" class="form-label">Nội dung chi tiết</label>
-                        <textarea class="form-control" id="content" name="content" rows="5">${promotion.content}</textarea>
-                    </div>
+                <div class="col-md-12">
+                    <label for="content" class="form-label fw-semibold">Nội dung chi tiết</label>
+                    <textarea class="form-control" id="content" name="content" rows="5">${promotion.content}</textarea>
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="promotionFile" class="form-label">Chọn ảnh (Ưu tiên)</label>
-                        <input type="file" class="form-control" id="promotionFile" name="promotionFile" accept="image/*">
-                        <div class="form-text">Chọn file từ máy tính.</div>
-                        
-                        <%-- Preview ảnh khi chọn file --%>
-                        <div class="mt-3" id="imagePreviewContainer" style="display: none;">
-                            <small class="text-muted d-block mb-2">Xem trước ảnh mới:</small>
-                            <img id="imagePreview" src="" alt="Preview" 
-                                 class="border rounded" 
-                                 style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                <div class="col-md-6">
+                    <label for="promotionFile" class="form-label fw-semibold">Chọn ảnh (Ưu tiên)</label>
+                    <input type="file" class="form-control" id="promotionFile" name="promotionFile" accept="image/*">
+                    <div class="form-text">
+                        <i class="fas fa-info-circle" style="margin-right: 10px;"></i>Chọn file từ máy tính.
+                    </div>
+                    
+                    <%-- Preview ảnh khi chọn file --%>
+                    <div class="mt-3" id="imagePreviewContainer" style="display: none;">
+                        <small class="text-muted d-block mb-2">Xem trước ảnh mới:</small>
+                        <img id="imagePreview" src="" alt="Preview" 
+                             class="border rounded" 
+                             style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                    </div>
+                    
+                    <%-- Hiển thị ảnh hiện tại (khi edit) --%>
+                    <c:if test="${not empty promotion and not empty promotion.imageUrl}">
+                        <div class="mt-3" id="currentImageContainer">
+                            <small class="text-muted d-block mb-2">Ảnh hiện tại:</small>
+                            <c:choose>
+                                <c:when test="${fn:startsWith(promotion.imageUrl, 'http')}">
+                                    <img src="${promotion.imageUrl}" alt="Current" id="currentImage"
+                                         class="border rounded" 
+                                         style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${pageContext.request.contextPath}/uploads/${promotion.imageUrl}" 
+                                         alt="Current" id="currentImage"
+                                         class="border rounded" 
+                                         style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                                </c:otherwise>
+                            </c:choose>
                         </div>
-                        
-                        <%-- Hiển thị ảnh hiện tại (khi edit) --%>
-                        <c:if test="${not empty promotion and not empty promotion.imageUrl}">
-                            <div class="mt-3" id="currentImageContainer">
-                                <small class="text-muted d-block mb-2">Ảnh hiện tại:</small>
-                                <c:choose>
-                                    <c:when test="${fn:startsWith(promotion.imageUrl, 'http')}">
-                                        <img src="${promotion.imageUrl}" alt="Current" id="currentImage"
-                                             class="border rounded" 
-                                             style="max-width: 200px; max-height: 200px; object-fit: cover;">
-                                    </c:when>
-                                    <c:otherwise>
-                                        <img src="${pageContext.request.contextPath}/uploads/${promotion.imageUrl}" 
-                                             alt="Current" id="currentImage"
-                                             class="border rounded" 
-                                             style="max-width: 200px; max-height: 200px; object-fit: cover;">
-                                    </c:otherwise>
-                                </c:choose>
-                            </div>
-                        </c:if>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="imageUrl" class="form-label">Hoặc dán URL ảnh</label>
-                        <input type="text" class="form-control" id="imageUrl" name="imageUrl" 
-                               value="${promotion.imageUrl}" placeholder="https://...">
-                        <div class="form-text">Nếu không upload file, hệ thống sẽ lấy URL này.</div>
+                    </c:if>
+                </div>
+                <div class="col-md-6">
+                    <label for="imageUrl" class="form-label fw-semibold">Hoặc dán URL ảnh</label>
+                    <input type="text" class="form-control" id="imageUrl" name="imageUrl" 
+                           value="${promotion.imageUrl}" placeholder="https://...">
+                    <div class="form-text">
+                        <i class="fas fa-info-circle" style="margin-right: 10px;"></i>Nếu không upload file, hệ thống sẽ lấy URL này.
                     </div>
                 </div>
-                
-                <div class="row"> 
-                    <div class="col-md-2 mb-3 d-flex align-items-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="isActive" name="isActive" 
-                                   ${promotion.isActive() ? 'checked' : ''}>
-                            <label class="form-check-label" for="isActive">
-                                Hiển thị?
-                            </label>
-                        </div>
+                <div class="col-md-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="isActive" name="isActive" 
+                               ${promotion.isActive() ? 'checked' : ''}>
+                        <label class="form-check-label fw-semibold" for="isActive">
+                            Hiển thị?
+                        </label>
                     </div>
-                    <div class="col-md-2 mb-3">
+                </div>
+                <div class="col-md-12">
+                    <hr class="my-4">
+                    <div class="d-flex gap-3">
                         <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save" style="margin-right: 10px;"></i>
                             <c:choose>
                                 <c:when test="${not empty promotion}">Cập nhật</c:when>
                                 <c:otherwise>Thêm</c:otherwise>
                             </c:choose>
                         </button>
                         <c:if test="${not empty promotion}">
-                            <a href="${pageContext.request.contextPath}/admin/promotions" class="btn btn-secondary">Hủy</a>
+                            <a href="${pageContext.request.contextPath}/admin/promotions" class="btn btn-outline-secondary">
+                                <i class="fas fa-times" style="margin-right: 10px;"></i>Hủy
+                            </a>
                         </c:if>
                     </div>
                 </div>
-            </form>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%-- Promotions List Card --%>
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list-alt" style="margin-right: 10px;"></i>Danh sách Khuyến mãi
+            </h6>
         </div>
     </div>
-
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Danh sách Khuyến mãi</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Ảnh</th>
-                            <th>Tiêu đề</th>
-                            <th>Mô tả</th>
-                            <th>Trạng thái</th>
-                            <th>Ngày tạo</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:forEach items="${promotions}" var="p">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 120px;" class="ps-4">Ảnh</th>
+                        <th>Tiêu đề</th>
+                        <th>Mô tả</th>
+                        <th style="width: 120px;" class="text-center">Trạng thái</th>
+                        <th style="width: 150px;">Ngày tạo</th>
+                        <th style="width: 180px;" class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:choose>
+                        <c:when test="${empty promotions}">
                             <tr>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${fn:startsWith(p.imageUrl, 'http')}">
-                                            <img src="${p.imageUrl}" alt="Promotion" height="50">
-                                        </c:when>
-                                        <c:otherwise>
-                                            <img src="${pageContext.request.contextPath}/uploads/${p.imageUrl}" alt="Promotion" height="50">
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-                                <td>${p.title}</td>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${fn:length(p.description) > 50}">
-                                            ${fn:substring(p.description, 0, 50)}...
-                                        </c:when>
-                                        <c:otherwise>
-                                            ${p.description}
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-                                <td>${p.isActive() ? 'Hiển thị' : 'Ẩn'}</td>
-                                <td>
-                                    <fmt:formatDate value="${p.createdDateAsDate}" pattern="dd/MM/yyyy HH:mm" />
-                                </td>
-                                <td>
-                                    <a href="${pageContext.request.contextPath}/admin/promotions?id=${p.id}" 
-                                       class="btn btn-sm btn-warning">Sửa</a>
-                                    <form action="${pageContext.request.contextPath}/admin/promotions" method="POST" class="d-inline">
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="id" value="${p.id}">
-                                        <button type="submit" class="btn btn-danger btn-sm" 
-                                                onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</button>
-                                    </form>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="py-4">
+                                        <i class="fas fa-inbox fa-4x text-muted mb-3 d-block"></i>
+                                        <h5 class="text-muted mb-2">Không có khuyến mãi nào</h5>
+                                        <p class="text-muted small mb-0">Bắt đầu bằng cách thêm khuyến mãi mới</p>
+                                    </div>
                                 </td>
                             </tr>
-                        </c:forEach>
-                    </tbody>
-                </table>
-            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach items="${promotions}" var="p">
+                                <tr class="border-bottom">
+                                    <td class="ps-4">
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(p.imageUrl, 'http')}">
+                                                <img src="${p.imageUrl}" alt="Promotion" 
+                                                     class="rounded shadow-sm"
+                                                     style="width: 80px; height: 80px; object-fit: cover;">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img src="${pageContext.request.contextPath}/uploads/${p.imageUrl}" 
+                                                     alt="Promotion" 
+                                                     class="rounded shadow-sm"
+                                                     style="width: 80px; height: 80px; object-fit: cover;">
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold fs-5">${p.title}</div>
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${fn:length(p.description) > 50}">
+                                                ${fn:substring(p.description, 0, 50)}...
+                                            </c:when>
+                                            <c:otherwise>
+                                                ${p.description}
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge ${p.isActive() ? 'bg-success' : 'bg-secondary'} text-white px-3 py-2">
+                                            <i class="fas ${p.isActive() ? 'fa-check-circle' : 'fa-times-circle'}" style="margin-right: 5px;"></i>
+                                            ${p.isActive() ? 'Hiển thị' : 'Ẩn'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <fmt:formatDate value="${p.createdDateAsDate}" pattern="dd/MM/yyyy HH:mm" />
+                                        </small>
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <div class="d-flex justify-content-center">
+                                            <a href="${pageContext.request.contextPath}/admin/promotions?id=${p.id}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               title="Chỉnh sửa"
+                                               style="margin: 0 7.5px;">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </a>
+                                            <form action="${pageContext.request.contextPath}/admin/promotions" method="POST" 
+                                                  style="display: inline; margin: 0 7.5px;" 
+                                                  onsubmit="return confirm('Xác nhận xóa khuyến mãi \'${p.title}\'?')">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="id" value="${p.id}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -223,4 +272,3 @@ document.getElementById('promotionFile').addEventListener('change', function(e) 
     }
 });
 </script>
-

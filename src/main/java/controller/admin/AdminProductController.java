@@ -24,7 +24,7 @@ import java.util.Map;
     "/admin/products/edit", 
     "/admin/products/save", 
     "/admin/products/delete"
-})
+}, asyncSupported = false)
 @MultipartConfig(
     fileSizeThreshold = 2 * 1024 * 1024,
     maxFileSize = 10 * 1024 * 1024,
@@ -141,11 +141,6 @@ public class AdminProductController extends HttpServlet {
             product.setDiscount((discountParam == null || discountParam.isEmpty()) 
                 ? BigDecimal.ZERO 
                 : new BigDecimal(discountParam));
-            
-            String stockParam = req.getParameter("stock");
-            product.setStock((stockParam == null || stockParam.isEmpty()) 
-                ? 0 
-                : Integer.parseInt(stockParam));
             
             // Category
             Category category = new Category();

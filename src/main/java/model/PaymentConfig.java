@@ -13,25 +13,25 @@ public class PaymentConfig {
   @GeneratedValue(strategy=GenerationType.IDENTITY)
   private Integer config_id;
 
-  @Column(nullable=false, unique=true, columnDefinition="NVARCHAR(50)")
+  @Column(nullable=false, unique=true, length=50)
   private String payment_method; // VNPAY, MOMO, COD, etc.
 
   @Column(nullable=false)
   private Boolean isActive;
 
-  @Column(columnDefinition="NVARCHAR(200)")
+  @Column(length=200)
   private String display_name;
 
   @Column(columnDefinition="NVARCHAR(MAX)")
   private String api_endpoint;
 
-  @Column(columnDefinition="NVARCHAR(500)")
+  @Column(length=500)
   private String merchant_id;
 
-  @Column(columnDefinition="NVARCHAR(500)")
+  @Column(length=500)
   private String secret_key;
 
-  @Column(columnDefinition="NVARCHAR(500)")
+  @Column(length=500)
   private String access_key;
 
   @Column(columnDefinition="NVARCHAR(MAX)")

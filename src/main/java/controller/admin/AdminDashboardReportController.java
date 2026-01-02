@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import service.AdminDashboardService;
 import service.impl.AdminDashboardServiceImpl;
 
-@WebServlet(urlPatterns = "/admin/dashboard")
+@WebServlet(urlPatterns = "/admin/dashboard", asyncSupported = false)
 public class AdminDashboardReportController extends HttpServlet {
     
     /**

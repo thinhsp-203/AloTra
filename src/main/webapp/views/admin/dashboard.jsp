@@ -8,23 +8,27 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-	<h1 class="h3 mb-0 text-gray-800">
-		<i class="fas fa-tachometer-alt me-2"></i>Dashboard
-	</h1>
+<%-- Header --%>
+<div class="d-flex justify-content-between align-items-center mb-4" style="margin-right: 20px;">
+	<div>
+		<h1 class="h3 mb-1 text-gray-800">
+			<i class="fas fa-tachometer-alt text-primary" style="margin-right: 10px;"></i>Dashboard
+		</h1>
+		<p class="text-muted mb-0">Tổng quan doanh thu, đơn hàng và khách hàng</p>
+	</div>
 	<fmt:formatDate value="<%=new java.util.Date()%>" pattern="EEEE, dd MMMM yyyy" var="todayFormatted"/>
 	<span class="text-muted"><c:out value="${todayFormatted}"/></span>
 </div>
 
-<!-- ========== CẢNH BÁO ĐƠN HÀNG CHỜ XÁC NHẬN ========== -->
+<%-- Alert Messages --%>
 <c:if test="${stats.pendingOrders > 0}">
-	<div class="alert alert-warning alert-dismissible fade show" role="alert">
-		<i class="fas fa-exclamation-triangle me-2"></i>
+	<div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+		<i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i>
 		<strong>Có <strong class="text-danger">${stats.pendingOrders}</strong> đơn hàng đang chờ xác nhận.</strong>
-		<a href="${pageContext.request.contextPath}/admin/orders?status=Chờ xác nhận" class="alert-link ms-2">
-			Xem ngay <i class="fas fa-arrow-right ms-1"></i>
+		<a href="${pageContext.request.contextPath}/admin/orders?status=Chờ xác nhận" class="alert-link" style="margin-left: 10px;">
+			Xem ngay <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
 		</a>
-		<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 	</div>
 </c:if>
 
@@ -42,7 +46,7 @@
 							<fmt:formatNumber value="${stats.revenueToday}" pattern="#,##0" />₫
 						</div>
 						<small class="text-muted">
-							<i class="fas fa-calendar-day me-1"></i>Hôm nay
+							<i class="fas fa-calendar-day" style="margin-right: 5px;"></i>Hôm nay
 						</small>
 					</div>
 					<div class="col-auto">
@@ -65,7 +69,7 @@
 							<fmt:formatNumber value="${stats.revenueWeek}" pattern="#,##0" />₫
 						</div>
 						<small class="text-muted">
-							<i class="fas fa-calendar-week me-1"></i>Tuần này
+							<i class="fas fa-calendar-week" style="margin-right: 5px;"></i>Tuần này
 						</small>
 					</div>
 					<div class="col-auto">
@@ -88,7 +92,7 @@
 							<fmt:formatNumber value="${stats.revenueMonth}" pattern="#,##0" />₫
 						</div>
 						<small class="text-muted">
-							<i class="fas fa-calendar-alt me-1"></i>Tháng này
+							<i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>Tháng này
 						</small>
 					</div>
 					<div class="col-auto">
@@ -111,7 +115,7 @@
 							<fmt:formatNumber value="${stats.totalRevenue}" pattern="#,##0" />₫
 						</div>
 						<small class="text-muted">
-							<i class="fas fa-infinity me-1"></i>Tất cả thời gian
+							<i class="fas fa-infinity" style="margin-right: 5px;"></i>Tất cả thời gian
 						</small>
 					</div>
 					<div class="col-auto">
@@ -135,7 +139,7 @@
 						</div>
 						<div class="h5 mb-0 font-weight-bold text-gray-800">${stats.ordersToday}</div>
 						<small class="text-muted">
-							<i class="fas fa-shopping-cart me-1"></i>Đã đặt hôm nay
+							<i class="fas fa-shopping-cart" style="margin-right: 5px;"></i>Đã đặt hôm nay
 						</small>
 					</div>
 					<div class="col-auto">
@@ -156,7 +160,7 @@
 						</div>
 						<div class="h5 mb-0 font-weight-bold text-gray-800">${stats.pendingOrders}</div>
 						<small class="text-muted">
-							<i class="fas fa-clock me-1"></i>Cần xử lý
+							<i class="fas fa-clock" style="margin-right: 5px;"></i>Cần xử lý
 						</small>
 					</div>
 					<div class="col-auto">
@@ -177,7 +181,7 @@
 						</div>
 						<div class="h5 mb-0 font-weight-bold text-gray-800">${stats.processingOrders}</div>
 						<small class="text-muted">
-							<i class="fas fa-cog me-1"></i>Đang chuẩn bị
+							<i class="fas fa-cog" style="margin-right: 5px;"></i>Đang chuẩn bị
 						</small>
 					</div>
 					<div class="col-auto">
@@ -198,8 +202,8 @@
 						</div>
 						<div class="h5 mb-0 font-weight-bold text-gray-800">${stats.totalCustomers}</div>
 						<small class="text-muted">
-							<i class="fas fa-users me-1"></i>Tổng: ${stats.totalCustomers}
-							<span class="text-success ms-2">+${stats.newCustomersThisMonth} tháng này</span>
+							<i class="fas fa-users" style="margin-right: 5px;"></i>Tổng: ${stats.totalCustomers}
+							<span class="text-success" style="margin-left: 10px;">+${stats.newCustomersThisMonth} tháng này</span>
 						</small>
 					</div>
 					<div class="col-auto">
@@ -213,12 +217,12 @@
 
 <!-- ========== BIỂU ĐỒ DOANH THU ========== -->
 <div class="row mb-4">
-	<!-- Doanh thu theo giờ trong ngày (quan trọng cho F&B) -->
+	<%-- Doanh thu theo giờ trong ngày (quan trọng cho F&B) --%>
 	<div class="col-xl-6 col-lg-6 mb-4">
-		<div class="card shadow mb-4">
-			<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+		<div class="card shadow-sm border-0 mb-4">
+			<div class="card-header bg-white border-bottom py-3">
 				<h6 class="m-0 font-weight-bold text-primary">
-					<i class="fas fa-clock me-2"></i>Doanh thu theo giờ hôm nay
+					<i class="fas fa-clock" style="margin-right: 10px;"></i>Doanh thu theo giờ hôm nay
 				</h6>
 			</div>
 			<div class="card-body">
@@ -229,12 +233,12 @@
 		</div>
 	</div>
 
-	<!-- Doanh thu 7 ngày qua -->
+	<%-- Doanh thu 7 ngày qua --%>
 	<div class="col-xl-6 col-lg-6 mb-4">
-		<div class="card shadow mb-4">
-			<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+		<div class="card shadow-sm border-0 mb-4">
+			<div class="card-header bg-white border-bottom py-3">
 				<h6 class="m-0 font-weight-bold text-primary">
-					<i class="fas fa-chart-area me-2"></i>Doanh thu 7 ngày qua
+					<i class="fas fa-chart-area" style="margin-right: 10px;"></i>Doanh thu 7 ngày qua
 				</h6>
 			</div>
 			<div class="card-body">
@@ -247,12 +251,12 @@
 </div>
 
 <div class="row mb-4">
-	<!-- Doanh thu 6 tháng gần nhất -->
+	<%-- Doanh thu 6 tháng gần nhất --%>
 	<div class="col-xl-8 col-lg-7">
-		<div class="card shadow mb-4">
-			<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+		<div class="card shadow-sm border-0 mb-4">
+			<div class="card-header bg-white border-bottom py-3">
 				<h6 class="m-0 font-weight-bold text-primary">
-					<i class="fas fa-chart-bar me-2"></i>Doanh thu 6 tháng gần nhất
+					<i class="fas fa-chart-bar" style="margin-right: 10px;"></i>Doanh thu 6 tháng gần nhất
 				</h6>
 			</div>
 			<div class="card-body">
@@ -263,41 +267,49 @@
 		</div>
 	</div>
 
-	<!-- Top 10 sản phẩm bán chạy tháng này -->
+	<%-- Top 10 sản phẩm bán chạy tháng này --%>
 	<div class="col-xl-4 col-lg-5">
-		<div class="card shadow mb-4">
-			<div class="card-header py-3">
+		<div class="card shadow-sm border-0 mb-4">
+			<div class="card-header bg-white border-bottom py-3">
 				<h6 class="m-0 font-weight-bold text-primary">
-					<i class="fas fa-fire me-2"></i>Top 10 sản phẩm bán chạy (tháng này)
+					<i class="fas fa-fire" style="margin-right: 10px;"></i>Top 10 sản phẩm bán chạy (tháng này)
 				</h6>
 			</div>
 			<div class="card-body p-0">
 				<div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-					<table class="table table-hover mb-0">
+					<table class="table table-hover align-middle mb-0">
 						<thead class="table-light sticky-top">
 							<tr>
-								<th class="border-0">#</th>
-								<th class="border-0">Sản phẩm</th>
-								<th class="border-0 text-end">Đã bán</th>
+								<th class="ps-4">#</th>
+								<th>Sản phẩm</th>
+								<th class="text-end pe-4">Đã bán</th>
 							</tr>
 						</thead>
 						<tbody>
 							<c:choose>
 								<c:when test="${not empty stats.topProducts && fn:length(stats.topProducts) > 0}">
 									<c:forEach var="item" items="${stats.topProducts}" varStatus="status">
-										<tr>
-											<td><strong class="text-primary">#${status.index + 1}</strong></td>
-											<td class="fw-semibold">${item[0]}</td>
-											<td class="text-end">
-												<span class="badge bg-success">${item[1]} sp</span>
+										<tr class="border-bottom">
+											<td class="ps-4">
+												<span class="badge bg-primary text-white px-3 py-2">${status.index + 1}</span>
+											</td>
+											<td>
+												<span class="fw-semibold fs-5">${item[0]}</span>
+											</td>
+											<td class="text-end pe-4">
+												<span class="badge bg-success text-white px-3 py-2">${item[1]} sp</span>
 											</td>
 										</tr>
 									</c:forEach>
 								</c:when>
 								<c:otherwise>
 									<tr>
-										<td colspan="3" class="text-center text-muted py-3">
-											<i class="fas fa-inbox me-2"></i>Chưa có dữ liệu
+										<td colspan="3" class="text-center py-5">
+											<div class="py-4">
+												<i class="fas fa-inbox fa-4x text-muted mb-3 d-block"></i>
+												<h5 class="text-muted mb-2">Không có dữ liệu</h5>
+												<p class="text-muted small mb-0">Chưa có sản phẩm nào được bán trong tháng này</p>
+											</div>
 										</td>
 									</tr>
 								</c:otherwise>
@@ -310,60 +322,63 @@
 	</div>
 </div>
 
-<!-- ========== ĐƠN HÀNG MỚI NHẤT ========== -->
+<%-- Đơn hàng mới nhất --%>
 <div class="row mb-4">
-	<!-- Đơn hàng mới nhất -->
 	<div class="col-12 mb-4">
-		<div class="card shadow mb-4">
-			<div class="card-header py-3">
+		<div class="card shadow-sm border-0 mb-4">
+			<div class="card-header bg-white border-bottom py-3">
 				<h6 class="m-0 font-weight-bold text-primary">
-					<i class="fas fa-shopping-bag me-2"></i>Đơn hàng mới nhất
+					<i class="fas fa-shopping-bag" style="margin-right: 10px;"></i>Đơn hàng mới nhất
 				</h6>
 			</div>
 			<div class="card-body p-0">
 				<div class="table-responsive">
-					<table class="table table-hover mb-0">
+					<table class="table table-hover align-middle mb-0">
 						<thead class="table-light">
 							<tr>
-								<th>Mã đơn</th>
+								<th class="ps-4">Mã đơn</th>
 								<th>Khách hàng</th>
 								<th>Tổng tiền</th>
 								<th>Trạng thái</th>
-								<th>Thời gian</th>
+								<th class="pe-4">Thời gian</th>
 							</tr>
 						</thead>
 						<tbody>
 							<c:choose>
 								<c:when test="${not empty stats.recentOrders && fn:length(stats.recentOrders) > 0}">
 									<c:forEach var="order" items="${stats.recentOrders}">
-										<tr>
-											<td><strong>#${order.order_id}</strong></td>
-											<td>${order.fullname}</td>
+										<tr class="border-bottom">
+											<td class="ps-4">
+												<span class="fw-semibold">#${order.order_id}</span>
+											</td>
 											<td>
-												<strong class="text-primary">
+												<span class="fw-semibold">${order.fullname}</span>
+											</td>
+											<td>
+												<strong class="text-success fs-5">
 													<fmt:formatNumber value="${order.total_amount}" pattern="#,##0" />₫
 												</strong>
 											</td>
 											<td>
 												<c:choose>
 													<c:when test="${order.order_status == 'Chờ xác nhận'}">
-														<span class="badge bg-warning text-white">${order.order_status}</span>
+														<span class="badge bg-warning text-white px-3 py-2">${order.order_status}</span>
 													</c:when>
 													<c:when test="${order.order_status == 'Đang xử lý'}">
-														<span class="badge bg-info text-white">${order.order_status}</span>
+														<span class="badge bg-info text-white px-3 py-2">${order.order_status}</span>
 													</c:when>
 													<c:when test="${order.order_status == 'Hoàn thành'}">
-														<span class="badge bg-success text-white">${order.order_status}</span>
+														<span class="badge bg-success text-white px-3 py-2">${order.order_status}</span>
 													</c:when>
 													<c:when test="${order.order_status == 'Đã hủy'}">
-														<span class="badge bg-danger text-white">${order.order_status}</span>
+														<span class="badge bg-danger text-white px-3 py-2">${order.order_status}</span>
 													</c:when>
 													<c:otherwise>
-														<span class="badge bg-secondary text-white">${order.order_status}</span>
+														<span class="badge bg-secondary text-white px-3 py-2">${order.order_status}</span>
 													</c:otherwise>
 												</c:choose>
 											</td>
-											<td>
+											<td class="pe-4">
 												<small class="text-muted">
 													<fmt:formatDate value="${order.createdDateAsDate}" pattern="dd/MM/yyyy HH:mm"/>
 												</small>
@@ -373,8 +388,12 @@
 								</c:when>
 								<c:otherwise>
 									<tr>
-										<td colspan="5" class="text-center text-muted py-3">
-											<i class="fas fa-inbox me-2"></i>Chưa có đơn hàng nào
+										<td colspan="5" class="text-center py-5">
+											<div class="py-4">
+												<i class="fas fa-inbox fa-4x text-muted mb-3 d-block"></i>
+												<h5 class="text-muted mb-2">Không có đơn hàng nào</h5>
+												<p class="text-muted small mb-0">Chưa có đơn hàng nào được đặt</p>
+											</div>
 										</td>
 									</tr>
 								</c:otherwise>

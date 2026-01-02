@@ -13,10 +13,10 @@ public class Category implements Serializable {
     @Column(name = "cate_id")
     private int id;
     
-    @Column(name = "cate_name", columnDefinition="NVARCHAR(200)")
+    @Column(name = "cate_name")
     private String name;
     
-    @Column(name = "icons", columnDefinition="NVARCHAR(500)")
+    @Column(name = "icons")
     private String icon;
     
     // Constructors

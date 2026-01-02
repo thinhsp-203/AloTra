@@ -73,16 +73,7 @@ public class AdminOrderController extends HttpServlet {
         int orderId = Integer.parseInt(req.getParameter("orderId"));
         
         try {
-            if ("acceptOrder".equals(action)) {
-                orderService.acceptOrder(orderId);
-                req.getSession().setAttribute("success", "Đã nhận đơn hàng thành công! Đơn hàng đang được chuẩn bị.");
-                
-            } else if ("cancelOrder".equals(action)) {
-                String cancellationReason = req.getParameter("cancellationReason");
-                orderService.cancelOrder(orderId, cancellationReason);
-                req.getSession().setAttribute("success", "Đã hủy đơn hàng thành công!");
-                
-            } else if ("updateStatus".equals(action)) {
+            if ("updateStatus".equals(action)) {
                 String newStatus = req.getParameter("status");
                 orderService.updateOrderStatus(orderId, newStatus);
                 req.getSession().setAttribute("success", "Đã cập nhật trạng thái đơn hàng thành công!");

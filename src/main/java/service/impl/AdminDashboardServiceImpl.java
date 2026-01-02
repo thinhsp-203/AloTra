@@ -203,15 +203,6 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .getResultList();
             stats.put("categoryStats", categoryStats);
             
-            // Sản phẩm sắp hết hàng
-            var lowStock = em.createQuery(
-                "SELECT p.product_name, p.stock FROM Product p " +
-                "WHERE p.stock < 10 AND p.isActive = true " +
-                "ORDER BY p.stock ASC", Object[].class)
-                .setMaxResults(10)
-                .getResultList();
-            stats.put("lowStock", lowStock);
-            
             // ============ BIỂU ĐỒ ============
             // Doanh thu theo tháng (6 tháng gần nhất)
             var monthlyRevenue = em.createQuery(

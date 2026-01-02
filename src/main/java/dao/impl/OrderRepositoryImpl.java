@@ -43,11 +43,6 @@ public class OrderRepositoryImpl implements OrderRepository {
             d.setPrice(unit);
             d.setToppings(ci.getToppingsCsv());
             em.persist(d);
-
-            if (p != null && p.getStock() != null) {
-                p.setStock(Math.max(0, p.getStock() - ci.getQuantity()));
-                em.merge(p);
-            }
         }
         return o;
     }

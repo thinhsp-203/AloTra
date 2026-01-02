@@ -9,7 +9,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = "/login")
+@WebServlet(urlPatterns = "/login", asyncSupported = false)
 public class LoginController extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private UserService userService;

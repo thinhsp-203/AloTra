@@ -6,7 +6,7 @@ import jakarta.servlet.http.*;
 import model.User;
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/user/*", "/checkout", "/cart/*"})
+@WebFilter(urlPatterns = {"/user/*", "/checkout", "/cart/*"}, asyncSupported = false)
 public class UserAuthenticationFilter implements Filter {
 
     @Override

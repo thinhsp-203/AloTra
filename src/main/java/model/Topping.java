@@ -14,7 +14,7 @@ public class Topping {
   @GeneratedValue(strategy=GenerationType.IDENTITY)
   private Integer topping_id;
 
-  @Column(nullable=false, columnDefinition="NVARCHAR(100)")
+  @Column(nullable=false, length=100)
   private String topping_name;
 
   @Column(nullable=false, precision=18, scale=2)

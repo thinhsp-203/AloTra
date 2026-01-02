@@ -22,10 +22,10 @@ public class OrderDetail {
   @JoinColumn(name="product_id", nullable=false)
   private Product product;
 
-  @Column(nullable=false, columnDefinition="NVARCHAR(200)")
+  @Column(nullable=false, length=200)
   private String product_name;
 
-  @Column(columnDefinition="NVARCHAR(20)")
+  @Column(length=20)
   private String size_name;
 
   @Column(nullable=false)
@@ -34,7 +34,7 @@ public class OrderDetail {
   @Column(nullable=false, precision=18, scale=2)
   private BigDecimal price; // giá đơn vị (1 sp), không nhân quantity
 
-  @Column(columnDefinition="NVARCHAR(500)")
+  @Column(length=500)
   private String toppings; // JSON/txt
   
   // Helper method để tính tổng tiền

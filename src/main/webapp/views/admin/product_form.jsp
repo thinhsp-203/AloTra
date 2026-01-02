@@ -2,20 +2,32 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
-<h1 class="h3 mb-4 text-gray-800">${empty p.product_id ? 'Thêm' : 'Sửa'} sản phẩm</h1>
+<%-- Header --%>
+<div class="d-flex justify-content-between align-items-center mb-4" style="margin-right: 20px;">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">
+            <i class="fas fa-box text-primary" style="margin-right: 10px;"></i>${empty p.product_id ? 'Thêm' : 'Sửa'} sản phẩm
+        </h1>
+        <p class="text-muted mb-0">${empty p.product_id ? 'Thêm sản phẩm mới vào hệ thống' : 'Chỉnh sửa thông tin sản phẩm'}</p>
+    </div>
+    <a href="${pageContext.request.contextPath}/admin/products" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left" style="margin-right: 10px;"></i>Quay lại
+    </a>
+</div>
 
+<%-- Alert Messages --%>
 <c:if test="${not empty sessionScope.error}">
-    <div class="alert alert-danger alert-dismissible fade show">
-        ${sessionScope.error}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-exclamation-circle" style="margin-right: 10px;"></i><strong>Lỗi!</strong> ${sessionScope.error}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <c:remove var="error" scope="session"/>
 </c:if>
 
 <c:if test="${not empty sessionScope.success}">
-    <div class="alert alert-success alert-dismissible fade show">
-        ${sessionScope.success}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle" style="margin-right: 10px;"></i><strong>Thành công!</strong> ${sessionScope.success}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <c:remove var="success" scope="session"/>
 </c:if>
@@ -29,10 +41,10 @@
         <!-- Cột trái: Thông tin chính -->
         <div class="col-lg-8">
             <!-- Thông tin cơ bản -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-info-circle"></i> Thông tin cơ bản
+                        <i class="fas fa-info-circle" style="margin-right: 10px;"></i>Thông tin cơ bản
                     </h6>
                 </div>
                 <div class="card-body">
@@ -53,10 +65,10 @@
             </div>
             
             <!-- Hình ảnh -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-image"></i> Hình ảnh sản phẩm
+                        <i class="fas fa-image" style="margin-right: 10px;"></i>Hình ảnh sản phẩm
                     </h6>
                 </div>
                 <div class="card-body">
@@ -100,60 +112,67 @@
             </div>
         </div>
         
-        <!-- Cột phải: Giá, tồn kho, cài đặt -->
+        <!-- Cột phải: Giá, cài đặt -->
         <div class="col-lg-4">
-            <!-- Giá & Tồn kho -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
+            <!-- Giá -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-dollar-sign"></i> Giá & Tồn kho
+                        <i class="fas fa-dollar-sign" style="margin-right: 10px;"></i>Giá bán
                     </h6>
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Giá bán <span class="text-danger">*</span></label>
-                        <div class="input-group">
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold mb-2">
+                            <i class="fas fa-money-bill-wave text-success" style="margin-right: 10px;"></i>Giá bán <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group" style="width: 100%;">
                             <input class="form-control" name="price" type="number" step="100" min="0" 
-                                   value="${p.price}" placeholder="0" required/>
-                            <span class="input-group-text">VNĐ</span>
+                                   value="${p.price}" placeholder="Nhập giá bán" required
+                                   style="font-size: 1rem; padding: 0.75rem; flex: 1 1 auto; min-width: 0;"/>
+                            <span class="input-group-text bg-light border-start-0">VNĐ</span>
                         </div>
-                        <div class="form-text">Giá bán của sản phẩm</div>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle text-info" style="margin-right: 5px;"></i>Ví dụ: 25000, 50000, 75000...
+                        </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Giảm giá</label>
-                        <div class="input-group">
+                        <label class="form-label fw-semibold mb-2">
+                            <i class="fas fa-percent text-warning" style="margin-right: 10px;"></i>Giảm giá
+                        </label>
+                        <div class="input-group" style="width: 100%;">
                             <input class="form-control" name="discount" type="number" step="1" min="0" max="100" 
-                                   value="${p.discount}" placeholder="0"/>
-                            <span class="input-group-text">%</span>
+                                   value="${p.discount}" placeholder="Nhập phần trăm giảm giá"
+                                   style="font-size: 1rem; padding: 0.75rem; flex: 1 1 auto; min-width: 0;"/>
+                            <span class="input-group-text bg-light border-start-0">%</span>
                         </div>
-                        <div class="form-text">Phần trăm giảm giá (0-100%)</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Số lượng tồn kho</label>
-                        <input class="form-control" name="stock" type="number" step="1" min="0" 
-                               value="${p.stock}" placeholder="0"/>
-                        <div class="form-text">Số lượng sản phẩm còn trong kho</div>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle text-info" style="margin-right: 5px;"></i>Phần trăm giảm giá từ 0 đến 100 (ví dụ: 10 = 10%)
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- Danh mục & Nhà cung cấp -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-tags"></i> Phân loại
+                        <i class="fas fa-tags" style="margin-right: 10px;"></i>Phân loại
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Danh mục <span class="text-danger">*</span></label>
-                        <select class="form-select" name="cate_id" required>
+                        <label class="form-label fw-semibold mb-2" style="font-size: 1.1rem;">
+                            <i class="fas fa-tags text-primary" style="margin-right: 10px;"></i>Danh mục <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select form-select-lg" name="cate_id" required
+                                style="font-size: 1.1rem; padding: 0.75rem 1rem; height: auto;">
                             <option value="">-- Chọn danh mục --</option>
                             <c:forEach var="c" items="${categories}">
                                 <option value="${c.id}" 
-                                        ${p.category != null && p.category.id == c.id ? 'selected' : ''}>
+                                        ${p.category != null && p.category.id == c.id ? 'selected' : ''}
+                                        style="font-size: 1.1rem;">
                                     ${c.name}
                                 </option>
                             </c:forEach>
@@ -163,10 +182,10 @@
             </div>
             
             <!-- Cài đặt -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-cog"></i> Cài đặt
+                        <i class="fas fa-cog" style="margin-right: 10px;"></i>Cài đặt
                     </h6>
                 </div>
                 <div class="card-body">
@@ -193,15 +212,15 @@
     </div>
     
     <!-- Actions -->
-    <div class="card shadow mb-4">
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
+            <div class="d-flex justify-content-between align-items-center gap-2">
+                <div class="d-flex gap-3">
                     <button class="btn btn-primary" type="submit">
-                        <i class="fas fa-save"></i> Lưu sản phẩm
+                        <i class="fas fa-save" style="margin-right: 10px;"></i>Lưu sản phẩm
                     </button>
                     <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/products">
-                        <i class="fas fa-times"></i> Hủy bỏ
+                        <i class="fas fa-times" style="margin-right: 10px;"></i>Hủy bỏ
                     </a>
                 </div>
                 <small class="text-muted">

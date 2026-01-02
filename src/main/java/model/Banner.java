@@ -11,10 +11,9 @@ public class Banner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, columnDefinition = "NVARCHAR(500)")
+    @Column(nullable = false)
     private String imageUrl; // Đường dẫn tới ảnh banner
 
-    @Column(columnDefinition = "NVARCHAR(500)")
     private String linkUrl; // Link khi click vào banner (có thể null)
 
     private int sortOrder = 0; // Thứ tự sắp xếp

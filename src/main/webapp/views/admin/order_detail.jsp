@@ -4,32 +4,32 @@
 <%@ taglib prefix="fn" uri="jakarta.tags.functions"%>
 
 <%-- Header with Order ID --%>
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4" style="margin-right: 20px;">
     <div>
         <h1 class="h3 mb-1 text-gray-800">
-            <i class="fas fa-receipt text-primary me-2"></i>Chi tiết đơn hàng #${order.order_id}
+            <i class="fas fa-receipt text-primary" style="margin-right: 10px;"></i>Chi tiết đơn hàng #${order.order_id}
         </h1>
         <p class="text-muted mb-0">
-            <i class="far fa-calendar me-1"></i>
+            <i class="far fa-calendar" style="margin-right: 10px;"></i>
             Ngày đặt: <fmt:formatDate value="${order.createdDateAsDate}" pattern="dd/MM/yyyy HH:mm"/>
         </p>
     </div>
     <a href="${pageContext.request.contextPath}/admin/orders" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+        <i class="fas fa-arrow-left" style="margin-right: 10px;"></i>Quay lại danh sách
     </a>
 </div>
 
 <%-- Alert Messages --%>
 <c:if test="${not empty sessionScope.success}">
     <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-        <i class="fas fa-check-circle me-2"></i><strong>Thành công!</strong> ${sessionScope.success}
+        <i class="fas fa-check-circle" style="margin-right: 10px;"></i><strong>Thành công!</strong> ${sessionScope.success}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <c:remove var="success" scope="session"/>
 </c:if>
 <c:if test="${not empty sessionScope.error}">
     <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-        <i class="fas fa-exclamation-circle me-2"></i><strong>Lỗi!</strong> ${sessionScope.error}
+        <i class="fas fa-exclamation-circle" style="margin-right: 10px;"></i><strong>Lỗi!</strong> ${sessionScope.error}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <c:remove var="error" scope="session"/>
@@ -43,7 +43,7 @@
             <div class="card-header bg-gradient-primary text-white py-3" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <h6 class="m-0 font-weight-bold">
-                    <i class="fas fa-user-circle me-2"></i>Thông tin khách hàng
+                    <i class="fas fa-user-circle" style="margin-right: 10px;"></i>Thông tin khách hàng
                 </h6>
             </div>
             <div class="card-body p-4">
@@ -90,7 +90,7 @@
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white border-bottom py-3">
                 <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-utensils me-2"></i>Sản phẩm đã đặt
+                    <i class="fas fa-utensils" style="margin-right: 10px;"></i>Sản phẩm đã đặt
                     <span class="ms-2">${fn:length(details)} món</span>
                 </h6>
             </div>
@@ -173,7 +173,7 @@
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white border-bottom py-3">
                 <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-tasks me-2"></i>Trạng thái đơn hàng
+                    <i class="fas fa-tasks" style="margin-right: 10px;"></i>Trạng thái đơn hàng
                 </h6>
             </div>
             <div class="card-body p-4">
@@ -186,10 +186,10 @@
                                 <div class="fw-bold">${order.order_status}</div>
                             </div>
                         </c:when>
-                        <c:when test="${order.order_status eq 'Đang chuẩn bị' || order.order_status eq 'Đang xử lý'}">
+                        <c:when test="${order.order_status eq 'Đang chuẩn bị'}">
                             <div class="alert alert-info mb-0 text-center py-3">
                                 <i class="fas fa-utensils fa-2x mb-2"></i>
-                                <div class="fw-bold">Đang chuẩn bị</div>
+                                <div class="fw-bold">${order.order_status}</div>
                             </div>
                         </c:when>
                         <c:when test="${order.order_status eq 'Đang giao'}">
@@ -216,17 +216,10 @@
                 <c:choose>
                     <c:when test="${order.order_status eq 'Đã hủy'}">
                         <div class="alert alert-warning border-warning">
-                            <i class="fas fa-lock me-2"></i>
+                            <i class="fas fa-lock" style="margin-right: 10px;"></i>
                             <strong>Đơn hàng đã bị hủy</strong>
                             <p class="mb-0 mt-2 small">Không thể cập nhật trạng thái cho đơn hàng đã hủy.</p>
                         </div>
-                        <c:if test="${not empty order.cancellation_reason}">
-                            <div class="alert alert-danger border-danger mb-3">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                <strong>Lý do hủy đơn:</strong>
-                                <p class="mb-0 mt-2">${order.cancellation_reason}</p>
-                            </div>
-                        </c:if>
                         <div class="mb-3">
                             <label class="form-label">Trạng thái (chỉ xem)</label>
                             <select class="form-select" disabled>
@@ -234,32 +227,7 @@
                             </select>
                         </div>
                     </c:when>
-                    <c:when test="${order.order_status eq 'Chờ xác nhận'}">
-                        <%-- Đơn hàng chờ xác nhận: Hiển thị buttons Nhận đơn và Hủy đơn --%>
-                        <div class="alert alert-info border-info mb-3">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Đơn hàng đang chờ xác nhận</strong>
-                            <p class="mb-0 mt-2 small">Vui lòng nhận đơn hoặc hủy đơn hàng này.</p>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <form method="post" action="${pageContext.request.contextPath}/admin/orders" class="mb-2">
-                                <input type="hidden" name="action" value="acceptOrder">
-                                <input type="hidden" name="orderId" value="${order.order_id}">
-                                <button type="submit" class="btn btn-success w-100 btn-lg" 
-                                        onclick="return confirm('Bạn có chắc chắn muốn nhận đơn hàng này? Đơn hàng sẽ chuyển sang trạng thái \"Đang chuẩn bị\".');">
-                                    <i class="fas fa-check-circle me-2"></i>Nhận đơn
-                                </button>
-                            </form>
-                            
-                            <button type="button" class="btn btn-danger w-100 btn-lg" 
-                                    onclick="openCancelModal()">
-                                <i class="fas fa-times-circle me-2"></i>Hủy đơn
-                            </button>
-                        </div>
-                    </c:when>
                     <c:otherwise>
-                        <%-- Đơn hàng đã được nhận: Cho phép cập nhật trạng thái --%>
                         <form method="post" action="${pageContext.request.contextPath}/admin/orders">
                             <input type="hidden" name="action" value="updateStatus">
                             <input type="hidden" name="orderId" value="${order.order_id}">
@@ -267,7 +235,10 @@
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Cập nhật trạng thái</label>
                                 <select class="form-select form-select-lg" name="status" required>
-                                    <option value="Đang chuẩn bị" ${order.order_status eq 'Đang chuẩn bị' || order.order_status eq 'Đang xử lý' ? 'selected' : ''}>
+                                    <option value="Chờ xác nhận" ${order.order_status eq 'Chờ xác nhận' ? 'selected' : ''}>
+                                        Chờ xác nhận
+                                    </option>
+                                    <option value="Đang chuẩn bị" ${order.order_status eq 'Đang chuẩn bị' ? 'selected' : ''}>
                                         Đang chuẩn bị
                                     </option>
                                     <option value="Đang giao" ${order.order_status eq 'Đang giao' ? 'selected' : ''}>
@@ -276,15 +247,14 @@
                                     <option value="Hoàn thành" ${order.order_status eq 'Hoàn thành' ? 'selected' : ''}>
                                         Hoàn thành
                                     </option>
+                                    <option value="Đã hủy" ${order.order_status eq 'Đã hủy' ? 'selected' : ''}>
+                                        Đã hủy
+                                    </option>
                                 </select>
-                                <div class="form-text">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Đơn hàng đã được nhận, bạn có thể cập nhật trạng thái theo quy trình.
-                                </div>
                             </div>
                             
                             <button type="submit" class="btn btn-primary w-100 btn-lg">
-                                <i class="fas fa-save me-2"></i>Cập nhật trạng thái
+                                <i class="fas fa-save" style="margin-right: 10px;"></i>Cập nhật trạng thái
                             </button>
                         </form>
                     </c:otherwise>
@@ -296,7 +266,7 @@
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white border-bottom py-3">
                 <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-money-bill-wave me-2"></i>Thông tin thanh toán
+                    <i class="fas fa-money-bill-wave" style="margin-right: 10px;"></i>Thông tin thanh toán
                 </h6>
             </div>
             <div class="card-body p-4">
@@ -305,13 +275,13 @@
                     <div>
                         <c:choose>
                             <c:when test="${order.payment_method eq 'COD'}">
-                                <span class="badge bg-secondary fs-6 px-3 py-2">
-                                    <i class="fas fa-money-bill me-2"></i>Thanh toán khi nhận hàng (COD)
+                                <span class="badge bg-secondary text-white fs-6 px-3 py-2">
+                                    <i class="fas fa-money-bill" style="margin-right: 5px;"></i>Thanh toán khi nhận hàng (COD)
                                 </span>
                             </c:when>
                             <c:when test="${order.payment_method eq 'Online'}">
-                                <span class="badge bg-primary fs-6 px-3 py-2">
-                                    <i class="fas fa-credit-card me-2"></i>Thanh toán online
+                                <span class="badge bg-primary text-white fs-6 px-3 py-2">
+                                    <i class="fas fa-credit-card" style="margin-right: 5px;"></i>Thanh toán online
                                 </span>
                             </c:when>
                             <c:otherwise>
@@ -348,7 +318,7 @@
                 <c:choose>
                     <c:when test="${order.order_status eq 'Đã hủy'}">
                         <div class="alert alert-warning border-warning">
-                            <i class="fas fa-lock me-2"></i>
+                            <i class="fas fa-lock" style="margin-right: 10px;"></i>
                             <strong>Đơn hàng đã bị hủy</strong>
                             <p class="mb-0 mt-2 small">Không thể cập nhật trạng thái thanh toán cho đơn hàng đã hủy.</p>
                         </div>
@@ -359,11 +329,11 @@
                             </select>
                             <div class="form-text mt-2">
                                 <c:if test="${order.payment_method eq 'Online' && order.payment_status eq 'Đã thanh toán'}">
-                                    <i class="fas fa-info-circle text-info me-1"></i>
+                                    <i class="fas fa-info-circle text-info" style="margin-right: 5px;"></i>
                                     Đơn hàng đã thanh toán online, trạng thái đã được tự động chuyển sang "Đã hoàn tiền" khi hủy.
                                 </c:if>
                                 <c:if test="${order.payment_method eq 'COD'}">
-                                    <i class="fas fa-info-circle text-info me-1"></i>
+                                    <i class="fas fa-info-circle text-info" style="margin-right: 5px;"></i>
                                     Đơn hàng COD đã hủy, trạng thái là "Chưa thanh toán" vì chưa thu tiền.
                                 </c:if>
                             </div>
@@ -395,7 +365,7 @@
                             </div>
                             
                             <button type="submit" class="btn btn-success w-100 btn-lg">
-                                <i class="fas fa-save me-2"></i>Cập nhật thanh toán
+                                <i class="fas fa-save" style="margin-right: 10px;"></i>Cập nhật thanh toán
                             </button>
                         </form>
                     </c:otherwise>
@@ -423,62 +393,3 @@
         </div>
     </div>
 </div>
-
-<%-- Modal Hủy đơn hàng --%>
-<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="cancelOrderModalLabel">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận hủy đơn hàng
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post" action="${pageContext.request.contextPath}/admin/orders" id="cancelOrderForm">
-                <input type="hidden" name="action" value="cancelOrder">
-                <input type="hidden" name="orderId" value="${order.order_id}">
-                <div class="modal-body">
-                    <div class="alert alert-warning mb-3">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Lưu ý:</strong> Hành động này không thể hoàn tác!
-                    </div>
-                    <div class="mb-3">
-                        <label for="cancellationReason" class="form-label fw-semibold">
-                            <i class="fas fa-comment-alt me-2"></i>Lý do hủy đơn <span class="text-danger">*</span>
-                        </label>
-                        <textarea class="form-control" id="cancellationReason" name="cancellationReason" 
-                                  rows="4" placeholder="Vui lòng nhập lý do hủy đơn hàng này..." required></textarea>
-                        <div class="form-text">Vui lòng cung cấp lý do rõ ràng để khách hàng hiểu rõ về việc hủy đơn.</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>Hủy
-                    </button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-check me-2"></i>Xác nhận hủy đơn
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-    function openCancelModal() {
-        const modal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
-        modal.show();
-    }
-    
-    // Reset form khi modal đóng
-    document.addEventListener('DOMContentLoaded', function() {
-        const cancelOrderModal = document.getElementById('cancelOrderModal');
-        const cancelOrderForm = document.getElementById('cancelOrderForm');
-        
-        if (cancelOrderModal && cancelOrderForm) {
-            cancelOrderModal.addEventListener('hidden.bs.modal', function () {
-                cancelOrderForm.reset();
-            });
-        }
-    });
-</script>

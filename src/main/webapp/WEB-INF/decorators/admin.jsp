@@ -51,7 +51,7 @@
 
         <li class="nav-item">
             <a class="nav-link" href="${pageContext.request.contextPath}/admin/orders">
-                <i class="fas fa-fw fa-cart-shopping"></i>
+                <i class="fas fa-fw fa-shopping-cart"></i>
                 <span>Đơn hàng</span>
             </a>
         </li>

@@ -8,7 +8,7 @@ import utils.Roles;
 
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/admin/*", "/api/admin/*"})
+@WebFilter(urlPatterns = {"/admin/*", "/api/admin/*"}, asyncSupported = false)
 public class AdminAuthorizationFilter implements Filter {
 
     @Override

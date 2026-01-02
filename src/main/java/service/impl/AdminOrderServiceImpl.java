@@ -20,12 +20,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 jpql.append(" AND (o.fullname LIKE :kw OR o.phone LIKE :kw)");
             }
             if (status != null && !status.trim().isEmpty()) {
-                // Xử lý trạng thái "Đang chuẩn bị" để tìm cả "Đang xử lý"
-                if ("Đang chuẩn bị".equals(status.trim())) {
-                    jpql.append(" AND (o.order_status = :status OR o.order_status = 'Đang xử lý')");
-                } else {
-                    jpql.append(" AND o.order_status = :status");
-                }
+                jpql.append(" AND o.order_status = :status");
             }
             jpql.append(" ORDER BY o.createdDate DESC");
             
@@ -35,7 +30,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 query.setParameter("kw", "%" + keyword.trim() + "%");
             }
             if (status != null && !status.trim().isEmpty()) {
-                query.setParameter("status", status.trim());
+                query.setParameter("status", status);
             }
             
             return query.getResultList();
@@ -76,24 +71,12 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             }
             
             // Không cho phép cập nhật nếu đơn hàng đã hủy
-            String currentStatus = order.getOrder_status();
-            if ("Đã hủy".equals(currentStatus)) {
+            if ("Đã hủy".equals(order.getOrder_status())) {
                 em.getTransaction().rollback();
                 throw new IllegalArgumentException("Không thể cập nhật đơn hàng đã bị hủy!");
             }
             
-            // Không cho phép cập nhật từ "Chờ xác nhận" - phải dùng "Nhận đơn" hoặc "Hủy đơn"
-            if ("Chờ xác nhận".equals(currentStatus)) {
-                em.getTransaction().rollback();
-                throw new IllegalArgumentException("Vui lòng nhận đơn hoặc hủy đơn hàng này trước khi cập nhật trạng thái!");
-            }
-            
-            // Normalize trạng thái "Đang xử lý" thành "Đang chuẩn bị" để thống nhất
-            if ("Đang xử lý".equals(newStatus)) {
-                newStatus = "Đang chuẩn bị";
-            }
-            
-            String oldStatus = currentStatus;
+            String oldStatus = order.getOrder_status();
             order.setOrder_status(newStatus);
             order.setUpdatedDate(LocalDateTime.now());
             
@@ -172,106 +155,6 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 em.getTransaction().rollback();
             }
             throw new RuntimeException("Lỗi khi cập nhật thanh toán: " + e.getMessage(), e);
-        } finally {
-            em.close();
-        }
-    }
-    
-    @Override
-    public void acceptOrder(int orderId) {
-        EntityManager em = JpaUtil.em();
-        try {
-            em.getTransaction().begin();
-            
-            Orders order = em.find(Orders.class, orderId);
-            if (order == null) {
-                em.getTransaction().rollback();
-                throw new IllegalArgumentException("Đơn hàng không tồn tại!");
-            }
-            
-            // Chỉ cho phép nhận đơn nếu trạng thái là "Chờ xác nhận"
-            String currentStatus = order.getOrder_status();
-            if (!"Chờ xác nhận".equals(currentStatus)) {
-                em.getTransaction().rollback();
-                throw new IllegalArgumentException("Chỉ có thể nhận đơn hàng đang ở trạng thái 'Chờ xác nhận'!");
-            }
-            
-            // Nhận đơn: Chuyển từ "Chờ xác nhận" -> "Đang chuẩn bị"
-            order.setOrder_status("Đang chuẩn bị");
-            order.setUpdatedDate(LocalDateTime.now());
-            
-            em.merge(order);
-            em.getTransaction().commit();
-        } catch (IllegalArgumentException e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Lỗi khi nhận đơn hàng: " + e.getMessage(), e);
-        } finally {
-            em.close();
-        }
-    }
-    
-    @Override
-    public void cancelOrder(int orderId, String cancellationReason) {
-        EntityManager em = JpaUtil.em();
-        try {
-            em.getTransaction().begin();
-            
-            Orders order = em.find(Orders.class, orderId);
-            if (order == null) {
-                em.getTransaction().rollback();
-                throw new IllegalArgumentException("Đơn hàng không tồn tại!");
-            }
-            
-            // Chỉ cho phép hủy đơn nếu trạng thái là "Chờ xác nhận"
-            String currentStatus = order.getOrder_status();
-            if (!"Chờ xác nhận".equals(currentStatus)) {
-                em.getTransaction().rollback();
-                throw new IllegalArgumentException("Chỉ có thể hủy đơn hàng đang ở trạng thái 'Chờ xác nhận'!");
-            }
-            
-            // Validate lý do hủy
-            if (cancellationReason == null || cancellationReason.trim().isEmpty()) {
-                em.getTransaction().rollback();
-                throw new IllegalArgumentException("Vui lòng nhập lý do hủy đơn hàng!");
-            }
-            
-            // Hủy đơn: Chuyển từ "Chờ xác nhận" -> "Đã hủy"
-            order.setOrder_status("Đã hủy");
-            order.setCancellation_reason(cancellationReason.trim());
-            order.setUpdatedDate(LocalDateTime.now());
-            
-            // Xử lý payment_status khi hủy đơn
-            String currentPaymentStatus = order.getPayment_status();
-            // Nếu đơn hàng đã thanh toán online → cần hoàn tiền
-            if ("Đã thanh toán".equals(currentPaymentStatus) && 
-                "Online".equals(order.getPayment_method())) {
-                order.setPayment_status("Đã hoàn tiền");
-            }
-            // Nếu là COD hoặc chưa thanh toán → giữ "Chưa thanh toán"
-            else if ("COD".equals(order.getPayment_method()) || 
-                     "Chưa thanh toán".equals(currentPaymentStatus)) {
-                order.setPayment_status("Chưa thanh toán");
-            }
-            
-            em.merge(order);
-            em.getTransaction().commit();
-        } catch (IllegalArgumentException e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Lỗi khi hủy đơn hàng: " + e.getMessage(), e);
         } finally {
             em.close();
         }

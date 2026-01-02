@@ -66,7 +66,7 @@
             <form>
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Số lượng:</label>
-                    <input type="number" class="form-control" value="1" min="1" max="${p.stock}" style="width: 100px;">
+                    <input type="number" class="form-control" value="1" min="1" style="width: 100px;">
                 </div>
                 
                 <div class="d-flex gap-2">
