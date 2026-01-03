@@ -39,6 +39,8 @@ public class CategoryEditController extends HttpServlet {
     req.setCharacterEncoding("UTF-8");
     int id = Integer.parseInt(req.getParameter("id"));
     String name = req.getParameter("name");
+    String isDrinkParam = req.getParameter("isDrink");
+    Boolean isDrink = "true".equalsIgnoreCase(isDrinkParam);
 
     
     Category old = service.get(id);
@@ -82,6 +84,7 @@ public class CategoryEditController extends HttpServlet {
     c.setId(id);
     c.setName(name);
     c.setIcon(finalFileName); // Cập nhật tên file mới (hoặc giữ tên file cũ)
+    c.setIsDrink(isDrink);
     service.edit(c);                  
 
     req.getSession().setAttribute("success", "Đã cập nhật danh mục!");

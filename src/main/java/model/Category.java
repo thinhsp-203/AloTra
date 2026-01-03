@@ -19,6 +19,9 @@ public class Category implements Serializable {
     @Column(name = "icons")
     private String icon;
     
+    @Column(name = "isDrink")
+    private Boolean isDrink;
+    
     // Constructors
     public Category() {}
     
@@ -31,4 +34,7 @@ public class Category implements Serializable {
     
     public String getIcon() { return icon; }
     public void setIcon(String icon) { this.icon = icon; }
+    
+    public Boolean getIsDrink() { return isDrink != null && isDrink; }
+    public void setIsDrink(Boolean isDrink) { this.isDrink = isDrink; }
 }

@@ -28,6 +28,8 @@ public class CategoryAddController extends HttpServlet {
       throws ServletException, IOException {
     req.setCharacterEncoding("UTF-8");
     String name = req.getParameter("name");
+    String isDrinkParam = req.getParameter("isDrink");
+    Boolean isDrink = "true".equalsIgnoreCase(isDrinkParam);
 
     String finalFileName = null; // Tên file sẽ lưu vào DB
     Part part = req.getPart("icon");
@@ -58,6 +60,7 @@ public class CategoryAddController extends HttpServlet {
     Category c = new Category();
     c.setName(name);
     c.setIcon(finalFileName); // Chỉ lưu tên file duy nhất
+    c.setIsDrink(isDrink);
     service.insert(c);
 
     req.getSession().setAttribute("success", "Đã thêm danh mục thành công!");

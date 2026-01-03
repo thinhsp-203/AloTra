@@ -283,8 +283,7 @@ try (var em = JpaUtil.em()) {
                                         <div class="col-lg-4 col-md-6">
                                             <h6 class="dropdown-header"><i class="bi bi-cup-straw"></i> Thức uống</h6>
                                             <c:forEach var="cat" items="${navbarCategories}">
-                                                <c:set var="lowerName" value="${fn:toLowerCase(cat.name)}" />
-                                                <c:if test="${fn:contains(lowerName, 'trà') || fn:contains(lowerName, 'cà phê') || fn:contains(lowerName, 'sinh tố') || fn:contains(lowerName, 'nước')}">
+                                                <c:if test="${cat.isDrink}">
                                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/products?cate=${cat.id}">
                                                         ${cat.name}
                                                     </a>
@@ -294,8 +293,7 @@ try (var em = JpaUtil.em()) {
                                         <div class="col-lg-4 col-md-6">
                                             <h6 class="dropdown-header"><i class="bi bi-cake2"></i> Bánh & Đồ ăn vặt</h6>
                                             <c:forEach var="cat" items="${navbarCategories}">
-                                                <c:set var="lowerName" value="${fn:toLowerCase(cat.name)}" />
-                                                <c:if test="${fn:contains(lowerName, 'bánh') || fn:contains(lowerName, 'ăn vặt') || fn:contains(lowerName, 'snack')}">
+                                                <c:if test="${not cat.isDrink}">
                                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/products?cate=${cat.id}">
                                                         ${cat.name}
                                                     </a>

@@ -34,13 +34,14 @@ public class ProductModalApiController extends HttpServlet {
             }
 
             String categoryName = (product.getCategory() != null) ? product.getCategory().getName() : "";
+            boolean isDrink = (product.getCategory() != null && Boolean.TRUE.equals(product.getCategory().getIsDrink()));
 
             List<ProductSize> sizes = productQueryService.getSizes(productId);
             List<Topping> toppings = productQueryService.getAvailableToppingsForCategory(categoryName);
 
             String productJson = String.format(
-                "{\"id\":%d, \"name\":\"%s\", \"basePrice\":%s, \"thumbnail\":\"%s\", \"categoryName\":\"%s\"}",
-                product.getProduct_id(), escapeJson(product.getProduct_name()), product.getPrice(), escapeJson(product.getThumbnail()), escapeJson(categoryName)
+                "{\"id\":%d, \"name\":\"%s\", \"basePrice\":%s, \"thumbnail\":\"%s\", \"categoryName\":\"%s\", \"isDrink\":%s}",
+                product.getProduct_id(), escapeJson(product.getProduct_name()), product.getPrice(), escapeJson(product.getThumbnail()), escapeJson(categoryName), isDrink
             );
 
             String sizesJson = sizes.stream()

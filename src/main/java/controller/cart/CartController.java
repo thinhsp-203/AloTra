@@ -84,12 +84,14 @@ public class CartController extends HttpServlet {
             int productId = Integer.parseInt(req.getParameter("productId"));
             int quantity = Integer.parseInt(req.getParameter("quantity"));
             String sizeName = req.getParameter("size");
+            String sugarLevel = req.getParameter("sweetness"); // Độ ngọt
+            String iceLevel = req.getParameter("ice"); // Mức đá
             String toppingParam = req.getParameter("topping");
             
             // Gọi service xử lý
             List<CartItem> cart = getCart(session);
             CartItem resultItem = cartService.addToCart(cart, productId, quantity, 
-                                                       sizeName, toppingParam);
+                                                       sizeName, sugarLevel, iceLevel, toppingParam);
             
             // Trả về JSON
             String itemJson = String.format(
@@ -120,11 +122,13 @@ public class CartController extends HttpServlet {
         try {
             int productId = Integer.parseInt(req.getParameter("productId"));
             String size = req.getParameter("size");
+            String sugarLevel = req.getParameter("sugarLevel");
+            String iceLevel = req.getParameter("iceLevel");
             String toppings = req.getParameter("toppings");
             int newQuantity = Integer.parseInt(req.getParameter("quantity"));
             
             List<CartItem> cart = getCart(req.getSession());
-            cartService.updateQuantity(cart, productId, size, toppings, newQuantity);
+            cartService.updateQuantity(cart, productId, size, sugarLevel, iceLevel, toppings, newQuantity);
             
             resp.getWriter().print("{\"ok\":true}");
             
@@ -140,10 +144,12 @@ public class CartController extends HttpServlet {
         try {
             int productId = Integer.parseInt(req.getParameter("productId"));
             String size = req.getParameter("size");
+            String sugarLevel = req.getParameter("sugarLevel");
+            String iceLevel = req.getParameter("iceLevel");
             String toppings = req.getParameter("toppings");
             
             List<CartItem> cart = getCart(req.getSession());
-            cartService.removeItem(cart, productId, size, toppings);
+            cartService.removeItem(cart, productId, size, sugarLevel, iceLevel, toppings);
             
             resp.sendRedirect(req.getContextPath() + "/checkout");
             
@@ -160,15 +166,20 @@ public class CartController extends HttpServlet {
         try {
             int oldProductId = Integer.parseInt(req.getParameter("oldProductId"));
             String oldSize = req.getParameter("oldSize");
+            String oldSugarLevel = req.getParameter("oldSugarLevel");
+            String oldIceLevel = req.getParameter("oldIceLevel");
             String oldToppingsCsv = req.getParameter("oldToppingsCsv");
             
             String newSize = req.getParameter("newSize");
+            String newSugarLevel = req.getParameter("newSugarLevel");
+            String newIceLevel = req.getParameter("newIceLevel");
             String newToppingParam = req.getParameter("newToppings");
             int quantity = Integer.parseInt(req.getParameter("quantity"));
             
             List<CartItem> cart = getCart(req.getSession());
             boolean success = cartService.updateItemDetails(cart, oldProductId, 
-                oldSize, oldToppingsCsv, newSize, newToppingParam, quantity);
+                oldSize, oldSugarLevel, oldIceLevel, oldToppingsCsv, 
+                newSize, newSugarLevel, newIceLevel, newToppingParam, quantity);
             
             if (success) {
                 resp.getWriter().print("{\"ok\":true, \"message\":\"Cập nhật giỏ hàng thành công!\"}");

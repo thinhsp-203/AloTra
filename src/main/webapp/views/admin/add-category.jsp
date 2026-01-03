@@ -63,6 +63,37 @@
           
           <div class="mb-4">
             <label class="form-label fw-semibold mb-2">
+              <i class="fas fa-list text-primary" style="margin-right: 10px;"></i>Loại danh mục <span class="text-danger">*</span>
+            </label>
+            <div class="form-check mb-2">
+              <input class="form-check-input" 
+                     type="radio" 
+                     name="isDrink" 
+                     id="isDrink_true" 
+                     value="true" 
+                     checked
+                     required>
+              <label class="form-check-label" for="isDrink_true">
+                <i class="bi bi-cup-straw text-primary"></i> Thức uống
+              </label>
+              <div class="form-text ms-4">Sản phẩm thuộc danh mục này sẽ có size (S/M/L)</div>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" 
+                     type="radio" 
+                     name="isDrink" 
+                     id="isDrink_false" 
+                     value="false"
+                     required>
+              <label class="form-check-label" for="isDrink_false">
+                <i class="bi bi-cake2 text-warning"></i> Bánh & Đồ ăn vặt
+              </label>
+              <div class="form-text ms-4">Sản phẩm thuộc danh mục này không có size</div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold mb-2">
               <i class="fas fa-image text-primary" style="margin-right: 10px;"></i>Ảnh đại diện
             </label>
             <div class="row">

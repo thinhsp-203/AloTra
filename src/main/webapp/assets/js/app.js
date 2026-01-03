@@ -91,56 +91,20 @@ function showLoginRequiredModal() {
 	                    return;
 	                }
 	                
-	                modalData = data; 
-	                
-	                // Sắp xếp sizes: M và L nằm cạnh nhau, căn giữa
-	                let sizesHtml = '';
-	                const otherSizes = data.sizes.filter(s => {
-	                    const name = s.name.toUpperCase();
-	                    return name !== 'M' && name !== 'L';
-	                });
-	                const sizeM = data.sizes.find(s => s.name.toUpperCase() === 'M');
-	                const sizeL = data.sizes.find(s => s.name.toUpperCase() === 'L');
-				
-				// Hiển thị các size khác (không phải M và L)
-				const otherSizesHtml = otherSizes.map((s, index) => `
-					<div class="col-auto">
-						<input type="radio" class="btn-check" name="size" id="modal-size-other-${index}" value="${escapeHtml(s.name)}" data-price-adj="${s.priceAdjustment}" ${s.priceAdjustment == 0 ? 'checked' : ''}>
-						<label class="btn btn-outline-primary btn-size" for="modal-size-other-${index}">
-							${escapeHtml(s.name)}
-							<div class="small fw-normal">${s.priceAdjustment == 0 ? '0 đ' : (s.priceAdjustment > 0 ? '+' : '') + new Intl.NumberFormat('vi-VN').format(s.priceAdjustment) + ' đ'}</div>
-						</label>
-					</div>
-				`).join('');
-				
-				// Hiển thị M và L cạnh nhau, căn giữa
-				let mlSizesHtml = '';
-				if (sizeM || sizeL) {
-					mlSizesHtml = `
-						<div class="col-12 d-flex justify-content-center mb-2" style="gap: 0.75rem;">
-							${sizeM ? `
-								<div class="col-auto">
-									<input type="radio" class="btn-check" name="size" id="modal-size-M" value="${escapeHtml(sizeM.name)}" data-price-adj="${sizeM.priceAdjustment}" ${sizeM.priceAdjustment == 0 ? 'checked' : ''}>
-									<label class="btn btn-outline-primary btn-size" for="modal-size-M">
-										${escapeHtml(sizeM.name)}
-										<div class="small fw-normal">${sizeM.priceAdjustment == 0 ? '0 đ' : (sizeM.priceAdjustment > 0 ? '+' : '') + new Intl.NumberFormat('vi-VN').format(sizeM.priceAdjustment) + ' đ'}</div>
-									</label>
-								</div>
-							` : ''}
-							${sizeL ? `
-								<div class="col-auto">
-									<input type="radio" class="btn-check" name="size" id="modal-size-L" value="${escapeHtml(sizeL.name)}" data-price-adj="${sizeL.priceAdjustment}" ${sizeL.priceAdjustment == 0 && !sizeM ? 'checked' : ''}>
-									<label class="btn btn-outline-primary btn-size" for="modal-size-L">
-										${escapeHtml(sizeL.name)}
-										<div class="small fw-normal">${sizeL.priceAdjustment == 0 ? '0 đ' : (sizeL.priceAdjustment > 0 ? '+' : '') + new Intl.NumberFormat('vi-VN').format(sizeL.priceAdjustment) + ' đ'}</div>
-									</label>
-								</div>
-							` : ''}
-						</div>
-					`;
-				}
-				
-				sizesHtml = otherSizesHtml + mlSizesHtml;
+                modalData = data; 
+                
+                // Render tất cả sizes trong cùng một container để thẳng hàng đều
+                // Tìm size có price = 0 để check mặc định
+                const defaultSizeIndex = data.sizes.findIndex(s => s.priceAdjustment == 0);
+                const sizesHtml = data.sizes.map((s, index) => `
+                    <div class="col-auto">
+                        <input type="radio" class="btn-check" name="size" id="modal-size-${index}" value="${escapeHtml(s.name)}" data-price-adj="${s.priceAdjustment}" ${(defaultSizeIndex >= 0 ? index === defaultSizeIndex : index === 0) ? 'checked' : ''}>
+                        <label class="btn btn-outline-primary btn-size" for="modal-size-${index}">
+                            ${escapeHtml(s.name)}
+                            <div class="small fw-normal">${s.priceAdjustment == 0 ? '0 đ' : (s.priceAdjustment > 0 ? '+' : '') + new Intl.NumberFormat('vi-VN').format(s.priceAdjustment) + ' đ'}</div>
+                        </label>
+                    </div>
+                `).join('');
 
 	                // === START FIX: Conditionally render toppings ===
 	                let toppingsHtml = '';
@@ -198,7 +162,7 @@ function showLoginRequiredModal() {
 					        </div>
 					        <div class="col-md-7">
 					            <div>
-					                ${data.sizes.length > 1 ? `
+					                ${(data.sizes && data.sizes.length > 0 && (data.product.isDrink || data.sizes.length > 1)) ? `
 					                    <div class="option-group">
 					                        <h6>Chọn kích cỡ</h6>
 					                        <div class="row g-2 align-items-center">${sizesHtml}</div>
@@ -229,6 +193,16 @@ function showLoginRequiredModal() {
                     const params = new URLSearchParams({ productId: productId, quantity: 1 });
                     const sizeInput = modalContent.querySelector('input[name="size"]:checked');
                     if (sizeInput) params.append('size', sizeInput.value);
+                    
+                    // Lấy độ ngọt (sweetness)
+                    const sweetnessInput = modalContent.querySelector('input[name="sweetness"]:checked');
+                    if (sweetnessInput) params.append('sweetness', sweetnessInput.value);
+                    
+                    // Lấy mức đá (ice)
+                    const iceInput = modalContent.querySelector('input[name="ice"]:checked');
+                    if (iceInput) params.append('ice', iceInput.value);
+                    
+                    // Lấy toppings
                     const toppings = [];
                     modalContent.querySelectorAll('input[data-topping-id]').forEach(input => {
                         const qty = parseInt(input.value);
@@ -330,7 +304,7 @@ function showLoginRequiredModal() {
             `;
             
             optionsContainer.innerHTML = `
-                ${data.sizes.length > 1 ? `<div class="mb-4 option-group"><h6>Chọn kích cỡ</h6><div class="row g-2">${sizesHtml}</div></div>` : ''}
+                ${(data.sizes && data.sizes.length > 0 && (data.product.isDrink || data.sizes.length > 1)) ? `<div class="mb-4 option-group"><h6>Chọn kích cỡ</h6><div class="row g-2">${sizesHtml}</div></div>` : ''}
                 ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
                 ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều', 'Không'])}
                 ${toppingsHtml ? `<div class="mb-4 option-group"><h6>Chọn Topping</h6>${toppingsHtml}</div>` : ''}
@@ -357,6 +331,16 @@ function showLoginRequiredModal() {
                 const params = new URLSearchParams({ productId: productId, quantity: 1 });
                 const sizeInput = optionsContainer.querySelector('input[name="size"]:checked');
                 if (sizeInput) params.append('size', sizeInput.value);
+                
+                // Lấy độ ngọt (sweetness)
+                const sweetnessInput = optionsContainer.querySelector('input[name="sweetness"]:checked');
+                if (sweetnessInput) params.append('sweetness', sweetnessInput.value);
+                
+                // Lấy mức đá (ice)
+                const iceInput = optionsContainer.querySelector('input[name="ice"]:checked');
+                if (iceInput) params.append('ice', iceInput.value);
+                
+                // Lấy toppings
                 const toppings = [];
                 optionsContainer.querySelectorAll('input[data-topping-id]').forEach(input => {
                     const qty = parseInt(input.value);

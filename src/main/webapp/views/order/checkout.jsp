@@ -437,17 +437,26 @@
                             
                             <c:forEach var="item" items="${sessionScope.CART}">
                                 <div class="cart-item-simple" data-product-id="${item.productId}" 
-                                     data-size="${item.sizeName}" data-toppings="${item.toppingsCsv}">
+                                     data-size="${item.sizeName}" 
+                                     data-sugar-level="${item.sugarLevel}"
+                                     data-ice-level="${item.iceLevel}"
+                                     data-toppings="${item.toppingsCsv}">
                                     <img src="${item.thumbnail}" class="item-image" alt="${item.productName}">
                                     
                                     <div class="item-details">
                                         <div class="item-name">${item.productName}</div>
                                         <div class="item-options">
                                             <c:if test="${not empty item.sizeName && item.sizeName ne 'Mặc định'}">
-                                                Kích cỡ: ${item.sizeName}
+                                                Kích cỡ: ${item.sizeName}<br>
+                                            </c:if>
+                                            <c:if test="${not empty item.sugarLevel}">
+                                                Độ ngọt: ${item.sugarLevel}<br>
+                                            </c:if>
+                                            <c:if test="${not empty item.iceLevel}">
+                                                Mức đá: ${item.iceLevel}<br>
                                             </c:if>
                                             <c:if test="${not empty item.toppingsCsv}">
-                                                <br>Đá: ${item.toppingsCsv}
+                                                Topping: ${item.toppingsCsv}
                                             </c:if>
                                         </div>
                                     </div>
@@ -568,6 +577,8 @@ document.addEventListener("DOMContentLoaded", function() {
             const params = new URLSearchParams({
                 productId: card.dataset.productId,
                 size: card.dataset.size || "Mặc định",
+                sugarLevel: card.dataset.sugarLevel || "Bình thường",
+                iceLevel: card.dataset.iceLevel || "Bình thường",
                 toppings: card.dataset.toppings || "",
                 quantity: newQty
             });
@@ -598,6 +609,8 @@ document.addEventListener("DOMContentLoaded", function() {
             form.action = contextPath + '/cart/remove';
             form.innerHTML = '<input name="productId" value="' + card.dataset.productId + '">' +
                            '<input name="size" value="' + (card.dataset.size || 'Mặc định') + '">' +
+                           '<input name="sugarLevel" value="' + (card.dataset.sugarLevel || 'Bình thường') + '">' +
+                           '<input name="iceLevel" value="' + (card.dataset.iceLevel || 'Bình thường') + '">' +
                            '<input name="toppings" value="' + (card.dataset.toppings || '') + '">';
             document.body.appendChild(form);
             form.submit();
@@ -731,7 +744,22 @@ document.addEventListener("DOMContentLoaded", function() {
     function renderEditModal(data, card) {
         const content = document.getElementById('editModalContent');
         const currentSize = card.dataset.size || "Mặc định";
+        const currentSugar = card.dataset.sugarLevel || "Bình thường";
+        const currentIce = card.dataset.iceLevel || "Bình thường";
         const currentToppingsStr = card.dataset.toppings || "";
+        
+        const createOptionGroup = (title, name, options, currentValue) => {
+            return '<div class="mb-3"><h6>' + title + '</h6>' +
+                '<div class="row row-cols-3 g-2">' +
+                options.map((opt, idx) => {
+                    const checked = (opt === currentValue) ? 'checked' : '';
+                    return '<div class="col">' +
+                        '<input type="radio" class="btn-check" name="edit-' + name + '" id="edit-' + name + '-' + idx + '" value="' + escapeHtml(opt) + '" ' + checked + '>' +
+                        '<label class="btn btn-outline-primary w-100" for="edit-' + name + '-' + idx + '">' + escapeHtml(opt) + '</label>' +
+                        '</div>';
+                }).join('') +
+                '</div></div>';
+        };
 
         let sizesHtml = '';
         if (data.sizes && data.sizes.length > 0) {
@@ -768,7 +796,9 @@ document.addEventListener("DOMContentLoaded", function() {
             }).join('');
         }
 
-        const sizesBlock = sizesHtml ? '<div class="mb-3"><h6>Size</h6><div class="row g-2">' + sizesHtml + '</div></div>' : '';
+        const sizesBlock = sizesHtml ? '<div class="mb-3"><h6>Kích cỡ</h6><div class="row g-2">' + sizesHtml + '</div></div>' : '';
+        const sugarBlock = createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều'], currentSugar);
+        const iceBlock = createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'], currentIce);
         const toppingsBlock = toppingsHtml ? '<div class="mb-3"><h6>Topping</h6>' + toppingsHtml + '</div>' : '';
 
         content.innerHTML = '<div class="row g-4">' +
@@ -779,7 +809,7 @@ document.addEventListener("DOMContentLoaded", function() {
             '<p class="h5 text-primary fw-bold mb-3" id="edit-base-price" data-price="' + data.product.basePrice + '">' +
             currencyFormatter.format(data.product.basePrice) + '</p>' +
             '<div style="max-height: 300px; overflow-y: auto;">' +
-            sizesBlock + toppingsBlock +
+            sizesBlock + sugarBlock + iceBlock + toppingsBlock +
             (!sizesBlock && !toppingsBlock ? '<p class="text-muted">Sản phẩm này không có tùy chọn.</p>' : '') +
             '</div></div></div>';
 
@@ -824,12 +854,19 @@ document.addEventListener("DOMContentLoaded", function() {
             .map(inp => inp.dataset.toppingId + ':' + inp.value)
             .join(',');
 
+        const newSugar = document.querySelector('input[name="edit-sweetness"]:checked');
+        const newIce = document.querySelector('input[name="edit-ice"]:checked');
+
         const params = new URLSearchParams({
             oldProductId: currentEditingItem.dataset.productId,
             oldSize: currentEditingItem.dataset.size || "Mặc định",
+            oldSugarLevel: currentEditingItem.dataset.sugarLevel || "Bình thường",
+            oldIceLevel: currentEditingItem.dataset.iceLevel || "Bình thường",
             oldToppingsCsv: currentEditingItem.dataset.toppings || "",
             quantity: currentEditingItem.querySelector('.quantity-mini input').value,
             newSize: newSize ? newSize.value : "Mặc định",
+            newSugarLevel: newSugar ? newSugar.value : "Bình thường",
+            newIceLevel: newIce ? newIce.value : "Bình thường",
             newToppings: newToppings
         });
 

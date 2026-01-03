@@ -61,6 +61,38 @@
               <i class="fas fa-info-circle text-info" style="margin-right: 5px;"></i>Tên danh mục sẽ hiển thị trên trang chủ và menu
             </div>
           </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold mb-2">
+              <i class="fas fa-list text-primary" style="margin-right: 10px;"></i>Loại danh mục <span class="text-danger">*</span>
+            </label>
+            <div class="form-check mb-2">
+              <input class="form-check-input" 
+                     type="radio" 
+                     name="isDrink" 
+                     id="isDrink_true" 
+                     value="true" 
+                     ${category.isDrink ? 'checked' : ''}
+                     required>
+              <label class="form-check-label" for="isDrink_true">
+                <i class="bi bi-cup-straw text-primary"></i> Thức uống
+              </label>
+              <div class="form-text ms-4">Sản phẩm thuộc danh mục này sẽ có size (S/M/L)</div>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" 
+                     type="radio" 
+                     name="isDrink" 
+                     id="isDrink_false" 
+                     value="false"
+                     ${not category.isDrink ? 'checked' : ''}
+                     required>
+              <label class="form-check-label" for="isDrink_false">
+                <i class="bi bi-cake2 text-warning"></i> Bánh & Đồ ăn vặt
+              </label>
+              <div class="form-text ms-4">Sản phẩm thuộc danh mục này không có size</div>
+            </div>
+          </div>
  
           <div class="mb-4">
             <label class="form-label fw-semibold mb-2">

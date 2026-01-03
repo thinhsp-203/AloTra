@@ -2,11 +2,14 @@ package service.impl;
 
 import config.JpaUtil;
 import dao.ProductDao;
+import dao.ProductSizeDao;
 import dao.impl.ProductDaoImpl;
+import dao.impl.ProductSizeDaoImpl;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.Part;
 import model.Category;
 import model.Product;
+import model.ProductSize;
 import service.AdminProductService;
 import utils.Constant;
 
@@ -23,6 +26,11 @@ public class AdminProductServiceImpl implements AdminProductService {
     
     private static final String PRODUCT_SUBDIR = "products";
     private final ProductDao productDao = new ProductDaoImpl();
+    
+    // Constants cho giá size mặc định (không hard-code trong logic)
+    private static final BigDecimal SIZE_S_PRICE = BigDecimal.ZERO; // +0 VND
+    private static final BigDecimal SIZE_M_PRICE = BigDecimal.valueOf(5000); // +5,000 VND
+    private static final BigDecimal SIZE_L_PRICE = BigDecimal.valueOf(10000); // +10,000 VND
     
     @Override
     public List<Product> getAllProducts() {
@@ -53,6 +61,63 @@ public class AdminProductServiceImpl implements AdminProductService {
         
         // 4. LƯU VÀO DB
         productDao.save(product);
+        
+        // 5. Nếu là sản phẩm thức uống mới tạo, tự động tạo sizes S/M/L
+        if (product.getProduct_id() != null && product.getCategory() != null && 
+            Boolean.TRUE.equals(product.getCategory().getIsDrink())) {
+            createDefaultSizesForDrink(product.getProduct_id());
+        }
+    }
+    
+    /**
+     * Tự động tạo sizes mặc định (S/M/L) cho sản phẩm thức uống
+     */
+    private void createDefaultSizesForDrink(int productId) {
+        EntityManager em = JpaUtil.em();
+        try {
+            ProductSizeDao sizeDao = new ProductSizeDaoImpl(em);
+            
+            // Kiểm tra xem đã có sizes chưa
+            List<ProductSize> existingSizes = sizeDao.findByProductId(productId);
+            if (!existingSizes.isEmpty()) {
+                // Đã có sizes rồi, không tạo lại
+                return;
+            }
+            
+            // Lấy product để set vào size
+            Product product = productDao.findById(productId);
+            if (product == null) {
+                return;
+            }
+            
+            // Tạo Size S
+            ProductSize sizeS = new ProductSize();
+            sizeS.setSize_name("S");
+            sizeS.setPrice_adjustment(SIZE_S_PRICE);
+            sizeS.setProduct(product);
+            sizeDao.save(sizeS);
+            
+            // Tạo Size M
+            ProductSize sizeM = new ProductSize();
+            sizeM.setSize_name("M");
+            sizeM.setPrice_adjustment(SIZE_M_PRICE);
+            sizeM.setProduct(product);
+            sizeDao.save(sizeM);
+            
+            // Tạo Size L
+            ProductSize sizeL = new ProductSize();
+            sizeL.setSize_name("L");
+            sizeL.setPrice_adjustment(SIZE_L_PRICE);
+            sizeL.setProduct(product);
+            sizeDao.save(sizeL);
+            
+        } catch (Exception e) {
+            // Log lỗi nhưng không throw exception (tạo size không quan trọng bằng việc lưu product)
+            System.err.println("Không thể tạo sizes mặc định cho sản phẩm #" + productId + ": " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
     }
     
     @Override

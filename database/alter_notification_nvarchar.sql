@@ -14,3 +14,4 @@ ALTER TABLE [dbo].[Notification]
 ALTER COLUMN [link] NVARCHAR(500) NULL
 GO
 
+
