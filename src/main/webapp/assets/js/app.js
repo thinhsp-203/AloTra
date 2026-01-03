@@ -438,8 +438,190 @@ function showLoginRequiredModal() {
         }
     }
 
+    // --- NOTIFICATION DROPDOWN LOGIC ---
+    let notificationLoadingInProgress = false;
+    
+    function initNotifications() {
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationIcon = document.getElementById('notificationIcon');
+        const notificationBadge = document.getElementById('notification-badge');
+        const notificationCount = document.getElementById('notification-count');
+        const notificationList = document.getElementById('notification-list');
+        
+        if (!notificationDropdown || !notificationIcon || !notificationList) {
+            console.log('Notification elements not found, skipping initialization');
+            return;
+        }
+        
+        // Function to load notifications
+        function ensureNotificationsLoaded() {
+            console.log('ensureNotificationsLoaded called', {
+                loadingInProgress: notificationLoadingInProgress,
+                notificationList: !!notificationList,
+                contextPath: contextPath
+            });
+            if (notificationLoadingInProgress) {
+                console.log('Already loading, skipping');
+                return;
+            }
+            if (!notificationList) {
+                console.error('Notification list element not found');
+                return;
+            }
+            
+            notificationLoadingInProgress = true;
+            console.log('Starting to load notifications...');
+            loadNotifications();
+        }
+        
+        // Listen for click event on the icon
+        notificationIcon.addEventListener('click', function(e) {
+            console.log('Notification icon clicked');
+            ensureNotificationsLoaded();
+        });
+        
+        // Also listen for Bootstrap dropdown shown event
+        notificationDropdown.addEventListener('shown.bs.dropdown', function() {
+            console.log('Dropdown shown event triggered');
+            ensureNotificationsLoaded();
+        });
+        
+        // Load initial count on page load
+        if (notificationBadge) {
+            get(`${contextPath}/api/notifications/recent`, (err, data) => {
+                if (!err && data) {
+                    const unreadCount = data.unreadCount || 0;
+                    if (unreadCount > 0 && notificationCount) {
+                        notificationCount.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                        notificationBadge.style.display = 'block';
+                    }
+                }
+            });
+        }
+    }
+    
+    function formatNotificationDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) return 'Vừa xong';
+        if (diffMins < 60) return diffMins + ' phút trước';
+        if (diffHours < 24) return diffHours + ' giờ trước';
+        if (diffDays < 7) return diffDays + ' ngày trước';
+        
+        return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+    
+    function loadNotifications() {
+        const notificationList = document.getElementById('notification-list');
+        if (!notificationList) {
+            notificationLoadingInProgress = false;
+            return;
+        }
+        
+        notificationList.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+        
+        const apiUrl = `${contextPath}/api/notifications/recent`;
+        console.log('Loading notifications from:', apiUrl);
+        
+        get(apiUrl, (err, data) => {
+            notificationLoadingInProgress = false;
+            
+            if (err) {
+                console.error('Error loading notifications:', err);
+                notificationList.innerHTML = '<div class="text-center py-3 text-muted"><small>Không thể tải thông báo: ' + (err.message || 'Lỗi kết nối') + '</small></div>';
+                return;
+            }
+            
+            if (!data) {
+                console.error('No data received from API');
+                notificationList.innerHTML = '<div class="text-center py-3 text-muted"><small>Không có dữ liệu</small></div>';
+                return;
+            }
+            
+            console.log('Notifications loaded:', data);
+            
+            const notifications = data.notifications || [];
+            const unreadCount = data.unreadCount || 0;
+            const notificationBadge = document.getElementById('notification-badge');
+            const notificationCount = document.getElementById('notification-count');
+            
+            // Update badge
+            if (notificationBadge && notificationCount) {
+                if (unreadCount > 0) {
+                    notificationCount.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    notificationBadge.style.display = 'block';
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+            }
+            
+            // Render notifications
+            if (notifications.length === 0) {
+                notificationList.innerHTML = '<div class="text-center py-4 text-muted"><i class="bi bi-bell-slash fs-4 d-block mb-2"></i><small>Chưa có thông báo nào</small></div>';
+                return;
+            }
+            
+            notificationList.innerHTML = notifications.map(notif => {
+                const isRead = notif.isRead || false;
+                const link = notif.link ? `${contextPath}${notif.link}` : '#';
+                const dateStr = formatNotificationDate(notif.createdDate);
+                const unreadClass = !isRead ? 'bg-light' : '';
+                const unreadDot = !isRead ? '<span class="badge bg-primary rounded-pill me-2" style="width: 8px; height: 8px; padding: 0;"></span>' : '';
+                
+                return `
+                    <a href="${link}" class="dropdown-item ${unreadClass} notification-item" data-id="${notif.id}" data-read="${isRead}" style="white-space: normal; padding: 0.75rem 1rem;">
+                        <div class="d-flex align-items-start">
+                            ${unreadDot}
+                            <div class="flex-grow-1">
+                                <div class="small ${!isRead ? 'fw-semibold' : ''}">${escapeHtml(notif.message || '')}</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">${dateStr}</div>
+                            </div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+            
+            // Add click handlers to mark as read
+            notificationList.querySelectorAll('.notification-item[data-read="false"]').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    const notifId = this.dataset.id;
+                    if (notifId) {
+                        post(`${contextPath}/user/notifications`, `action=markAsRead&id=${notifId}`, (err, result) => {
+                            if (!err) {
+                                this.classList.remove('bg-light');
+                                this.dataset.read = 'true';
+                                const dot = this.querySelector('.badge');
+                                if (dot) dot.remove();
+                                const messageDiv = this.querySelector('.small');
+                                if (messageDiv) messageDiv.classList.remove('fw-semibold');
+                                
+                                const currentCount = parseInt(notificationCount.textContent) || 0;
+                                const newCount = Math.max(0, currentCount - 1);
+                                if (newCount > 0) {
+                                    notificationCount.textContent = newCount > 99 ? '99+' : newCount;
+                                    notificationBadge.style.display = 'block';
+                                } else {
+                                    notificationBadge.style.display = 'none';
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
+
     // --- INITIALIZATION ---
     document.addEventListener("DOMContentLoaded", function(){
+        // Initialize notifications
+        initNotifications();
+        
         // Menu dropdown hover
         const dropdowns = document.querySelectorAll('.main-nav .dropdown');
         dropdowns.forEach(function(dropdown) {

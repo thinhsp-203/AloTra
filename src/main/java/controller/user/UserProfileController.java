@@ -21,7 +21,7 @@ import java.util.List;
     maxFileSize = 10*1024*1024, 
     maxRequestSize = 50*1024*1024
 )
-@WebServlet(urlPatterns = {"/user/profile", "/user/orders", "/user/change-password"})
+@WebServlet(urlPatterns = {"/user/profile", "/user/orders", "/user/change-password"}, asyncSupported = false)
 public class UserProfileController extends HttpServlet {
     
     /**

@@ -90,57 +90,6 @@ document.getElementById('logoUrl')?.addEventListener('input', function(e) {
 });
 </script>
 
-<%-- Banner Form Card --%>
-<div class="card shadow-sm border-0 mb-4">
-    <div class="card-header bg-white border-bottom py-3">
-        <h6 class="m-0 font-weight-bold text-primary">
-            <i class="fas fa-images" style="margin-right: 10px;"></i>Thêm Banner Mới
-        </h6>
-    </div>
-    <div class="card-body p-4">
-        <form action="${pageContext.request.contextPath}/admin/banners" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="action" value="add">
-            
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="bannerFile" class="form-label fw-semibold">Chọn ảnh (Ưu tiên)</label>
-                    <input type="file" class="form-control" id="bannerFile" name="bannerFile" accept="image/*">
-                    <div class="form-text">
-                        <i class="fas fa-info-circle" style="margin-right: 10px;"></i>Chọn file từ máy tính.
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <label for="imageUrl" class="form-label fw-semibold">Hoặc dán URL ảnh</label>
-                    <input type="text" class="form-control" id="imageUrl" name="imageUrl" placeholder="https://...">
-                    <div class="form-text">
-                        <i class="fas fa-info-circle" style="margin-right: 10px;"></i>Nếu không upload file, hệ thống sẽ lấy URL này.
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <label for="linkUrl" class="form-label fw-semibold">Link khi click</label>
-                    <input type="text" class="form-control" id="linkUrl" name="linkUrl" placeholder="/hoặc URL đầy đủ">
-                </div>
-                <div class="col-md-2">
-                    <label for="sortOrder" class="form-label fw-semibold">Thứ tự:</label>
-                    <input type="number" class="form-control" id="sortOrder" name="sortOrder" value="0">
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="isActive" name="isActive" value="true" checked>
-                        <label class="form-check-label fw-semibold" for="isActive">
-                            Hiển thị?
-                        </label>
-                    </div>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-plus" style="margin-right: 10px;"></i>Thêm
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
 
 <%-- Banners List Card --%>
 <div class="card shadow-sm border-0 mb-4">
@@ -149,6 +98,9 @@ document.getElementById('logoUrl')?.addEventListener('input', function(e) {
             <h6 class="m-0 font-weight-bold text-primary">
                 <i class="fas fa-list-alt" style="margin-right: 10px;"></i>Danh sách Banner
             </h6>
+            <a href="${pageContext.request.contextPath}/admin/banners/create" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus" style="margin-right: 5px;"></i>Thêm Banner Mới
+            </a>
         </div>
     </div>
     <div class="card-body p-0">
@@ -158,7 +110,6 @@ document.getElementById('logoUrl')?.addEventListener('input', function(e) {
                     <tr>
                         <th style="width: 120px;" class="ps-4">Ảnh</th>
                         <th>Đường dẫn Ảnh/URL</th>
-                        <th>Link</th>
                         <th style="width: 100px;" class="text-center">Thứ tự</th>
                         <th style="width: 120px;" class="text-center">Trạng thái</th>
                         <th style="width: 120px;" class="text-center pe-4">Thao tác</th>
@@ -168,7 +119,7 @@ document.getElementById('logoUrl')?.addEventListener('input', function(e) {
                     <c:choose>
                         <c:when test="${empty banners}">
                             <tr>
-                                <td colspan="6" class="text-center py-5">
+                                <td colspan="5" class="text-center py-5">
                                     <div class="py-4">
                                         <i class="fas fa-inbox fa-4x text-muted mb-3 d-block"></i>
                                         <h5 class="text-muted mb-2">Không có banner nào</h5>
@@ -198,16 +149,6 @@ document.getElementById('logoUrl')?.addEventListener('input', function(e) {
                                     <td>
                                         <small class="text-muted">${b.imageUrl}</small>
                                     </td>
-                                    <td>
-                                        <c:if test="${not empty b.linkUrl}">
-                                            <a href="${b.linkUrl}" target="_blank" class="text-primary">
-                                                <i class="fas fa-external-link-alt" style="margin-right: 5px;"></i>${fn:length(b.linkUrl) > 30 ? fn:substring(b.linkUrl, 0, 30).concat('...') : b.linkUrl}
-                                            </a>
-                                        </c:if>
-                                        <c:if test="${empty b.linkUrl}">
-                                            <span class="text-muted">-</span>
-                                        </c:if>
-                                    </td>
                                     <td class="text-center">${b.sortOrder}</td>
                                     <td class="text-center">
                                         <span class="badge ${b.isActive() ? 'bg-success' : 'bg-secondary'} text-white px-3 py-2">
@@ -216,15 +157,21 @@ document.getElementById('logoUrl')?.addEventListener('input', function(e) {
                                         </span>
                                     </td>
                                     <td class="text-center pe-4">
-                                        <form action="${pageContext.request.contextPath}/admin/banners" method="POST" 
-                                              style="display: inline;" 
-                                              onsubmit="return confirm('Xác nhận xóa banner này?')">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="id" value="${b.id}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        <div class="d-flex justify-content-center gap-3">
+                                            <a href="${pageContext.request.contextPath}/admin/banners/edit?id=${b.id}" 
+                                               class="btn btn-sm btn-outline-primary" title="Sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="${pageContext.request.contextPath}/admin/banners" method="POST" 
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('Xác nhận xóa banner này?')">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="id" value="${b.id}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             </c:forEach>

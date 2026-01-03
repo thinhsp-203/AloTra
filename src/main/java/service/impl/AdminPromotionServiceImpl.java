@@ -13,11 +13,15 @@ import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletContext;
 import model.Promotion;
+import model.User;
 import service.AdminPromotionService;
+import service.NotificationService;
+import service.impl.NotificationServiceImpl;
 import utils.Constant;
 
 public class AdminPromotionServiceImpl implements AdminPromotionService {
     private static final String PROMOTION_SUBDIR = "promotions";
+    private final NotificationService notificationService = new NotificationServiceImpl();
     
     @Override
     public List<Promotion> getAllPromotions() {
@@ -55,18 +59,41 @@ public class AdminPromotionServiceImpl implements AdminPromotionService {
             }
             
             EntityManager em = JpaUtil.em();
+            boolean isNew = promotion.getId() == null;
             try {
                 em.getTransaction().begin();
                 
-                if (promotion.getId() == null) {
+                if (isNew) {
                     em.persist(promotion);
                 } else {
                     em.merge(promotion);
                 }
                 
                 em.getTransaction().commit();
+                
+                // Tạo notification cho tất cả users khi có promotion mới và active
+                if (isNew && promotion.isActive()) {
+                    try {
+                        em = JpaUtil.em();
+                        List<User> users = em.createQuery("SELECT u FROM User u WHERE u.isActive = true", User.class).getResultList();
+                        String message = "Khuyến mãi mới: " + promotion.getTitle() + "! Xem ngay!";
+                        String link = "/promotions/detail?id=" + promotion.getId();
+                        for (User user : users) {
+                            notificationService.createNotification(user.getId(), message, link);
+                        }
+                    } catch (Exception e) {
+                        // Log lỗi nhưng không ảnh hưởng đến việc lưu promotion
+                        System.err.println("Lỗi khi tạo notification cho promotion: " + e.getMessage());
+                    } finally {
+                        if (em != null && em.isOpen()) {
+                            em.close();
+                        }
+                    }
+                }
             } finally {
-                em.close();
+                if (em != null && em.isOpen()) {
+                    em.close();
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi lưu khuyến mãi: " + e.getMessage(), e);

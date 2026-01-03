@@ -113,7 +113,7 @@
      <div class="container text-center mb-5">
         <div class="section-title-wrapper">
             <h2 class="section-title">
-                <i class="bi bi-sparkles"></i>
+                <i class="bi bi-fire"></i>
                 SẢN PHẨM MỚI
             </h2>
         </div>

@@ -11,6 +11,7 @@ import java.util.*;
 public class AdminOrderServiceImpl implements AdminOrderService {
     
     private final LoyaltyService loyaltyService = new LoyaltyServiceImpl();
+    private final NotificationService notificationService = new NotificationServiceImpl();
     
     @Override
     public List<Orders> searchOrders(String keyword, String status) {
@@ -119,6 +120,18 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             
             em.merge(order);
             em.getTransaction().commit();
+            
+            // Tạo notification cho user về cập nhật trạng thái đơn hàng
+            try {
+                if (order.getUser() != null) {
+                    String message = "Đơn hàng #" + orderId + " của bạn đã được cập nhật: " + newStatus;
+                    String link = "/user/orders";
+                    notificationService.createNotification(order.getUser().getId(), message, link);
+                }
+            } catch (Exception e) {
+                // Log lỗi nhưng không ảnh hưởng đến cập nhật đơn hàng
+                System.err.println("Lỗi khi tạo notification cho đơn hàng #" + orderId + ": " + e.getMessage());
+            }
         } catch (IllegalArgumentException e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();

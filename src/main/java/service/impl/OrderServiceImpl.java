@@ -10,7 +10,9 @@ import model.CartItem;
 import model.Orders;
 import model.User;
 import model.Voucher;
+import service.NotificationService;
 import service.OrderService;
+import service.impl.NotificationServiceImpl;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,6 +22,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository = new OrderRepositoryImpl();
     private final VoucherRepository voucherRepository = new VoucherRepositoryImpl();
+    private final NotificationService notificationService = new NotificationServiceImpl();
 
     @Override
     public VoucherResult applyVoucher(String code, List<CartItem> cartItems) {
@@ -95,6 +98,17 @@ public class OrderServiceImpl implements OrderService {
                     grandTotal, paymentMethod, paymentStatus, orderStatus, items, em);
 
             em.getTransaction().commit();
+            
+            // Tạo notification cho user về đơn hàng mới
+            try {
+                String message = "Đơn hàng #" + order.getOrder_id() + " của bạn đã được đặt thành công!";
+                String link = "/user/orders";
+                notificationService.createNotification(user.getId(), message, link);
+            } catch (Exception e) {
+                // Log lỗi nhưng không ảnh hưởng đến đơn hàng
+                System.err.println("Lỗi khi tạo notification cho đơn hàng #" + order.getOrder_id() + ": " + e.getMessage());
+            }
+            
             return order;
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {

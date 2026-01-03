@@ -9,7 +9,7 @@ import java.io.IOException;
 import service.PromotionService;
 import service.impl.PromotionServiceImpl;
 
-@WebServlet(name = "PromotionController", urlPatterns = {"/promotions", "/khuyen-mai"})
+@WebServlet(name = "PromotionController", urlPatterns = {"/promotions", "/promotions/*", "/khuyen-mai"})
 public class PromotionController extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
@@ -23,7 +23,14 @@ public class PromotionController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        String pathInfo = req.getPathInfo(); // e.g., "/detail" or null
         String idParam = req.getParameter("id");
+        
+        // If path is /promotions/detail but no id parameter, redirect to list
+        if ("/detail".equals(pathInfo) && (idParam == null || idParam.isEmpty())) {
+            resp.sendRedirect(req.getContextPath() + "/promotions");
+            return;
+        }
         
         if (idParam != null && !idParam.isEmpty()) {
             // Chi tiết khuyến mãi
@@ -32,6 +39,9 @@ public class PromotionController extends HttpServlet {
                 var promotion = promotionService.getPromotionById(id);
                 if (promotion != null && promotion.isActive()) {
                     req.setAttribute("promotion", promotion);
+                    // Get related promotions (exclude current one, limit to 3)
+                    var relatedPromotions = promotionService.getRelatedPromotions(id, 3);
+                    req.setAttribute("relatedPromotions", relatedPromotions);
                     req.getRequestDispatcher("/views/promotion_detail.jsp").forward(req, resp);
                     return;
                 } else {

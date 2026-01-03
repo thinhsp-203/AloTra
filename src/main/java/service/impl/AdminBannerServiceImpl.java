@@ -38,17 +38,35 @@ public class AdminBannerServiceImpl implements AdminBannerService {
     }
     
     @Override
-    public void saveBanner(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl) {
+    public int getMaxSortOrder() {
+        EntityManager em = JpaUtil.em();
         try {
-            String finalImageUrl = handleImageUpload(banner, imageFile, imageUrl);
-            if (finalImageUrl != null) {
-                banner.setImageUrl(finalImageUrl);
-            } else if (banner.getId() == null) {
-                throw new IllegalArgumentException("Bạn phải cung cấp ảnh!");
-            }
-            
+            Object result = em.createQuery("SELECT MAX(b.sortOrder) FROM Banner b").getSingleResult();
+            return result != null ? ((Integer) result) : -1;
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public void saveBanner(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl, jakarta.servlet.ServletContext servletContext) {
+        try {
             EntityManager em = JpaUtil.em();
             try {
+                // Tự động set thứ tự khi tạo mới
+                if (banner.getId() == null) {
+                    Object maxResult = em.createQuery("SELECT MAX(b.sortOrder) FROM Banner b").getSingleResult();
+                    int maxSortOrder = (maxResult != null) ? ((Integer) maxResult) : -1;
+                    banner.setSortOrder(maxSortOrder + 1);
+                }
+                
+                String finalImageUrl = handleImageUpload(banner, imageFile, imageUrl, servletContext);
+                if (finalImageUrl != null) {
+                    banner.setImageUrl(finalImageUrl);
+                } else if (banner.getId() == null) {
+                    throw new IllegalArgumentException("Bạn phải cung cấp ảnh!");
+                }
+                
                 em.getTransaction().begin();
                 
                 if (banner.getId() == null) {
@@ -67,7 +85,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
     }
     
     @Override
-    public void deleteBanner(int id) {
+    public void deleteBanner(int id, jakarta.servlet.ServletContext servletContext) {
         EntityManager em = JpaUtil.em();
         try {
             em.getTransaction().begin();
@@ -78,9 +96,9 @@ public class AdminBannerServiceImpl implements AdminBannerService {
                 if (banner.getImageUrl() != null && !banner.getImageUrl().startsWith("http")) {
                     try {
                         String fileName = Paths.get(banner.getImageUrl()).getFileName().toString();
-                        String uploadDirPhysical = Paths.get(Constant.UPLOAD_DIRECTORY, BANNER_SUBDIR)
-                            .toFile().getAbsolutePath();
-                        File fileToDelete = new File(uploadDirPhysical, fileName);
+                        String uploadBaseDir = Constant.getUploadPath(servletContext);
+                        File uploadDir = new File(uploadBaseDir, BANNER_SUBDIR);
+                        File fileToDelete = new File(uploadDir, fileName);
                         if (fileToDelete.exists()) {
                             fileToDelete.delete();
                         }
@@ -102,36 +120,56 @@ public class AdminBannerServiceImpl implements AdminBannerService {
         }
     }
     
-    private String handleImageUpload(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl) {
+    private String handleImageUpload(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl, jakarta.servlet.ServletContext servletContext) {
         try {
-            String originalFileName = (imageFile != null) 
-                ? Paths.get(imageFile.getSubmittedFileName()).getFileName().toString() 
-                : null;
-            
-            if (originalFileName != null && !originalFileName.isEmpty()) {
-                String extension = "";
-                int i = originalFileName.lastIndexOf('.');
-                if (i > 0) {
-                    extension = originalFileName.substring(i);
+            // Kiểm tra file upload
+            if (imageFile != null && imageFile.getSize() > 0) {
+                String submittedFileName = imageFile.getSubmittedFileName();
+                if (submittedFileName != null && !submittedFileName.trim().isEmpty()) {
+                    String originalFileName = Paths.get(submittedFileName).getFileName().toString();
+                    
+                    if (originalFileName != null && !originalFileName.isEmpty()) {
+                        String extension = "";
+                        int i = originalFileName.lastIndexOf('.');
+                        if (i > 0) {
+                            extension = originalFileName.substring(i);
+                        }
+                        String finalFileName = "banner-" + UUID.randomUUID().toString() + extension;
+                        
+                        // Sử dụng ServletContext để lấy đường dẫn đúng từ webapp/uploads/banners
+                        String uploadBaseDir = Constant.getUploadPath(servletContext);
+                        File uploadDir = new File(uploadBaseDir, BANNER_SUBDIR);
+                        if (!uploadDir.exists()) {
+                            uploadDir.mkdirs();
+                        }
+                        
+                        // Xóa ảnh cũ nếu đang edit và có ảnh cũ
+                        if (banner.getId() != null && banner.getImageUrl() != null && !banner.getImageUrl().startsWith("http")) {
+                            try {
+                                String oldFileName = Paths.get(banner.getImageUrl()).getFileName().toString();
+                                File oldFile = new File(uploadDir, oldFileName);
+                                if (oldFile.exists()) {
+                                    oldFile.delete();
+                                }
+                            } catch (Exception e) {
+                                // Ignore error when deleting old file
+                            }
+                        }
+                        
+                        File fileToSave = new File(uploadDir, finalFileName);
+                        
+                        try (InputStream input = imageFile.getInputStream()) {
+                            Files.copy(input, fileToSave.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        }
+                        
+                        return BANNER_SUBDIR + "/" + finalFileName;
+                    }
                 }
-                String finalFileName = "banner-" + UUID.randomUUID().toString() + extension;
-                
-                String uploadDirPhysical = Paths.get(Constant.UPLOAD_DIRECTORY, BANNER_SUBDIR)
-                    .toFile().getAbsolutePath();
-                File uploadDir = new File(uploadDirPhysical);
-                if (!uploadDir.exists()) uploadDir.mkdirs();
-                
-                File fileToSave = new File(uploadDirPhysical, finalFileName);
-                
-                try (InputStream input = imageFile.getInputStream()) {
-                    Files.copy(input, fileToSave.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                }
-                
-                return BANNER_SUBDIR + "/" + finalFileName;
             }
             
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                return imageUrl;
+            // Kiểm tra URL ảnh
+            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                return imageUrl.trim();
             }
             
             return null;

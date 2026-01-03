@@ -200,6 +200,35 @@ try (var em = JpaUtil.em()) {
                             ${not empty sessionScope.cart ? fn:length(sessionScope.cart.items) : 0}
                         </span>
                     </a>
+                    <c:if test="${not empty sessionScope.currentUser}">
+                        <div class="nav-item dropdown" id="notificationDropdown">
+                            <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" id="notificationIcon">
+                                <i class="bi bi-bell fs-4"></i>
+                                <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle" id="notification-badge" style="display: none;">
+                                    <span id="notification-count">0</span>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" style="width: 350px; max-height: 500px; overflow-y: auto;" id="notificationDropdownMenu">
+                                <li class="px-3 py-2 border-bottom">
+                                    <h6 class="mb-0"><i class="bi bi-bell me-2"></i>Thông báo</h6>
+                                </li>
+                                <li>
+                                    <div id="notification-list" class="p-2">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="border-top">
+                                    <a class="dropdown-item text-center text-primary fw-semibold" href="${pageContext.request.contextPath}/user/notifications">
+                                        <i class="bi bi-arrow-right-circle me-2"></i>Xem tất cả thông báo
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </c:if>
                     <c:choose>
                         <c:when test="${empty sessionScope.currentUser}">
                             <a class="btn btn-primary btn-sm" href="${pageContext.request.contextPath}/login">Đăng nhập</a>

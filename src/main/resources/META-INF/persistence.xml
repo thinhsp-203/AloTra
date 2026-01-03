@@ -6,7 +6,7 @@
 
 <properties>
 <property name="jakarta.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
-<property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://VNF-PC001\\SQLEXPRESS:1433;databaseName=AloTra;encrypt=false;trustServerCertificate=true"/>
+<property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://VNF-PC001\\SQLEXPRESS:1433;databaseName=AloTra;encrypt=false;trustServerCertificate=true;sendStringParametersAsUnicode=true"/>
 <property name="jakarta.persistence.jdbc.user" value="sa"/>
 <property name="jakarta.persistence.jdbc.password" value="PlhAnh22@!"/>
 <!--  Khuyến nghị thêm dialect cho SQL Server  -->
