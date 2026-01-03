@@ -214,7 +214,7 @@
                 </div>
                 
                 <c:choose>
-                    <c:when test="${order.order_status eq 'Đã hủy'}">
+                    <c:when test="${order.order_status eq 'Hủy Đơn'}">
                         <div class="alert alert-warning border-warning">
                             <i class="fas fa-lock" style="margin-right: 10px;"></i>
                             <strong>Đơn hàng đã bị hủy</strong>
@@ -223,7 +223,7 @@
                         <div class="mb-3">
                             <label class="form-label">Trạng thái (chỉ xem)</label>
                             <select class="form-select" disabled>
-                                <option value="Đã hủy" selected>Đã hủy</option>
+                                <option value="Hủy Đơn" selected>Hủy Đơn</option>
                             </select>
                         </div>
                     </c:when>
@@ -247,8 +247,8 @@
                                     <option value="Hoàn thành" ${order.order_status eq 'Hoàn thành' ? 'selected' : ''}>
                                         Hoàn thành
                                     </option>
-                                    <option value="Đã hủy" ${order.order_status eq 'Đã hủy' ? 'selected' : ''}>
-                                        Đã hủy
+                                    <option value="Hủy Đơn" ${order.order_status eq 'Hủy Đơn' ? 'selected' : ''}>
+                                        Hủy Đơn
                                     </option>
                                 </select>
                             </div>
@@ -316,7 +316,7 @@
                 </div>
                 
                 <c:choose>
-                    <c:when test="${order.order_status eq 'Đã hủy'}">
+                    <c:when test="${order.order_status eq 'Hủy Đơn'}">
                         <div class="alert alert-warning border-warning">
                             <i class="fas fa-lock" style="margin-right: 10px;"></i>
                             <strong>Đơn hàng đã bị hủy</strong>

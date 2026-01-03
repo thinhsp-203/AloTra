@@ -139,7 +139,7 @@ public class UserProfileController extends HttpServlet {
         int orderId = Integer.parseInt(req.getParameter("orderId"));
         
         profileService.cancelOrder(currentUser.getId(), orderId);
-        req.getSession().setAttribute("orderSuccess", "Đã hủy đơn hàng #" + orderId);
+        req.getSession().setAttribute("orderSuccess", "Hủy đơn hàng #" + orderId);
         
         resp.sendRedirect(req.getContextPath() + "/user/orders");
     }

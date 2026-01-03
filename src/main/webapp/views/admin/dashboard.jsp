@@ -370,7 +370,7 @@
 													<c:when test="${order.order_status == 'Hoàn thành'}">
 														<span class="badge bg-success text-white px-3 py-2">${order.order_status}</span>
 													</c:when>
-													<c:when test="${order.order_status == 'Đã hủy'}">
+													<c:when test="${order.order_status == 'Hủy Đơn'}">
 														<span class="badge bg-danger text-white px-3 py-2">${order.order_status}</span>
 													</c:when>
 													<c:otherwise>

@@ -169,6 +169,89 @@
     margin-top: 0.5rem;
     font-size: 0.85rem;
 }
+
+.voucher-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.voucher-item {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.voucher-item:hover {
+    border-color: var(--bs-primary);
+    box-shadow: 0 2px 8px rgba(0, 102, 51, 0.1);
+}
+
+.voucher-item.selected {
+    border-color: var(--bs-primary);
+    background: rgba(0, 102, 51, 0.05);
+}
+
+.voucher-item.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f5f5f5;
+}
+
+.voucher-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.voucher-code {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--bs-primary);
+}
+
+.voucher-discount {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #28a745;
+}
+
+.voucher-description {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.voucher-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.voucher-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.voucher-info-item i {
+    color: var(--bs-primary);
+}
+
+.voucher-warning {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #fff3cd;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #856404;
+}
 </style>
 
 <div class="checkout-container">
@@ -257,16 +340,18 @@
                         </label>
                     </div>
 
-                    <!-- VOUCHER SECTION - THÊM VÀO ĐÂY -->
+                    <!-- VOUCHER SECTION -->
                     <div class="section-card">
                         <div class="section-header">
                             <i class="bi bi-tag"></i> Mã giảm giá
                         </div>
-                        <div class="voucher-input-group">
+                        
+                        <!-- Input để nhập mã thủ công (nếu có) -->
+                        <div class="voucher-input-group mb-3">
                             <input class="form-control form-control-sm" 
                                    name="voucher" 
-                                   id="voucher-code" 
-                                   placeholder="Nhập mã giảm giá"/>
+                                   id="voucher-code-input" 
+                                   placeholder="Nhập mã giảm giá (nếu có)"/>
                             <button class="btn btn-outline-primary btn-sm" 
                                     type="button" 
                                     id="apply-voucher-btn">
@@ -274,6 +359,69 @@
                             </button>
                         </div>
                         <div id="voucher-message" class="voucher-message"></div>
+                        
+                        <!-- Danh sách voucher khả dụng -->
+                        <c:choose>
+                            <c:when test="${empty availableVouchers}">
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mb-0 mt-2">Hiện tại không có mã giảm giá nào</p>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="voucher-list">
+                                    <c:forEach var="vInfo" items="${availableVouchers}">
+                                        <c:set var="v" value="${vInfo.voucher()}"/>
+                                        <div class="voucher-item ${vInfo.canUse() ? '' : 'disabled'}" 
+                                             data-code="${v.code}"
+                                             <c:if test="${vInfo.canUse()}">onclick="selectVoucher(this, '${v.code}')"</c:if>>
+                                            <div class="voucher-header">
+                                                <div class="voucher-code">${v.code}</div>
+                                                <div class="voucher-discount">${vInfo.discountDisplay()}</div>
+                                            </div>
+                                            <c:if test="${not empty v.description}">
+                                                <div class="voucher-description">${v.description}</div>
+                                            </c:if>
+                                            <div class="voucher-info">
+                                                <c:if test="${not empty v.min_order_value}">
+                                                    <div class="voucher-info-item">
+                                                        <i class="bi bi-cart-check"></i>
+                                                        <span>Đơn tối thiểu: <fmt:formatNumber value="${v.min_order_value}" pattern="#,##0" />₫</span>
+                                                    </div>
+                                                </c:if>
+                                                <c:choose>
+                                                    <c:when test="${v.usage_limit != null}">
+                                                        <div class="voucher-info-item">
+                                                            <i class="bi bi-people"></i>
+                                                            <span>Còn lại: ${vInfo.remainingUses()} lượt</span>
+                                                        </div>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <div class="voucher-info-item">
+                                                            <i class="bi bi-people"></i>
+                                                            <span>Không giới hạn lượt</span>
+                                                        </div>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                <div class="voucher-info-item">
+                                                    <i class="bi bi-calendar-event"></i>
+                                                    <span>
+                                                        <fmt:formatDate value="${v.start_dateAsDate}" pattern="dd/MM/yyyy"/> - 
+                                                        <fmt:formatDate value="${v.end_dateAsDate}" pattern="dd/MM/yyyy"/>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <c:if test="${not vInfo.canUse()}">
+                                                <div class="voucher-warning">
+                                                    <i class="bi bi-exclamation-triangle"></i> 
+                                                    Đơn hàng chưa đủ điều kiện (cần tối thiểu <fmt:formatNumber value="${v.min_order_value}" pattern="#,##0" />₫)
+                                                </div>
+                                            </c:if>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
 
@@ -456,9 +604,26 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // VOUCHER APPLICATION - THÊM VÀO ĐÂY
+    // Function để chọn voucher từ danh sách
+    window.selectVoucher = function(element, code) {
+        // Bỏ chọn các voucher khác
+        document.querySelectorAll('.voucher-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Chọn voucher này
+        element.classList.add('selected');
+        
+        // Điền mã vào input
+        document.getElementById('voucher-code-input').value = code;
+        
+        // Tự động áp dụng voucher
+        document.getElementById('apply-voucher-btn').click();
+    };
+    
+    // VOUCHER APPLICATION
     document.getElementById('apply-voucher-btn')?.addEventListener('click', function() {
-        const code = document.getElementById('voucher-code').value.trim();
+        const code = document.getElementById('voucher-code-input').value.trim();
         const msgEl = document.getElementById('voucher-message');
         const discountEl = document.getElementById('discount-display');
         const totalEl = document.getElementById('grand-total-display');
@@ -474,7 +639,7 @@ document.addEventListener("DOMContentLoaded", function() {
         this.disabled = true;
         this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang kiểm tra...';
         
-        fetch(contextPath + '/api/voucher/apply', {
+        fetch(contextPath + '/api/voucher', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: 'code=' + encodeURIComponent(code)
@@ -484,17 +649,37 @@ document.addEventListener("DOMContentLoaded", function() {
             if (data.ok) {
                 msgEl.className = 'voucher-message text-success';
                 msgEl.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + data.message;
-                discountEl.textContent = '-' + data.discountFormatted;
+                
+                // Format discount amount
+                const discountAmount = parseFloat(data.discount) || 0;
+                const discountFormatted = new Intl.NumberFormat('vi-VN').format(discountAmount);
+                discountEl.textContent = '-' + discountFormatted + '₫';
                 discountEl.parentElement.classList.remove('text-success');
                 discountEl.parentElement.classList.add('text-danger');
-                totalEl.textContent = data.newTotalFormatted;
+                
+                // Format new total
+                const newTotal = parseFloat(data.newTotal) || 0;
+                const newTotalFormatted = new Intl.NumberFormat('vi-VN').format(newTotal);
+                totalEl.textContent = newTotalFormatted + '₫';
+                
+                // Đánh dấu voucher đã chọn trong danh sách
+                document.querySelectorAll('.voucher-item').forEach(item => {
+                    if (item.dataset.code === code) {
+                        item.classList.add('selected');
+                    }
+                });
             } else {
                 msgEl.className = 'voucher-message text-danger';
                 msgEl.innerHTML = '<i class="bi bi-x-circle-fill"></i> ' + data.message;
-                discountEl.textContent = '0 đ';
+                discountEl.textContent = '0₫';
                 discountEl.parentElement.classList.remove('text-danger');
                 discountEl.parentElement.classList.add('text-success');
                 totalEl.textContent = subtotalEl.textContent;
+                
+                // Bỏ chọn voucher nếu có
+                document.querySelectorAll('.voucher-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
             }
         })
         .catch(error => {

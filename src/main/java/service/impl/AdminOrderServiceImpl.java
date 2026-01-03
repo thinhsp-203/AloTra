@@ -10,6 +10,8 @@ import java.util.*;
 
 public class AdminOrderServiceImpl implements AdminOrderService {
     
+    private final LoyaltyService loyaltyService = new LoyaltyServiceImpl();
+    
     @Override
     public List<Orders> searchOrders(String keyword, String status) {
         EntityManager em = JpaUtil.em();
@@ -71,7 +73,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             }
             
             // Không cho phép cập nhật nếu đơn hàng đã hủy
-            if ("Đã hủy".equals(order.getOrder_status())) {
+            if ("Hủy Đơn".equals(order.getOrder_status())) {
                 em.getTransaction().rollback();
                 throw new IllegalArgumentException("Không thể cập nhật đơn hàng đã bị hủy!");
             }
@@ -81,7 +83,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             order.setUpdatedDate(LocalDateTime.now());
             
             // Logic: Khi đơn hàng bị hủy, tự động cập nhật payment_status
-            if ("Đã hủy".equals(newStatus) && !"Đã hủy".equals(oldStatus)) {
+            if ("Hủy Đơn".equals(newStatus) && !"Hủy Đơn".equals(oldStatus)) {
                 String currentPaymentStatus = order.getPayment_status();
                 
                 // Chỉ cập nhật nếu chưa phải "Đã hoàn tiền" (tránh ghi đè)
@@ -96,6 +98,22 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                              "Chưa thanh toán".equals(currentPaymentStatus)) {
                         order.setPayment_status("Chưa thanh toán");
                     }
+                }
+            }
+            
+            // Logic: Khi đơn hàng được set "Hoàn thành", tự động set payment_status = "Đã thanh toán"
+            if ("Hoàn thành".equals(newStatus) && !"Hoàn thành".equals(oldStatus)) {
+                order.setPayment_status("Đã thanh toán");
+                
+                // Tích điểm thành viên khi đơn hàng hoàn thành
+                try {
+                    if (order.getUser() != null && order.getTotal_amount() != null) {
+                        loyaltyService.earnPointsFromOrder(order.getUser(), order.getTotal_amount(), order.getOrder_id());
+                    }
+                } catch (Exception e) {
+                    // Log lỗi nhưng không rollback transaction vì đơn hàng vẫn cần được cập nhật
+                    System.err.println("Lỗi khi tích điểm cho đơn hàng #" + orderId + ": " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
             
@@ -129,13 +147,13 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             }
             
             // Không cho phép cập nhật nếu đơn hàng đã hủy
-            if ("Đã hủy".equals(order.getOrder_status())) {
+            if ("Hủy Đơn".equals(order.getOrder_status())) {
                 em.getTransaction().rollback();
                 throw new IllegalArgumentException("Không thể cập nhật thanh toán cho đơn hàng đã bị hủy!");
             }
             
             // Logic: Không cho phép đặt "Đã thanh toán" nếu đơn hàng đã bị hủy (double check)
-            if ("Đã hủy".equals(order.getOrder_status()) && "Đã thanh toán".equals(paymentStatus)) {
+            if ("Hủy Đơn".equals(order.getOrder_status()) && "Đã thanh toán".equals(paymentStatus)) {
                 em.getTransaction().rollback();
                 throw new IllegalArgumentException("Không thể đặt 'Đã thanh toán' cho đơn hàng đã bị hủy.");
             }

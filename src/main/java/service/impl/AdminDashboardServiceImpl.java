@@ -125,7 +125,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             stats.put("completedOrders", completedOrders != null ? completedOrders : 0L);
             
             Long cancelledOrders = em.createQuery(
-                "SELECT COUNT(o) FROM Orders o WHERE o.order_status = 'Đã hủy'", Long.class)
+                "SELECT COUNT(o) FROM Orders o WHERE o.order_status = 'Hủy Đơn'", Long.class)
                 .getSingleResult();
             stats.put("cancelledOrders", cancelledOrders != null ? cancelledOrders : 0L);
             

@@ -67,8 +67,8 @@
                         <option value="Hoàn thành" ${selectedStatus eq 'Hoàn thành' ? 'selected' : ''}>
                             Hoàn thành
                         </option>
-                        <option value="Đã hủy" ${selectedStatus eq 'Đã hủy' ? 'selected' : ''}>
-                            Đã hủy
+                        <option value="Hủy Đơn" ${selectedStatus eq 'Hủy Đơn' ? 'selected' : ''}>
+                            Hủy Đơn
                         </option>
                     </select>
                 </div>

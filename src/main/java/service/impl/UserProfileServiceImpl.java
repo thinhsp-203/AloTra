@@ -220,7 +220,7 @@ public class UserProfileServiceImpl implements UserProfileService {
                 throw new IllegalArgumentException("Không thể hủy đơn hàng này!");
             }
             
-            order.setOrder_status("Đã hủy");
+            order.setOrder_status("Hủy Đơn");
             order.setUpdatedDate(java.time.LocalDateTime.now());
             em.merge(order);
             

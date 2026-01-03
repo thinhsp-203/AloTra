@@ -106,9 +106,9 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${cs eq 'Đã hủy' ? 'active' : ''}" 
-                   href="${pageContext.request.contextPath}/user/orders?status=Đã hủy">
-                    <i class="bi bi-x-circle"></i> Đã hủy
+                <a class="nav-link ${cs eq 'Hủy Đơn' ? 'active' : ''}" 
+                   href="${pageContext.request.contextPath}/user/orders?status=Hủy Đơn">
+                    <i class="bi bi-x-circle"></i> Hủy Đơn
                 </a>
             </li>
         </ul>

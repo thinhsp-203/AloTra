@@ -73,8 +73,9 @@ function showLoginRequiredModal() {
 	// --- PRODUCT MODAL LOGIC ---
 	    const productModal = document.getElementById('productModal');
 	    if (productModal) {
-	        let modalData = null; 
+	        let modalData = null;
 	        
+	        // Product modal layout: name and price on left, above image
 	        productModal.addEventListener('show.bs.modal', function (event) {
 	            const button = event.relatedTarget;
 	            const productId = button.dataset.productId;
@@ -92,15 +93,54 @@ function showLoginRequiredModal() {
 	                
 	                modalData = data; 
 	                
-	                let sizesHtml = data.sizes.map((s, index) => `
-	                    <div class="col-auto">
-	                        <input type="radio" class="btn-check" name="size" id="modal-size-${index}" value="${escapeHtml(s.name)}" data-price-adj="${s.priceAdjustment}" ${s.priceAdjustment == 0 ? 'checked' : ''}>
-	                        <label class="btn btn-outline-primary btn-size" for="modal-size-${index}">
-	                            ${escapeHtml(s.name)}
-	                            <div class="small fw-normal">${s.priceAdjustment == 0 ? '0 đ' : (s.priceAdjustment > 0 ? '+' : '') + new Intl.NumberFormat('vi-VN').format(s.priceAdjustment) + ' đ'}</div>
-	                        </label>
-	                    </div>
-	                `).join('');
+	                // Sắp xếp sizes: M và L nằm cạnh nhau, căn giữa
+	                let sizesHtml = '';
+	                const otherSizes = data.sizes.filter(s => {
+	                    const name = s.name.toUpperCase();
+	                    return name !== 'M' && name !== 'L';
+	                });
+	                const sizeM = data.sizes.find(s => s.name.toUpperCase() === 'M');
+	                const sizeL = data.sizes.find(s => s.name.toUpperCase() === 'L');
+				
+				// Hiển thị các size khác (không phải M và L)
+				const otherSizesHtml = otherSizes.map((s, index) => `
+					<div class="col-auto">
+						<input type="radio" class="btn-check" name="size" id="modal-size-other-${index}" value="${escapeHtml(s.name)}" data-price-adj="${s.priceAdjustment}" ${s.priceAdjustment == 0 ? 'checked' : ''}>
+						<label class="btn btn-outline-primary btn-size" for="modal-size-other-${index}">
+							${escapeHtml(s.name)}
+							<div class="small fw-normal">${s.priceAdjustment == 0 ? '0 đ' : (s.priceAdjustment > 0 ? '+' : '') + new Intl.NumberFormat('vi-VN').format(s.priceAdjustment) + ' đ'}</div>
+						</label>
+					</div>
+				`).join('');
+				
+				// Hiển thị M và L cạnh nhau, căn giữa
+				let mlSizesHtml = '';
+				if (sizeM || sizeL) {
+					mlSizesHtml = `
+						<div class="col-12 d-flex justify-content-center mb-2" style="gap: 0.75rem;">
+							${sizeM ? `
+								<div class="col-auto">
+									<input type="radio" class="btn-check" name="size" id="modal-size-M" value="${escapeHtml(sizeM.name)}" data-price-adj="${sizeM.priceAdjustment}" ${sizeM.priceAdjustment == 0 ? 'checked' : ''}>
+									<label class="btn btn-outline-primary btn-size" for="modal-size-M">
+										${escapeHtml(sizeM.name)}
+										<div class="small fw-normal">${sizeM.priceAdjustment == 0 ? '0 đ' : (sizeM.priceAdjustment > 0 ? '+' : '') + new Intl.NumberFormat('vi-VN').format(sizeM.priceAdjustment) + ' đ'}</div>
+									</label>
+								</div>
+							` : ''}
+							${sizeL ? `
+								<div class="col-auto">
+									<input type="radio" class="btn-check" name="size" id="modal-size-L" value="${escapeHtml(sizeL.name)}" data-price-adj="${sizeL.priceAdjustment}" ${sizeL.priceAdjustment == 0 && !sizeM ? 'checked' : ''}>
+									<label class="btn btn-outline-primary btn-size" for="modal-size-L">
+										${escapeHtml(sizeL.name)}
+										<div class="small fw-normal">${sizeL.priceAdjustment == 0 ? '0 đ' : (sizeL.priceAdjustment > 0 ? '+' : '') + new Intl.NumberFormat('vi-VN').format(sizeL.priceAdjustment) + ' đ'}</div>
+									</label>
+								</div>
+							` : ''}
+						</div>
+					`;
+				}
+				
+				sizesHtml = otherSizesHtml + mlSizesHtml;
 
 	                // === START FIX: Conditionally render toppings ===
 	                let toppingsHtml = '';
@@ -115,7 +155,7 @@ function showLoginRequiredModal() {
 	                            </div>
 	                        </div>
 	                    `).join('');
-	                    toppingsHtml = `<div class="mb-3"><h6>Chọn Topping</h6><div id="modalToppingsList">${toppingItems}</div></div>`;
+	                    toppingsHtml = `<div class="option-group"><h6>Chọn Topping</h6><div id="modalToppingsList">${toppingItems}</div></div>`;
 	                }
 	                // === END FIX ===
 	                
@@ -133,42 +173,38 @@ function showLoginRequiredModal() {
 	                    </div>
 	                `;
 	                
-	                let teaOptionsHtml = '';
-	                if (data.product.categoryName && data.product.categoryName.toLowerCase().includes('trà')) {
-	                    teaOptionsHtml = createOptionGroup('Mức trà', 'tea', ['Ít', 'Bình thường', 'Nhiều']);
-	                }
-
 					modalContent.innerHTML = `
-					    <div class="row g-4">
+					    <div class="row g-3">
 					        <div class="col-md-5">
-					            <img src="${escapeHtml(data.product.thumbnail)}" 
-					                 class="img-fluid rounded" 
-					                 alt="${escapeHtml(data.product.name)}"
-					                 style="position: sticky; top: 0;">
-					        </div>
-					        <div class="col-md-7">
-					            <div style="max-height: calc(80vh - 250px); overflow-y: auto; padding-right: 10px;">
-					                <div class="d-flex justify-content-between align-items-start mb-2">
-					                    <h4 id="modalProductName">${escapeHtml(data.product.name)}</h4>
+					            <div style="position: sticky; top: 0;">
+					                <div class="d-flex justify-content-between align-items-start" style="margin-top: 0; padding-top: 0;">
+					                    <h4 id="modalProductName" class="mb-0" style="margin-top: 0;">${escapeHtml(data.product.name)}</h4>
 					                    <button class="btn btn-outline-danger btn-sm btn-wishlist ms-2" 
 					                            data-product-id="${data.product.id}"
 					                            title="Thêm vào yêu thích"
-					                            type="button">
-					                        <i class="bi bi-heart"></i>
+					                            type="button"
+					                            style="flex-shrink: 0; padding: 0.25rem 0.5rem;">
+					                        <i class="bi bi-heart" style="font-size: 0.9rem;"></i>
 					                    </button>
 					                </div>
-					                <p class="h5 text-primary fw-bold mb-4" id="modalBasePrice" data-price="${data.product.basePrice}">
+					                <p class="h5 text-primary fw-bold mb-2" id="modalBasePrice" data-price="${data.product.basePrice}">
 					                    ${currencyFormatter.format(data.product.basePrice)}
 					                </p>
-					                <hr>
+					                <img src="${escapeHtml(data.product.thumbnail)}" 
+					                     class="img-fluid" 
+					                     alt="${escapeHtml(data.product.name)}"
+					                     style="width: 100%; height: auto; object-fit: cover; border-radius: 0.5rem;">
+					            </div>
+					        </div>
+					        <div class="col-md-7">
+					            <div>
 					                ${data.sizes.length > 1 ? `
-					                    <div class="mb-3 option-group">
+					                    <div class="option-group">
 					                        <h6>Chọn kích cỡ</h6>
-					                        <div class="row g-2">${sizesHtml}</div>
+					                        <div class="row g-2 align-items-center">${sizesHtml}</div>
 					                    </div>
 					                ` : ''}
 					                ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều'])}
-					                ${teaOptionsHtml}
 					                ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
 					                ${toppingsHtml}
 					            </div>
@@ -293,16 +329,10 @@ function showLoginRequiredModal() {
                 </div>
             `;
             
-            let teaOptionsHtml = '';
-            if (data.product.categoryName && data.product.categoryName.toLowerCase().includes('trà')) {
-                teaOptionsHtml = createOptionGroup('Mức trà', 'tea', ['Ít', 'Bình thường', 'Nhiều']);
-            }
-
             optionsContainer.innerHTML = `
                 ${data.sizes.length > 1 ? `<div class="mb-4 option-group"><h6>Chọn kích cỡ</h6><div class="row g-2">${sizesHtml}</div></div>` : ''}
                 ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
                 ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều', 'Không'])}
-                ${teaOptionsHtml}
                 ${toppingsHtml ? `<div class="mb-4 option-group"><h6>Chọn Topping</h6>${toppingsHtml}</div>` : ''}
             `;
 

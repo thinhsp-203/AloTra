@@ -146,8 +146,8 @@ try (var em = JpaUtil.em()) {
 
 <header class="sticky-top bg-white shadow-sm">
     <div class="container py-2">
-        <div class="row align-items-center g-2">
-            <div class="col-auto">
+        <div class="header-top-wrapper">
+            <div class="header-left">
                 <a class="navbar-brand" href="${pageContext.request.contextPath}/home">
 				    <c:choose>
 				        <c:when test="${not empty siteSettings.LOGO_URL}">
@@ -155,8 +155,6 @@ try (var em = JpaUtil.em()) {
 				        </c:when>
 				    </c:choose>
 				</a>
-            </div>
-            <div class="col-auto" style="max-width: 500px;">
                 <div class="search-autocomplete-container">
                     <form action="${pageContext.request.contextPath}/products" method="get" class="search-form position-relative">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -190,7 +188,10 @@ try (var em = JpaUtil.em()) {
                     </div>
                 </div>
             </div>
-            <div class="col-auto ms-auto">
+            <div class="header-center">
+                <h1 class="site-title mb-0">AloTra</h1>
+            </div>
+            <div class="header-right">
                 <div class="d-flex align-items-center gap-3">
                     <a href="${pageContext.request.contextPath}/cart/view" 
                        class="nav-link position-relative">
