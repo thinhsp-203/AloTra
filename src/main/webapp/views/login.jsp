@@ -38,16 +38,15 @@
       min-height: auto;
       height: 100%;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem;
+      align-items: stretch;
+      justify-content: stretch;
+      padding: 0;
+      overflow: hidden;
     }
     .auth-image-col img {
-      max-width: 100%;
-      max-height: 100%;
-      width: auto;
-      height: auto;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
 </style>
