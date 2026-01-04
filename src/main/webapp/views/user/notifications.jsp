@@ -14,12 +14,21 @@
                 <i class="bi bi-bell text-primary"></i> Thông báo
             </h2>
             <c:if test="${not empty notifications}">
-                <form action="${pageContext.request.contextPath}/user/notifications" method="POST" style="display: inline;">
-                    <input type="hidden" name="action" value="markAllAsRead">
-                    <button type="submit" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-check-all me-1"></i>Đánh dấu tất cả đã đọc
-                    </button>
-                </form>
+                <div class="d-flex gap-2">
+                    <form action="${pageContext.request.contextPath}/user/notifications" method="POST" style="display: inline;">
+                        <input type="hidden" name="action" value="markAllAsRead">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-check-all me-1"></i>Đánh dấu tất cả đã đọc
+                        </button>
+                    </form>
+                    <form action="${pageContext.request.contextPath}/user/notifications" method="POST" style="display: inline;" 
+                          onsubmit="return confirm('Bạn có chắc muốn xóa tất cả thông báo?')">
+                        <input type="hidden" name="action" value="deleteAll">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash me-1"></i>Xóa tất cả
+                        </button>
+                    </form>
+                </div>
             </c:if>
         </div>
 
@@ -54,14 +63,14 @@
                                         <fmt:formatDate value="${notif.createdDateAsDate}" pattern="dd/MM/yyyy HH:mm"/>
                                     </small>
                                 </div>
-                                <div class="ms-3">
+                                <div class="ms-3 d-flex align-items-center gap-2">
                                     <c:if test="${not empty notif.link}">
                                         <a href="${pageContext.request.contextPath}${notif.link}" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-arrow-right"></i> Xem
                                         </a>
                                     </c:if>
                                     <c:if test="${not notif.isRead}">
-                                        <form action="${pageContext.request.contextPath}/user/notifications" method="POST" style="display: inline-block;" class="ms-2">
+                                        <form action="${pageContext.request.contextPath}/user/notifications" method="POST" style="display: inline-block;">
                                             <input type="hidden" name="action" value="markAsRead">
                                             <input type="hidden" name="id" value="${notif.id}">
                                             <button type="submit" class="btn btn-sm btn-link text-muted" title="Đánh dấu đã đọc">
@@ -69,6 +78,14 @@
                                             </button>
                                         </form>
                                     </c:if>
+                                    <form action="${pageContext.request.contextPath}/user/notifications" method="POST" style="display: inline-block;" 
+                                          onsubmit="return confirm('Bạn có chắc muốn xóa thông báo này?')">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="id" value="${notif.id}">
+                                        <button type="submit" class="btn btn-sm btn-link text-danger" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

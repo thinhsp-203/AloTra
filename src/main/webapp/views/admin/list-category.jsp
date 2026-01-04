@@ -42,20 +42,21 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0" style="table-layout: fixed; width: 100%;">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 80px;" class="ps-4">#</th>
-                        <th style="width: 120px;">Icon</th>
-                        <th>Tên danh mục</th>
-                        <th class="text-center" style="width: 180px;">Thao tác</th>
+                        <th class="text-center col-id" style="width: 80px;">ID</th>
+                        <th class="text-center col-icon" style="width: 110px;">Icon</th>
+                        <th class="col-name">Tên danh mục</th>
+                        <th class="text-center col-type" style="width: 180px;">Loại danh mục</th>
+                        <th class="text-center col-action" style="width: 120px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:choose>
                         <c:when test="${empty cateList}">
                             <tr>
-                                <td colspan="4" class="text-center py-5">
+                                <td colspan="5" class="text-center py-5">
                                     <div class="py-4">
                                         <i class="fas fa-inbox fa-4x text-muted mb-3 d-block"></i>
                                         <h5 class="text-muted mb-2">Không có danh mục nào</h5>
@@ -67,31 +68,54 @@
                         <c:otherwise>
                             <c:forEach items="${cateList}" var="cate" varStatus="st">
                                 <tr class="border-bottom">
-                                    <td class="ps-4">
-                                        <strong class="text-primary">${st.index + 1}</strong>
+                                    <td class="text-center">
+                                        <strong class="text-primary">${cate.id}</strong>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <c:choose>
                                             <c:when test="${not empty cate.icon}">
-                                                <img src="${pageContext.request.contextPath}/uploads/categories/${cate.icon}" 
-                                                     class="rounded shadow-sm" 
-                                                     style="width: 80px; height: 80px; object-fit: cover;"
-                                                     alt="${cate.name}"
-                                                     onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/uploads/categories/default.png';"/>
+                                                <c:choose>
+                                                    <c:when test="${fn:startsWith(cate.icon, 'http')}">
+                                                        <img src="${cate.icon}" 
+                                                             class="rounded shadow-sm" 
+                                                             style="width: 60px; height: 60px; object-fit: cover;"
+                                                             alt="${cate.name}"/>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <img src="${pageContext.request.contextPath}/${cate.icon}" 
+                                                             class="rounded shadow-sm" 
+                                                             style="width: 60px; height: 60px; object-fit: cover;"
+                                                             alt="${cate.name}"
+                                                             onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/uploads/categories/default.png';"/>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </c:when>
                                             <c:otherwise>
                                                 <img src="${pageContext.request.contextPath}/uploads/categories/default.png" 
                                                      class="rounded shadow-sm" 
-                                                     style="width: 80px; height: 80px; object-fit: cover;"
+                                                     style="width: 60px; height: 60px; object-fit: cover;"
                                                      alt="${cate.name}"/>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
                                     <td>
                                         <div class="fw-semibold mb-1 fs-5">${cate.name}</div>
-                                        <small class="text-muted">ID: ${cate.id}</small>
                                     </td>
-                                    <td class="text-center pe-4">
+                                    <td class="text-center">
+                                        <c:choose>
+                                            <c:when test="${cate.isDrink}">
+                                                <span class="badge bg-primary text-white">
+                                                    <i class="fas fa-coffee" style="margin-right: 5px;"></i>Thức uống
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge bg-success text-white">
+                                                    <i class="fas fa-cookie-bite" style="margin-right: 5px;"></i>Bánh & Đồ ăn vặt
+                                                </span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="text-center">
                                         <div class="d-flex justify-content-center">
                                             <a href="${pageContext.request.contextPath}/admin/category/edit?id=${cate.id}" 
                                                class="btn btn-sm btn-outline-primary" 

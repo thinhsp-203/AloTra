@@ -26,6 +26,9 @@ public class Notification {
     @Column(nullable = false)
     private Boolean isRead = false;
     
+    @Column(nullable = true)
+    private Boolean isDeleted = false;
+    
     @Column(nullable = false)
     private LocalDateTime createdDate = LocalDateTime.now();
     
@@ -68,6 +71,14 @@ public class Notification {
     
     public void setIsRead(Boolean isRead) {
         this.isRead = isRead;
+    }
+    
+    public Boolean getIsDeleted() {
+        return isDeleted != null && isDeleted;
+    }
+    
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted != null ? isDeleted : false;
     }
     
     public LocalDateTime getCreatedDate() {

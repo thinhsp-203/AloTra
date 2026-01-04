@@ -12,5 +12,7 @@ public interface NotificationDao {
     void update(Notification notification);
     void markAsRead(Integer id);
     void markAllAsRead(Integer userId);
+    void markAsDeleted(Integer id, Integer userId);
+    void markAllAsDeleted(Integer userId);
 }
 

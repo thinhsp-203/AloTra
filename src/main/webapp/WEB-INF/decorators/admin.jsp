@@ -20,14 +20,6 @@
 <!-- ================= SIDEBAR ================= -->
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-    <a class="sidebar-brand d-flex align-items-center justify-content-center"
-       href="${pageContext.request.contextPath}/admin/dashboard">
-        <div class="sidebar-brand-icon rotate-n-15">
-            <i class="fas fa-mug-hot"></i>
-        </div>
-        <div class="sidebar-brand-text mx-3">AloTra Admin</div>
-    </a>
-
     <hr class="sidebar-divider my-0">
 
     <!-- DASHBOARD (ADMIN + STAFF) -->
@@ -156,8 +148,18 @@
 <div id="content">
 
 <!-- TOPBAR -->
-<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
-<ul class="navbar-nav ml-auto">
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow position-relative">
+    <!-- Centered Title -->
+    <div class="admin-title-center position-absolute start-50">
+        <a class="text-decoration-none" href="${pageContext.request.contextPath}/admin/dashboard">
+            <span class="admin-title-pill">
+                <i class="fas fa-mug-hot"></i> ALOTRA ADMIN
+            </span>
+        </a>
+    </div>
+    <!-- User Dropdown (Right) -->
+    <div class="ms-auto d-flex align-items-center">
+        <ul class="navbar-nav">
 
 <li class="nav-item dropdown no-arrow">
     <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
@@ -184,7 +186,8 @@
     </div>
 </li>
 
-</ul>
+        </ul>
+    </div>
 </nav>
 
 <div class="container-fluid">

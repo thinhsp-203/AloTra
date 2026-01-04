@@ -7,15 +7,11 @@ import jakarta.servlet.http.Part;
 import model.Orders;
 import model.User;
 import service.UserProfileService;
-import utils.Constant;
 import utils.PasswordUtil;
+import utils.UploadType;
+import utils.UploadUtil;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
 public class UserProfileServiceImpl implements UserProfileService {
     
@@ -137,50 +133,19 @@ public class UserProfileServiceImpl implements UserProfileService {
                 throw new IllegalArgumentException("User không tồn tại!");
             }
             
-            // Xử lý upload
-            String originalFileName = Paths.get(avatarFile.getSubmittedFileName())
-                .getFileName().toString();
-            String extension = "";
-            int i = originalFileName.lastIndexOf('.');
-            if (i > 0) {
-                extension = originalFileName.substring(i);
-            }
-            
-            String finalFileName = "user-" + userId + "-" + UUID.randomUUID().toString() + extension;
-            
-            // Lưu file vào thư mục uploads/users
-            String uploadPath = Constant.getUploadPath(servletContext);
-            File usersDir = new File(uploadPath, "users");
-            if (!usersDir.exists()) usersDir.mkdirs();
-            File fileToSave = new File(usersDir, finalFileName);
-            
             // Xóa avatar cũ
-            if (user.getAvatar() != null && !user.getAvatar().isEmpty() && !user.getAvatar().startsWith("http")) {
-                String oldAvatarPath = user.getAvatar();
-                File oldFile;
-                
-                if (oldAvatarPath.startsWith("users/")) {
-                    // Avatar cũ ở uploads/users/
-                    String oldFileName = oldAvatarPath.substring(6); // Bỏ "users/" prefix
-                    oldFile = new File(usersDir, oldFileName);
-                } else {
-                    // Avatar cũ ở uploads/ (tương thích ngược)
-                    File uploadDir = new File(uploadPath);
-                    oldFile = new File(uploadDir, oldAvatarPath);
-                }
-                
-                if (oldFile.exists()) {
-                    oldFile.delete();
-                }
+            if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
+                UploadUtil.deleteOldImage(user.getAvatar(), servletContext);
             }
             
-            // Lưu file mới
-            try (InputStream input = avatarFile.getInputStream()) {
-                Files.copy(input, fileToSave.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            // Upload file mới
+            String uploadedPath = UploadUtil.save(avatarFile, UploadType.USERS, servletContext);
+            if (uploadedPath == null) {
+                throw new IllegalArgumentException("Không thể upload file!");
             }
             
-            // Cập nhật DB - lưu với prefix "users/"
-            user.setAvatar("users/" + finalFileName);
+            // Cập nhật DB - lưu relative path: "uploads/users/filename"
+            user.setAvatar(uploadedPath);
             em.merge(user);
             
             em.getTransaction().commit();

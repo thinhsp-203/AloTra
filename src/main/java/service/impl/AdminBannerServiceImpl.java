@@ -1,21 +1,15 @@
 package service.impl;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
 
 import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import model.Banner;
 import service.AdminBannerService;
-import utils.Constant;
+import utils.UploadType;
+import utils.UploadUtil;
 
 public class AdminBannerServiceImpl implements AdminBannerService {
-    private static final String BANNER_SUBDIR = "banners";
     
     @Override
     public List<Banner> getAllBanners() {
@@ -93,18 +87,8 @@ public class AdminBannerServiceImpl implements AdminBannerService {
             Banner banner = em.find(Banner.class, id);
             if (banner != null) {
                 // Xóa file ảnh
-                if (banner.getImageUrl() != null && !banner.getImageUrl().startsWith("http")) {
-                    try {
-                        String fileName = Paths.get(banner.getImageUrl()).getFileName().toString();
-                        String uploadBaseDir = Constant.getUploadPath(servletContext);
-                        File uploadDir = new File(uploadBaseDir, BANNER_SUBDIR);
-                        File fileToDelete = new File(uploadDir, fileName);
-                        if (fileToDelete.exists()) {
-                            fileToDelete.delete();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                if (banner.getImageUrl() != null) {
+                    UploadUtil.deleteOldImage(banner.getImageUrl(), servletContext);
                 }
                 em.remove(banner);
             }
@@ -122,58 +106,26 @@ public class AdminBannerServiceImpl implements AdminBannerService {
     
     private String handleImageUpload(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl, jakarta.servlet.ServletContext servletContext) {
         try {
-            // Kiểm tra file upload
-            if (imageFile != null && imageFile.getSize() > 0) {
-                String submittedFileName = imageFile.getSubmittedFileName();
-                if (submittedFileName != null && !submittedFileName.trim().isEmpty()) {
-                    String originalFileName = Paths.get(submittedFileName).getFileName().toString();
-                    
-                    if (originalFileName != null && !originalFileName.isEmpty()) {
-                        String extension = "";
-                        int i = originalFileName.lastIndexOf('.');
-                        if (i > 0) {
-                            extension = originalFileName.substring(i);
-                        }
-                        String finalFileName = "banner-" + UUID.randomUUID().toString() + extension;
-                        
-                        // Sử dụng ServletContext để lấy đường dẫn đúng từ webapp/uploads/banners
-                        String uploadBaseDir = Constant.getUploadPath(servletContext);
-                        File uploadDir = new File(uploadBaseDir, BANNER_SUBDIR);
-                        if (!uploadDir.exists()) {
-                            uploadDir.mkdirs();
-                        }
-                        
-                        // Xóa ảnh cũ nếu đang edit và có ảnh cũ
-                        if (banner.getId() != null && banner.getImageUrl() != null && !banner.getImageUrl().startsWith("http")) {
-                            try {
-                                String oldFileName = Paths.get(banner.getImageUrl()).getFileName().toString();
-                                File oldFile = new File(uploadDir, oldFileName);
-                                if (oldFile.exists()) {
-                                    oldFile.delete();
-                                }
-                            } catch (Exception e) {
-                                // Ignore error when deleting old file
-                            }
-                        }
-                        
-                        File fileToSave = new File(uploadDir, finalFileName);
-                        
-                        try (InputStream input = imageFile.getInputStream()) {
-                            Files.copy(input, fileToSave.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        }
-                        
-                        return BANNER_SUBDIR + "/" + finalFileName;
-                    }
+            // TRƯỜNG HỢP 1: Upload file (ưu tiên)
+            String uploadedPath = UploadUtil.save(imageFile, UploadType.BANNERS, servletContext);
+            if (uploadedPath != null) {
+                // Xóa ảnh cũ nếu đang edit
+                if (banner.getId() != null && banner.getImageUrl() != null) {
+                    UploadUtil.deleteOldImage(banner.getImageUrl(), servletContext);
                 }
+                return uploadedPath;
             }
             
-            // Kiểm tra URL ảnh
+            // TRƯỜNG HỢP 2: URL từ text input
             if (imageUrl != null && !imageUrl.trim().isEmpty()) {
                 return imageUrl.trim();
             }
             
+            // TRƯỜNG HỢP 3: Giữ nguyên ảnh cũ
             return null;
             
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi upload ảnh: " + e.getMessage(), e);
         }

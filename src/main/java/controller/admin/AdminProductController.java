@@ -23,7 +23,9 @@ import java.util.Map;
     "/admin/products/create", 
     "/admin/products/edit", 
     "/admin/products/save", 
-    "/admin/products/delete"
+    "/admin/products/delete",
+    "/admin/products/disable",
+    "/admin/products/enable"
 }, asyncSupported = false)
 @MultipartConfig(
     fileSizeThreshold = 2 * 1024 * 1024,
@@ -77,6 +79,10 @@ public class AdminProductController extends HttpServlet {
                 saveProduct(req, resp);
             } else if (uri.endsWith("/admin/products/delete")) {
                 deleteProduct(req, resp);
+            } else if (uri.endsWith("/admin/products/disable")) {
+                disableProduct(req, resp);
+            } else if (uri.endsWith("/admin/products/enable")) {
+                enableProduct(req, resp);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -169,12 +175,44 @@ public class AdminProductController extends HttpServlet {
         resp.sendRedirect(req.getContextPath() + "/admin/products");
     }
 
+    private void disableProduct(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        try {
+            int id = Integer.parseInt(req.getParameter("id"));
+            productService.disableProduct(id, req.getServletContext());
+            req.getSession().setAttribute("success", "Đã ngừng bán sản phẩm!");
+        } catch (IllegalArgumentException e) {
+            req.getSession().setAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            req.getSession().setAttribute("error", "Lỗi: " + e.getMessage());
+        }
+        
+        resp.sendRedirect(req.getContextPath() + "/admin/products");
+    }
+    
+    private void enableProduct(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        try {
+            int id = Integer.parseInt(req.getParameter("id"));
+            productService.enableProduct(id, req.getServletContext());
+            req.getSession().setAttribute("success", "Đã kích hoạt sản phẩm!");
+        } catch (IllegalArgumentException e) {
+            req.getSession().setAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            req.getSession().setAttribute("error", "Lỗi: " + e.getMessage());
+        }
+        
+        resp.sendRedirect(req.getContextPath() + "/admin/products");
+    }
+    
     private void deleteProduct(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         try {
             int id = Integer.parseInt(req.getParameter("id"));
             productService.deleteProduct(id, req.getServletContext());
-            req.getSession().setAttribute("success", "Đã xóa sản phẩm!");
+            req.getSession().setAttribute("success", "Đã xóa sản phẩm vĩnh viễn!");
         } catch (IllegalArgumentException e) {
             req.getSession().setAttribute("error", e.getMessage());
         } catch (Exception e) {

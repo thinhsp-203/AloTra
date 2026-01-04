@@ -15,7 +15,7 @@ public class NotificationDaoImpl implements NotificationDao {
         EntityManager em = JpaUtil.em();
         try {
             TypedQuery<Notification> query = em.createQuery(
-                "SELECT n FROM Notification n WHERE n.user.id = :userId ORDER BY n.createdDate DESC", 
+                "SELECT n FROM Notification n WHERE n.user.id = :userId AND (n.isDeleted = false OR n.isDeleted IS NULL) ORDER BY n.createdDate DESC", 
                 Notification.class
             );
             query.setParameter("userId", userId);
@@ -30,7 +30,7 @@ public class NotificationDaoImpl implements NotificationDao {
         EntityManager em = JpaUtil.em();
         try {
             TypedQuery<Notification> query = em.createQuery(
-                "SELECT n FROM Notification n WHERE n.user.id = :userId ORDER BY n.createdDate DESC", 
+                "SELECT n FROM Notification n WHERE n.user.id = :userId AND (n.isDeleted = false OR n.isDeleted IS NULL) ORDER BY n.createdDate DESC", 
                 Notification.class
             );
             query.setParameter("userId", userId);
@@ -46,7 +46,7 @@ public class NotificationDaoImpl implements NotificationDao {
         EntityManager em = JpaUtil.em();
         try {
             TypedQuery<Long> query = em.createQuery(
-                "SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId AND n.isRead = false", 
+                "SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId AND n.isRead = false AND (n.isDeleted = false OR n.isDeleted IS NULL)", 
                 Long.class
             );
             query.setParameter("userId", userId);
@@ -127,13 +127,60 @@ public class NotificationDaoImpl implements NotificationDao {
         try {
             em.getTransaction().begin();
             TypedQuery<Notification> query = em.createQuery(
-                "SELECT n FROM Notification n WHERE n.user.id = :userId AND n.isRead = false", 
+                "SELECT n FROM Notification n WHERE n.user.id = :userId AND n.isRead = false AND (n.isDeleted = false OR n.isDeleted IS NULL)", 
                 Notification.class
             );
             query.setParameter("userId", userId);
             List<Notification> notifications = query.getResultList();
             for (Notification n : notifications) {
                 n.setIsRead(true);
+                em.merge(n);
+            }
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public void markAsDeleted(Integer id, Integer userId) {
+        EntityManager em = JpaUtil.em();
+        try {
+            em.getTransaction().begin();
+            Notification notification = em.find(Notification.class, id);
+            if (notification != null && notification.getUser().getId().equals(userId)) {
+                notification.setIsDeleted(true);
+                em.merge(notification);
+            }
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public void markAllAsDeleted(Integer userId) {
+        EntityManager em = JpaUtil.em();
+        try {
+            em.getTransaction().begin();
+            TypedQuery<Notification> query = em.createQuery(
+                "SELECT n FROM Notification n WHERE n.user.id = :userId AND (n.isDeleted = false OR n.isDeleted IS NULL)", 
+                Notification.class
+            );
+            query.setParameter("userId", userId);
+            List<Notification> notifications = query.getResultList();
+            for (Notification n : notifications) {
+                n.setIsDeleted(true);
                 em.merge(n);
             }
             em.getTransaction().commit();

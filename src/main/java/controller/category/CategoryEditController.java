@@ -4,14 +4,12 @@ import jakarta.servlet.*;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.UUID;
+import java.io.IOException;
 import model.Category;
 import service.CategoryService;
 import service.impl.CategoryServiceImpl;
-import utils.Constant; // Import Constant
+import utils.UploadType;
+import utils.UploadUtil;
 
 @WebServlet(urlPatterns = {"/admin/category/edit"})
 @MultipartConfig(fileSizeThreshold = 2*1024*1024, maxFileSize = 10*1024*1024, maxRequestSize = 50*1024*1024)
@@ -46,44 +44,23 @@ public class CategoryEditController extends HttpServlet {
     Category old = service.get(id);
     if (old == null) { resp.sendError(HttpServletResponse.SC_NOT_FOUND); return; }
 
-    String finalFileName = old.getIcon(); // Giữ lại ảnh cũ làm mặc định
+    String iconPath = old.getIcon(); // Giữ lại ảnh cũ làm mặc định
     Part part = req.getPart("icon");
     
     if (part != null && part.getSize() > 0) {
-      String originalFileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-      
-      // Tạo tên file duy nhất
-      String extension = "";
-      int i = originalFileName.lastIndexOf('.');
-      if (i > 0) {
-          extension = originalFileName.substring(i);
-      }
-      finalFileName = "category-" + UUID.randomUUID().toString() + extension;
-      
-      // Lưu file vào thư mục uploads/categories
-      String uploadPath = Constant.getUploadPath(req.getServletContext());
-      File categoriesDir = new File(uploadPath, "categories");
-      if (!categoriesDir.exists()) categoriesDir.mkdirs();
-      
-      File fileToSave = new File(categoriesDir, finalFileName);
-      
-      try (InputStream input = part.getInputStream()) {
-          Files.copy(input, fileToSave.toPath());
-      }
-      
-      // (Tùy chọn: Xóa file ảnh cũ nếu tồn tại)
+      // Xóa ảnh cũ nếu có
       if (old.getIcon() != null && !old.getIcon().isEmpty()) {
-          File oldFile = new File(categoriesDir, old.getIcon());
-          if (oldFile.exists()) {
-              oldFile.delete();
-          }
+          UploadUtil.deleteOldImage(old.getIcon(), req.getServletContext());
       }
+      
+      // Upload file mới
+      iconPath = UploadUtil.save(part, UploadType.CATEGORIES, req.getServletContext());
     }
 
     Category c = new Category();
     c.setId(id);
     c.setName(name);
-    c.setIcon(finalFileName); // Cập nhật tên file mới (hoặc giữ tên file cũ)
+    c.setIcon(iconPath); // Cập nhật relative path mới (hoặc giữ path cũ)
     c.setIsDrink(isDrink);
     service.edit(c);                  
 

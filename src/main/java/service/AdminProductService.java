@@ -34,8 +34,21 @@ public interface AdminProductService {
     void saveProduct(Product product, Part thumbnailFile, String thumbnailUrl, jakarta.servlet.ServletContext servletContext);
     
     /**
-     * Xóa sản phẩm (Soft delete: set isActive = false)
+     * Ngừng bán sản phẩm (Soft delete: set isActive = false)
+     * @param servletContext ServletContext (không dùng trong disable, chỉ để đồng nhất signature)
+     */
+    void disableProduct(int id, jakarta.servlet.ServletContext servletContext);
+    
+    /**
+     * Kích hoạt/Hiển thị sản phẩm (set isActive = true)
+     * @param servletContext ServletContext (không dùng trong enable, chỉ để đồng nhất signature)
+     */
+    void enableProduct(int id, jakarta.servlet.ServletContext servletContext);
+    
+    /**
+     * Xóa sản phẩm vĩnh viễn (Hard delete)
      * @param servletContext ServletContext để xóa file ảnh
+     * @throws IllegalArgumentException nếu sản phẩm đã có đơn hàng
      */
     void deleteProduct(int id, jakarta.servlet.ServletContext servletContext);
     

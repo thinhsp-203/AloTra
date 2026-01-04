@@ -42,20 +42,21 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0" style="table-layout: fixed; width: 100%;">
                 <thead class="table-light">
                     <tr>
-                        <th class="ps-4">Tên Topping</th>
-                        <th style="width: 150px;" class="text-end">Giá</th>
-                        <th style="width: 150px;" class="text-center">Trạng thái</th>
-                        <th style="width: 180px;" class="text-center pe-4">Thao tác</th>
+                        <th class="text-center col-id" style="width: 80px;">ID</th>
+                        <th class="col-name">Tên Topping</th>
+                        <th class="text-end col-price" style="width: 140px;">Giá</th>
+                        <th class="text-center col-status" style="width: 160px;">Trạng thái</th>
+                        <th class="text-center col-action" style="width: 120px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:choose>
                         <c:when test="${empty items}">
                             <tr>
-                                <td colspan="4" class="text-center py-5">
+                                <td colspan="5" class="text-center py-5">
                                     <div class="py-4">
                                         <i class="fas fa-inbox fa-4x text-muted mb-3 d-block"></i>
                                         <h5 class="text-muted mb-2">Không có topping nào</h5>
@@ -67,12 +68,15 @@
                         <c:otherwise>
                             <c:forEach var="item" items="${items}">
                                 <tr class="border-bottom">
-                                    <td class="ps-4">
+                                    <td class="text-center">
+                                        <strong class="text-primary">${item.topping_id}</strong>
+                                    </td>
+                                    <td>
                                         <div class="fw-semibold fs-5">${item.topping_name}</div>
                                     </td>
                                     <td class="text-end">
                                         <strong class="text-success fs-5">
-                                            <fmt:formatNumber value="${item.price}" pattern="#,##0₫"/>
+                                            <fmt:formatNumber value="${item.price}" pattern="#,##0"/>đ
                                         </strong>
                                     </td>
                                     <td class="text-center">
@@ -81,7 +85,7 @@
                                             ${item.isAvailable ? 'Đang bán' : 'Ngừng bán'}
                                         </span>
                                     </td>
-                                    <td class="text-center pe-4">
+                                    <td class="text-center">
                                         <div class="d-flex justify-content-center">
                                             <a href="${pageContext.request.contextPath}/admin/toppings/edit?id=${item.topping_id}" 
                                                class="btn btn-sm btn-outline-primary" 

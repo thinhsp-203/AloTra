@@ -50,12 +50,23 @@ public class NotificationServiceImpl implements NotificationService {
                 notification.setMessage(message);
                 notification.setLink(link);
                 notification.setIsRead(false);
+                notification.setIsDeleted(false);
                 notification.setCreatedDate(java.time.LocalDateTime.now());
                 notificationDao.save(notification);
             }
         } finally {
             em.close();
         }
+    }
+    
+    @Override
+    public void deleteNotification(Integer notificationId, Integer userId) {
+        notificationDao.markAsDeleted(notificationId, userId);
+    }
+    
+    @Override
+    public void deleteAllNotifications(Integer userId) {
+        notificationDao.markAllAsDeleted(userId);
     }
 }
 

@@ -139,25 +139,45 @@
                                         </c:choose>
                                     </td>
                                     <td class="text-center pe-4">
-                                        <div class="d-flex justify-content-center">
+                                        <div class="d-flex justify-content-center gap-2">
                                             <a href="${pageContext.request.contextPath}/p?id=${p.product_id}" 
                                                class="btn btn-sm btn-outline-info" 
                                                title="Xem chi tiết"
-                                               target="_blank"
-                                               style="margin: 0 7.5px;">
+                                               target="_blank">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="${pageContext.request.contextPath}/admin/products/edit?id=${p.product_id}" 
                                                class="btn btn-sm btn-outline-primary" 
-                                               title="Chỉnh sửa"
-                                               style="margin: 0 7.5px;">
+                                               title="Chỉnh sửa">
                                                 <i class="fas fa-pencil-alt"></i>
                                             </a>
+                                            <c:choose>
+                                                <c:when test="${p.isActive}">
+                                                    <form action="${pageContext.request.contextPath}/admin/products/disable" method="post" 
+                                                          style="display: inline;" 
+                                                          onsubmit="return confirm('Xác nhận ngừng bán sản phẩm &quot;${p.product_name}&quot;?')">
+                                                        <input type="hidden" name="id" value="${p.product_id}">
+                                                        <button type="submit" class="btn btn-sm btn-outline-warning" title="Ngừng bán">
+                                                            <i class="fas fa-ban"></i>
+                                                        </button>
+                                                    </form>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <form action="${pageContext.request.contextPath}/admin/products/enable" method="post" 
+                                                          style="display: inline;" 
+                                                          onsubmit="return confirm('Xác nhận kích hoạt sản phẩm &quot;${p.product_name}&quot;?')">
+                                                        <input type="hidden" name="id" value="${p.product_id}">
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Kích hoạt">
+                                                            <i class="fas fa-check-circle"></i>
+                                                        </button>
+                                                    </form>
+                                                </c:otherwise>
+                                            </c:choose>
                                             <form action="${pageContext.request.contextPath}/admin/products/delete" method="post" 
-                                                  style="display: inline; margin: 0 7.5px;" 
-                                                  onsubmit="return confirm('Xác nhận xóa sản phẩm &quot;${p.product_name}&quot;?')">
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('CẢNH BÁO: Xóa sản phẩm &quot;${p.product_name}&quot; vĩnh viễn?\n\nLưu ý: Nếu sản phẩm đã có đơn hàng, hệ thống sẽ từ chối và đề xuất dùng &quot;Ngừng bán&quot;.')">
                                                 <input type="hidden" name="id" value="${p.product_id}">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa vĩnh viễn">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>

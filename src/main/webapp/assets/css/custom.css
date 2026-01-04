@@ -1521,3 +1521,119 @@ body {
 div#content-wrapper.d-flex.flex-column {
     margin-left: 0 !important;
 }
+
+/* === ADMIN HEADER - CENTERED TITLE PILL === */
+.admin-title-center {
+    z-index: 100; /* Ensure it's above other elements (avatar) */
+    pointer-events: none; /* Allow clicks to pass through to elements behind */
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%); /* Center horizontally only */
+    display: flex;
+    align-items: center; /* Align vertically with navbar content */
+    height: 100%; /* Match navbar height */
+}
+
+.admin-title-center a {
+    pointer-events: auto; /* Re-enable clicks on the link */
+}
+
+.admin-title-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.5rem;
+    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(78, 115, 223, 0.3),
+                0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.admin-title-pill i {
+    font-size: 1.1rem;
+    color: #ffd700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.admin-title-pill:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(78, 115, 223, 0.4),
+                0 3px 8px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #5a7feb 0%, #2d56d1 100%);
+}
+
+.admin-title-pill:hover i {
+    transform: rotate(-15deg) scale(1.1);
+}
+
+.admin-title-pill:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Responsive: On small screens, adjust title position */
+@media (max-width: 768px) {
+    .admin-title-pill {
+        font-size: 0.9rem;
+        padding: 0.55rem 1.3rem;
+        letter-spacing: 1.2px;
+    }
+    
+    .admin-title-pill i {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .admin-title-center {
+        position: static !important;
+        transform: none !important;
+        margin: 0 auto 0.5rem auto;
+    }
+    
+    .admin-title-pill {
+        font-size: 0.85rem;
+        padding: 0.5rem 1.2rem;
+        letter-spacing: 1px;
+    }
+    
+    .admin-title-pill i {
+        font-size: 0.95rem;
+    }
+    
+    .topbar {
+        flex-direction: column;
+        align-items: stretch;
+        min-height: auto;
+        padding: 0.75rem 1rem;
+    }
+    
+    .topbar > .ms-auto {
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+        justify-content: flex-end;
+    }
+}
+
+/* Ensure topbar has proper positioning context */
+.topbar.position-relative {
+    min-height: 4rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Prevent avatar from overlapping centered title */
+.topbar > .ms-auto {
+    min-width: 200px; /* Reserve space for avatar */
+    z-index: 1;
+    position: relative;
+    margin-left: auto !important; /* Ensure right alignment */
+}

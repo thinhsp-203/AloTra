@@ -11,20 +11,15 @@ import model.Category;
 import model.Product;
 import model.ProductSize;
 import service.AdminProductService;
-import utils.Constant;
+import utils.UploadType;
+import utils.UploadUtil;
 
-import java.io.File;
-import java.io.InputStream;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class AdminProductServiceImpl implements AdminProductService {
     
-    private static final String PRODUCT_SUBDIR = "products";
     private final ProductDao productDao = new ProductDaoImpl();
     
     // Constants cho giá size mặc định (không hard-code trong logic)
@@ -121,19 +116,100 @@ public class AdminProductServiceImpl implements AdminProductService {
     }
     
     @Override
-    public void deleteProduct(int id, jakarta.servlet.ServletContext servletContext) {
+    public void disableProduct(int id, jakarta.servlet.ServletContext servletContext) {
         Product p = productDao.findById(id);
         if (p == null) {
             throw new IllegalArgumentException("Sản phẩm không tồn tại!");
         }
         
-        // Soft delete
+        // Ngừng bán: set isActive = false
         p.setIsActive(false);
         p.setUpdatedDate(LocalDateTime.now());
         productDao.update(p);
+    }
+    
+    @Override
+    public void enableProduct(int id, jakarta.servlet.ServletContext servletContext) {
+        Product p = productDao.findById(id);
+        if (p == null) {
+            throw new IllegalArgumentException("Sản phẩm không tồn tại!");
+        }
         
-        // (Tùy chọn) Xóa file ảnh
-        deleteProductImage(p.getThumbnail(), servletContext);
+        // Kích hoạt: set isActive = true
+        p.setIsActive(true);
+        p.setUpdatedDate(LocalDateTime.now());
+        productDao.update(p);
+    }
+    
+    @Override
+    public void deleteProduct(int id, jakarta.servlet.ServletContext servletContext) {
+        EntityManager em = JpaUtil.em();
+        try {
+            em.getTransaction().begin();
+            
+            Product p = em.find(Product.class, id);
+            if (p == null) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Sản phẩm không tồn tại!");
+            }
+            
+            // Kiểm tra sản phẩm đã có đơn hàng chưa
+            Long orderCount = em.createQuery(
+                "SELECT COUNT(od) FROM OrderDetail od WHERE od.product.product_id = :productId",
+                Long.class
+            ).setParameter("productId", id).getSingleResult();
+            
+            if (orderCount > 0) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Sản phẩm đã có đơn hàng, không thể xóa vĩnh viễn. Vui lòng dùng chức năng 'Ngừng bán'.");
+            }
+            
+            // Xóa các bảng con trước (vì không có CASCADE)
+            // 1. Xóa Review
+            em.createQuery("DELETE FROM Review r WHERE r.product.product_id = :productId")
+              .setParameter("productId", id)
+              .executeUpdate();
+            
+            // 2. Xóa ViewHistory (nếu có)
+            try {
+                em.createQuery("DELETE FROM ViewHistory vh WHERE vh.product.product_id = :productId")
+                  .setParameter("productId", id)
+                  .executeUpdate();
+            } catch (Exception e) {
+                // Nếu bảng ViewHistory không tồn tại, bỏ qua
+            }
+            
+            // 3. Xóa WishlistItem
+            em.createQuery("DELETE FROM WishlistItem wi WHERE wi.product.product_id = :productId")
+              .setParameter("productId", id)
+              .executeUpdate();
+            
+            // 4. Xóa ProductSize (có CASCADE nhưng xóa thủ công để chắc chắn)
+            em.createQuery("DELETE FROM ProductSize ps WHERE ps.product.product_id = :productId")
+              .setParameter("productId", id)
+              .executeUpdate();
+            
+            // 5. Xóa file ảnh
+            UploadUtil.deleteOldImage(p.getThumbnail(), servletContext);
+            
+            // 6. Xóa Product (sau khi đã xóa các bảng con)
+            em.remove(p);
+            
+            em.getTransaction().commit();
+            
+        } catch (IllegalArgumentException e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw new RuntimeException("Lỗi khi xóa sản phẩm: " + e.getMessage(), e);
+        } finally {
+            em.close();
+        }
     }
     
     @Override
@@ -171,43 +247,18 @@ public class AdminProductServiceImpl implements AdminProductService {
     
     /**
      * Xử lý upload thumbnail (ưu tiên file upload)
-     * @return Tên file mới (hoặc URL), hoặc null nếu không có thay đổi
+     * @return Relative path mới (hoặc URL), hoặc null nếu không có thay đổi
      */
     private String handleThumbnailUpload(Product product, Part thumbnailFile, String thumbnailUrl, jakarta.servlet.ServletContext servletContext) {
         try {
-            String originalFileName = (thumbnailFile != null) 
-                ? Paths.get(thumbnailFile.getSubmittedFileName()).getFileName().toString() 
-                : null;
-            
             // TRƯỜNG HỢP 1: Upload file (ưu tiên)
-            if (originalFileName != null && !originalFileName.isEmpty()) {
-                String extension = "";
-                int i = originalFileName.lastIndexOf('.');
-                if (i > 0) {
-                    extension = originalFileName.substring(i);
-                }
-                String finalFileName = "product-" + UUID.randomUUID().toString() + extension;
-                
-                // Lưu file vào thư mục uploads/products
-                String uploadPath = Constant.getUploadPath(servletContext);
-                File productsDir = new File(uploadPath, PRODUCT_SUBDIR);
-                if (!productsDir.exists()) productsDir.mkdirs();
-                
-                File fileToSave = new File(productsDir, finalFileName);
-                
+            String uploadedPath = UploadUtil.save(thumbnailFile, UploadType.PRODUCTS, servletContext);
+            if (uploadedPath != null) {
                 // Xóa ảnh cũ nếu tồn tại
-                if (product.getThumbnail() != null && 
-                    !product.getThumbnail().isEmpty() && 
-                    !product.getThumbnail().startsWith("http")) {
-                    deleteProductImage(product.getThumbnail(), servletContext);
+                if (product.getThumbnail() != null && !product.getThumbnail().isEmpty()) {
+                    UploadUtil.deleteOldImage(product.getThumbnail(), servletContext);
                 }
-                
-                // Lưu file mới
-                try (InputStream input = thumbnailFile.getInputStream()) {
-                    Files.copy(input, fileToSave.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                }
-                
-                return PRODUCT_SUBDIR + "/" + finalFileName;
+                return uploadedPath;
             }
             
             // TRƯỜNG HỢP 2: URL từ text input
@@ -218,31 +269,10 @@ public class AdminProductServiceImpl implements AdminProductService {
             // TRƯỜNG HỢP 3: Giữ nguyên ảnh cũ
             return null;
             
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi upload ảnh: " + e.getMessage(), e);
-        }
-    }
-    
-    /**
-     * Xóa file ảnh sản phẩm
-     */
-    private void deleteProductImage(String thumbnailPath, jakarta.servlet.ServletContext servletContext) {
-        if (thumbnailPath == null || thumbnailPath.isEmpty() || thumbnailPath.startsWith("http")) {
-            return;
-        }
-        
-        try {
-            // thumbnailPath có thể là "products/filename" hoặc chỉ "filename"
-            String fileName = Paths.get(thumbnailPath).getFileName().toString();
-            String uploadPath = Constant.getUploadPath(servletContext);
-            File productsDir = new File(uploadPath, PRODUCT_SUBDIR);
-            File oldFile = new File(productsDir, fileName);
-            if (oldFile.exists()) {
-                oldFile.delete();
-            }
-        } catch (Exception e) {
-            // Log lỗi nhưng không throw exception (xóa ảnh không quan trọng)
-            System.err.println("Không thể xóa ảnh: " + e.getMessage());
         }
     }
 }

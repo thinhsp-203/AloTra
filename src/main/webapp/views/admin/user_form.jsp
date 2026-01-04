@@ -46,7 +46,7 @@
                 <div class="card-body text-center p-4">
                     <c:set var="avatarSrc" value="${user.avatar}"/>
                     <c:if test="${not empty avatarSrc and not fn:startsWith(avatarSrc, 'http')}">
-                        <c:set var="avatarSrc" value="${pageContext.request.contextPath}/uploads/users/${user.avatar}"/>
+                        <c:set var="avatarSrc" value="${pageContext.request.contextPath}/${user.avatar}"/>
                     </c:if>
                     <c:if test="${empty avatarSrc}">
                         <c:set var="avatarSrc" value="https://via.placeholder.com/150?text=No+Avatar"/>

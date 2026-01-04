@@ -62,9 +62,15 @@ public class NotificationController extends HttpServlet {
                 notificationService.markAsRead(notificationId);
             } else if ("markAllAsRead".equals(action)) {
                 notificationService.markAllAsRead(currentUser.getId());
+            } else if ("delete".equals(action)) {
+                Integer notificationId = Integer.parseInt(req.getParameter("id"));
+                notificationService.deleteNotification(notificationId, currentUser.getId());
+            } else if ("deleteAll".equals(action)) {
+                notificationService.deleteAllNotifications(currentUser.getId());
             }
         } catch (Exception e) {
             e.printStackTrace();
+            req.getSession().setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
         }
         
         resp.sendRedirect(req.getContextPath() + "/user/notifications");

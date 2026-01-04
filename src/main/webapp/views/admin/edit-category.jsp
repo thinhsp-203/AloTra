@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <%-- Header --%>
 <div class="d-flex justify-content-between align-items-center mb-4" style="margin-right: 20px;">
@@ -104,12 +105,23 @@
                 <div class="border rounded p-3 bg-light text-center">
                   <c:choose>
                     <c:when test="${not empty category.icon}">
-                      <img src="${pageContext.request.contextPath}/uploads/categories/${category.icon}" 
-                           class="img-fluid rounded border" 
-                           style="max-width: 100%; max-height: 200px; object-fit: cover;"
-                           alt="${category.name}"
-                           id="imagePreview"
-                           onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/uploads/categories/default.png';"/>
+                      <c:choose>
+                          <c:when test="${fn:startsWith(category.icon, 'http')}">
+                              <img src="${category.icon}" 
+                                   class="img-fluid rounded border" 
+                                   style="max-width: 100%; max-height: 200px; object-fit: cover;"
+                                   alt="${category.name}"
+                                   id="imagePreview"/>
+                          </c:when>
+                          <c:otherwise>
+                              <img src="${pageContext.request.contextPath}/${category.icon}" 
+                                   class="img-fluid rounded border" 
+                                   style="max-width: 100%; max-height: 200px; object-fit: cover;"
+                                   alt="${category.name}"
+                                   id="imagePreview"
+                                   onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/uploads/categories/default.png';"/>
+                          </c:otherwise>
+                      </c:choose>
                     </c:when>
                     <c:otherwise>
                       <img src="${pageContext.request.contextPath}/uploads/categories/default.png" 

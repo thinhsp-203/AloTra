@@ -4,14 +4,12 @@ import jakarta.servlet.*;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.UUID;
+import java.io.IOException;
 import model.Category;
 import service.CategoryService;
 import service.impl.CategoryServiceImpl;
-import utils.Constant; // Import Constant
+import utils.UploadType;
+import utils.UploadUtil;
 
 @WebServlet(urlPatterns = {"/admin/category/add"})
 @MultipartConfig(fileSizeThreshold = 2*1024*1024, maxFileSize = 10*1024*1024, maxRequestSize = 50*1024*1024)
@@ -31,35 +29,16 @@ public class CategoryAddController extends HttpServlet {
     String isDrinkParam = req.getParameter("isDrink");
     Boolean isDrink = "true".equalsIgnoreCase(isDrinkParam);
 
-    String finalFileName = null; // Tên file sẽ lưu vào DB
+    String iconPath = null; // Relative path sẽ lưu vào DB: "uploads/categories/filename"
     Part part = req.getPart("icon");
     
     if (part != null && part.getSize() > 0) {
-      String originalFileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-      
-      // Tạo tên file duy nhất để tránh trùng lặp
-      String extension = "";
-      int i = originalFileName.lastIndexOf('.');
-      if (i > 0) {
-          extension = originalFileName.substring(i); // Lấy cả dấu . (vd: .png)
-      }
-      finalFileName = "category-" + UUID.randomUUID().toString() + extension;
-      
-      // Lưu file vào thư mục uploads/categories
-      String uploadPath = Constant.getUploadPath(req.getServletContext());
-      File categoriesDir = new File(uploadPath, "categories");
-      if (!categoriesDir.exists()) categoriesDir.mkdirs();
-      
-      File fileToSave = new File(categoriesDir, finalFileName);
-      
-      try (InputStream input = part.getInputStream()) {
-          Files.copy(input, fileToSave.toPath());
-      }
+      iconPath = UploadUtil.save(part, UploadType.CATEGORIES, req.getServletContext());
     }
 
     Category c = new Category();
     c.setName(name);
-    c.setIcon(finalFileName); // Chỉ lưu tên file duy nhất
+    c.setIcon(iconPath); // Lưu relative path: "uploads/categories/filename" hoặc null
     c.setIsDrink(isDrink);
     service.insert(c);
 

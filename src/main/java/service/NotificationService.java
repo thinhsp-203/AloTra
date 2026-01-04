@@ -10,5 +10,7 @@ public interface NotificationService {
     void markAsRead(Integer notificationId);
     void markAllAsRead(Integer userId);
     void createNotification(Integer userId, String message, String link);
+    void deleteNotification(Integer notificationId, Integer userId);
+    void deleteAllNotifications(Integer userId);
 }
 
