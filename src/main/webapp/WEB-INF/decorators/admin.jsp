@@ -72,38 +72,10 @@
 
     <hr class="sidebar-divider">
 
-    <!-- HỆ THỐNG (ADMIN ONLY) -->
-    <div class="sidebar-heading">Hệ thống</div>
+    <!-- MARKETING & NỘI DUNG (ADMIN ONLY) -->
+    <div class="sidebar-heading">Marketing & Nội dung</div>
 
     <c:if test="${sessionScope.currentUser.roleid == Roles.ADMIN}">
-
-        <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/users">
-                <i class="fas fa-fw fa-users"></i>
-                <span>Người dùng</span>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/vouchers">
-                <i class="fas fa-fw fa-ticket-alt"></i>
-                <span>Vouchers</span>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/reports">
-                <i class="fas fa-fw fa-chart-area"></i>
-                <span>Báo cáo</span>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/payment-config">
-                <i class="fas fa-fw fa-credit-card"></i>
-                <span>Cấu hình TT</span>
-            </a>
-        </li>
 
         <li class="nav-item">
             <a class="nav-link" href="${pageContext.request.contextPath}/admin/banners">
@@ -120,9 +92,24 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/stores">
-                <i class="fas fa-fw fa-store"></i>
-                <span>Cửa hàng</span>
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/vouchers">
+                <i class="fas fa-fw fa-ticket-alt"></i>
+                <span>Vouchers</span>
+            </a>
+        </li>
+    </c:if>
+
+    <hr class="sidebar-divider">
+
+    <!-- QUẢN LÝ KHÁCH HÀNG (ADMIN ONLY) -->
+    <div class="sidebar-heading">Quản lý Khách hàng</div>
+
+    <c:if test="${sessionScope.currentUser.roleid == Roles.ADMIN}">
+
+        <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/users">
+                <i class="fas fa-fw fa-users"></i>
+                <span>Người dùng</span>
             </a>
         </li>
 
@@ -132,11 +119,48 @@
                 <span>Quà tặng Hội viên</span>
             </a>
         </li>
+    </c:if>
+
+    <hr class="sidebar-divider">
+
+    <!-- CỬA HÀNG & THÔNG TIN (ADMIN ONLY) -->
+    <div class="sidebar-heading">Cửa hàng & Thông tin</div>
+
+    <c:if test="${sessionScope.currentUser.roleid == Roles.ADMIN}">
+
+        <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/stores">
+                <i class="fas fa-fw fa-store"></i>
+                <span>Cửa hàng</span>
+            </a>
+        </li>
 
         <li class="nav-item">
             <a class="nav-link" href="${pageContext.request.contextPath}/admin/about">
                 <i class="fas fa-fw fa-info-circle"></i>
                 <span>Về chúng tôi</span>
+            </a>
+        </li>
+    </c:if>
+
+    <hr class="sidebar-divider">
+
+    <!-- HỆ THỐNG & BÁO CÁO (ADMIN ONLY) -->
+    <div class="sidebar-heading">Hệ thống & Báo cáo</div>
+
+    <c:if test="${sessionScope.currentUser.roleid == Roles.ADMIN}">
+
+        <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/reports">
+                <i class="fas fa-fw fa-chart-area"></i>
+                <span>Báo cáo</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/payment-config">
+                <i class="fas fa-fw fa-credit-card"></i>
+                <span>Cấu hình TT</span>
             </a>
         </li>
     </c:if>

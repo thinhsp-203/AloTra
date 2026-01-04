@@ -19,9 +19,6 @@
 	<div class="d-flex align-items-center gap-2">
 		<fmt:formatDate value="<%=new java.util.Date()%>" pattern="EEEE, dd MMMM yyyy" var="todayFormatted"/>
 		<span class="text-muted"><c:out value="${todayFormatted}"/></span>
-		<button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()" title="Làm mới dữ liệu">
-			<i class="fas fa-sync-alt"></i>
-		</button>
 	</div>
 </div>
 
