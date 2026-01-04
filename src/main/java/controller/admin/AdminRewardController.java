@@ -1,17 +1,26 @@
 package controller.admin;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 import model.Reward;
 import service.AdminRewardService;
 import service.impl.AdminRewardServiceImpl;
+import utils.UploadUtil;
+import utils.UploadType;
 
 import java.io.IOException;
 
 @WebServlet(urlPatterns = "/admin/rewards")
+@MultipartConfig(
+    fileSizeThreshold = 2 * 1024 * 1024,
+    maxFileSize = 10 * 1024 * 1024,
+    maxRequestSize = 50 * 1024 * 1024
+)
 public class AdminRewardController extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
@@ -57,6 +66,7 @@ public class AdminRewardController extends HttpServlet {
                 
             } else if ("add".equals(action) || "edit".equals(action)) {
                 Reward reward;
+                String oldImagePath = null;
                 
                 if ("edit".equals(action)) {
                     int id = Integer.parseInt(req.getParameter("id"));
@@ -66,6 +76,7 @@ public class AdminRewardController extends HttpServlet {
                         resp.sendRedirect(req.getContextPath() + "/admin/rewards");
                         return;
                     }
+                    oldImagePath = reward.getImage_url();
                 } else {
                     reward = new Reward();
                 }
@@ -73,7 +84,30 @@ public class AdminRewardController extends HttpServlet {
                 reward.setName(req.getParameter("name"));
                 reward.setDescription(req.getParameter("description"));
                 reward.setPoints_required(Integer.parseInt(req.getParameter("points_required")));
-                reward.setImage_url(req.getParameter("image_url"));
+                
+                // Xử lý upload ảnh
+                Part imagePart = req.getPart("imageFile");
+                String imageUrl = req.getParameter("image_url");
+                
+                if (imagePart != null && imagePart.getSize() > 0) {
+                    // Ưu tiên upload file
+                    String uploadedPath = UploadUtil.save(imagePart, UploadType.GIFTS, req.getServletContext());
+                    if (uploadedPath != null) {
+                        reward.setImage_url(uploadedPath);
+                        // Xóa ảnh cũ nếu có
+                        if (oldImagePath != null && !oldImagePath.isEmpty() && !oldImagePath.startsWith("http")) {
+                            UploadUtil.deleteOldImage(oldImagePath, req.getServletContext());
+                        }
+                    }
+                } else if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                    // Nếu không upload file, dùng URL
+                    reward.setImage_url(imageUrl.trim());
+                } else if (oldImagePath != null) {
+                    // Giữ nguyên ảnh cũ nếu không có thay đổi
+                    reward.setImage_url(oldImagePath);
+                } else {
+                    reward.setImage_url(null);
+                }
                 
                 String stockStr = req.getParameter("stock");
                 if (stockStr != null && !stockStr.trim().isEmpty()) {

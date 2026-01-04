@@ -76,8 +76,14 @@
                                     </td>
                                     <td>
                                         <c:set var="thumbnailSrc" value="${p.thumbnail}"/>
-                                        <c:if test="${not empty thumbnailSrc and not fn:startsWith(thumbnailSrc, 'http')}">
+                                        <c:if test="${not empty thumbnailSrc}">
                                             <c:choose>
+                                                <c:when test="${fn:startsWith(thumbnailSrc, 'http')}">
+                                                    <c:set var="thumbnailSrc" value="${p.thumbnail}"/>
+                                                </c:when>
+                                                <c:when test="${fn:startsWith(thumbnailSrc, 'uploads/')}">
+                                                    <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/${p.thumbnail}"/>
+                                                </c:when>
                                                 <c:when test="${fn:startsWith(thumbnailSrc, 'products/')}">
                                                     <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/uploads/${p.thumbnail}"/>
                                                 </c:when>

@@ -124,59 +124,116 @@ function showLoginRequiredModal() {
 	                // === END FIX ===
 	                
 	                const createOptionGroup = (title, name, options) => `
-	                    <div class="mb-3">
-	                        <h6>${title}</h6>
-	                        <div class="row row-cols-3 g-2">
+	                    <div class="mb-4 d-flex align-items-center gap-3">
+	                        <h6 class="fw-semibold mb-0" style="min-width: 60px;">${title}:</h6>
+	                        <div class="d-flex gap-2 flex-wrap">
 	                            ${options.map((opt, index) => `
-	                                <div class="col">
+	                                <div>
 	                                    <input type="radio" class="btn-check" name="${name}" id="modal-${name}-${index}" value="${opt}" ${index === 1 ? 'checked' : ''}>
-	                                    <label class="btn btn-outline-primary w-100" for="modal-${name}-${index}">${opt}</label>
+	                                    <label class="btn btn-outline-primary" for="modal-${name}-${index}">${opt}</label>
 	                                </div>
 	                            `).join('')}
 	                        </div>
 	                    </div>
 	                `;
 	                
+					// Chỉ hiển thị "Mức đá" và "Độ ngọt" cho đồ uống (isDrink === true)
+					const isDrink = data.product.isDrink === true;
+					
+					// Xử lý thumbnail URL
+					let thumbnailUrl = data.product.thumbnail || '';
+					if (thumbnailUrl && !thumbnailUrl.startsWith('http')) {
+					    if (thumbnailUrl.startsWith('uploads/')) {
+					        thumbnailUrl = contextPath + '/' + thumbnailUrl;
+					    } else {
+					        thumbnailUrl = contextPath + '/uploads/products/' + thumbnailUrl;
+					    }
+					}
+					if (!thumbnailUrl) {
+					    thumbnailUrl = 'https://via.placeholder.com/400x400?text=No+Image';
+					}
+					
 					modalContent.innerHTML = `
-					    <div class="row g-3">
+					    <div class="row g-4">
+					        <!-- Left: Image (Fixed Size) -->
 					        <div class="col-md-5">
-					            <div style="position: sticky; top: 0;">
-					                <div class="d-flex justify-content-between align-items-start" style="margin-top: 0; padding-top: 0;">
-					                    <h4 id="modalProductName" class="mb-0" style="margin-top: 0;">${escapeHtml(data.product.name)}</h4>
-					                    <button class="btn btn-outline-danger btn-sm btn-wishlist ms-2" 
-					                            data-product-id="${data.product.id}"
-					                            title="Thêm vào yêu thích"
-					                            type="button"
-					                            style="flex-shrink: 0; padding: 0.25rem 0.5rem;">
-					                        <i class="bi bi-heart" style="font-size: 0.9rem;"></i>
-					                    </button>
-					                </div>
-					                <p class="h5 text-primary fw-bold mb-2" id="modalBasePrice" data-price="${data.product.basePrice}">
-					                    ${currencyFormatter.format(data.product.basePrice)}
-					                </p>
-					                <img src="${escapeHtml(data.product.thumbnail)}" 
-					                     class="img-fluid" 
+					            <div class="product-image-container" style="width: 100%; height: 320px; overflow: hidden; border-radius: 0.5rem; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+					                <img src="${escapeHtml(thumbnailUrl)}" 
 					                     alt="${escapeHtml(data.product.name)}"
-					                     style="width: 100%; height: auto; object-fit: cover; border-radius: 0.5rem;">
+					                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;"
+					                     onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
 					            </div>
 					        </div>
+					        
+					        <!-- Right: Product Info & Options -->
 					        <div class="col-md-7">
-					            <div>
-					                ${(data.sizes && data.sizes.length > 0 && (data.product.isDrink || data.sizes.length > 1)) ? `
-					                    <div class="option-group">
-					                        <h6>Chọn kích cỡ</h6>
+					            <!-- Product Name -->
+					            <div class="d-flex justify-content-between align-items-start mb-3">
+					                <h4 id="modalProductName" class="mb-0">${escapeHtml(data.product.name)}</h4>
+					                <button class="btn btn-outline-danger btn-sm btn-wishlist ms-2" 
+					                        data-product-id="${data.product.id}"
+					                        title="Thêm vào yêu thích"
+					                        type="button"
+					                        style="flex-shrink: 0; padding: 0.5rem;">
+					                    <i class="bi bi-heart" style="font-size: 1.1rem;"></i>
+					                </button>
+					            </div>
+					            
+					            <!-- Price & Quantity Selector on same row -->
+					            <div class="d-flex justify-content-between align-items-center mb-4">
+					                <p class="h5 text-primary fw-bold mb-0" id="modalBasePrice" data-price="${data.product.basePrice}">
+					                    ${currencyFormatter.format(data.product.basePrice)}
+					                </p>
+					                <div class="d-flex align-items-center">
+					                    <button class="btn btn-outline-secondary" type="button" id="modalQtyDecrease" style="width: 36px; height: 36px; padding: 0;">
+					                        <i class="bi bi-dash-lg"></i>
+					                    </button>
+					                    <input type="number" class="form-control text-center" id="modalQuantity" value="1" min="1" 
+					                           style="width: 50px; height: 36px; margin: 0 5px; padding: 0.25rem;" readonly>
+					                    <button class="btn btn-outline-secondary" type="button" id="modalQtyIncrease" style="width: 36px; height: 36px; padding: 0;">
+					                        <i class="bi bi-plus-lg"></i>
+					                    </button>
+					                </div>
+					            </div>
+					            
+					            <!-- Options -->
+					            <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+								                ${(data.sizes && data.sizes.length > 0 && (data.product.isDrink || data.sizes.length > 1)) ? `
+					                    <div class="mb-4 option-group">
+					                        <h6 class="fw-semibold mb-2">Chọn kích cỡ</h6>
 					                        <div class="row g-2 align-items-center">${sizesHtml}</div>
 					                    </div>
 					                ` : ''}
-					                ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều'])}
-					                ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
-					                ${toppingsHtml}
+					                ${isDrink ? createOptionGroup('Trà', 'tea', ['Ít', 'Bình thường', 'Nhiều']) : ''}
+					                ${isDrink ? createOptionGroup('Ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều']) : ''}
+					                ${isDrink ? createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều']) : ''}
+					                ${toppingsHtml ? `<div class="mb-0">${toppingsHtml}</div>` : ''}
 					            </div>
 					        </div>
 					    </div>
 					`;
 
                 modalContent.querySelectorAll('input[type="radio"]').forEach(input => input.addEventListener('change', updateModalPrice));
+                
+                // Quantity selector handlers
+                const qtyInput = document.getElementById('modalQuantity');
+                const qtyDecrease = document.getElementById('modalQtyDecrease');
+                const qtyIncrease = document.getElementById('modalQtyIncrease');
+                
+                qtyDecrease.addEventListener('click', function() {
+                    let qty = parseInt(qtyInput.value) || 1;
+                    if (qty > 1) {
+                        qtyInput.value = qty - 1;
+                        updateModalPrice();
+                    }
+                });
+                
+                qtyIncrease.addEventListener('click', function() {
+                    let qty = parseInt(qtyInput.value) || 1;
+                    qtyInput.value = qty + 1;
+                    updateModalPrice();
+                });
+                
                 window.updateModalToppingQty = (id, change) => {
                     const qtyInput = document.getElementById(`modal-topping-qty-${id}`);
                     let currentQty = parseInt(qtyInput.value) + change;
@@ -190,17 +247,22 @@ function showLoginRequiredModal() {
                 addToCartBtn.disabled = false;
                 
                 addToCartBtn.onclick = function() {
-                    const params = new URLSearchParams({ productId: productId, quantity: 1 });
+                    const quantity = parseInt(qtyInput.value) || 1;
+                    const params = new URLSearchParams({ productId: productId, quantity: quantity });
                     const sizeInput = modalContent.querySelector('input[name="size"]:checked');
                     if (sizeInput) params.append('size', sizeInput.value);
                     
+                    // Lấy trà (tea) - nếu có
+                    const teaInput = modalContent.querySelector('input[name="tea"]:checked');
+                    if (teaInput && isDrink) params.append('tea', teaInput.value);
+                    
                     // Lấy độ ngọt (sweetness)
                     const sweetnessInput = modalContent.querySelector('input[name="sweetness"]:checked');
-                    if (sweetnessInput) params.append('sweetness', sweetnessInput.value);
+                    if (sweetnessInput && isDrink) params.append('sweetness', sweetnessInput.value);
                     
                     // Lấy mức đá (ice)
                     const iceInput = modalContent.querySelector('input[name="ice"]:checked');
-                    if (iceInput) params.append('ice', iceInput.value);
+                    if (iceInput && isDrink) params.append('ice', iceInput.value);
                     
                     // Lấy toppings
                     const toppings = [];
@@ -221,11 +283,13 @@ function showLoginRequiredModal() {
             const sizeInput = document.querySelector('input[name="size"]:checked');
             const sizeAdj = sizeInput ? (parseFloat(sizeInput.dataset.priceAdj) || 0) : 0;
             let toppingsPrice = 0;
-            document.querySelectorAll('#modalToppingsList input[data-topping-id]').forEach(input => {
+            // Tìm tất cả input topping trong modal
+            document.querySelectorAll('#productModalContent input[data-topping-id]').forEach(input => {
                 toppingsPrice += (parseFloat(input.dataset.price) || 0) * (parseInt(input.value) || 0);
             });
-            const finalPrice = basePrice + sizeAdj + toppingsPrice;
-            document.getElementById('modalAddToCartBtn').textContent = `Thêm vào giỏ - ${currencyFormatter.format(finalPrice)}`;
+            const quantity = parseInt(document.getElementById('modalQuantity')?.value || 1) || 1;
+            const finalPrice = (basePrice + sizeAdj + toppingsPrice) * quantity;
+            document.getElementById('modalAddToCartBtn').textContent = `Thêm vào giỏ hàng : ${currencyFormatter.format(finalPrice)}`;
         }
     }
 
@@ -303,10 +367,13 @@ function showLoginRequiredModal() {
                 </div>
             `;
             
+            // Chỉ hiển thị "Mức đá" và "Độ ngọt" cho đồ uống (isDrink === true)
+            const isDrink = data.product.isDrink === true;
+            
             optionsContainer.innerHTML = `
                 ${(data.sizes && data.sizes.length > 0 && (data.product.isDrink || data.sizes.length > 1)) ? `<div class="mb-4 option-group"><h6>Chọn kích cỡ</h6><div class="row g-2">${sizesHtml}</div></div>` : ''}
-                ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
-                ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều', 'Không'])}
+                ${isDrink ? createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều']) : ''}
+                ${isDrink ? createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều', 'Không']) : ''}
                 ${toppingsHtml ? `<div class="mb-4 option-group"><h6>Chọn Topping</h6>${toppingsHtml}</div>` : ''}
             `;
 

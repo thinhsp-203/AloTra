@@ -132,19 +132,25 @@ document.getElementById('logoUrl')?.addEventListener('input', function(e) {
                             <c:forEach items="${banners}" var="b">
                                 <tr class="border-bottom">
                                     <td class="ps-4">
-                                        <c:choose>
-                                            <c:when test="${fn:startsWith(b.imageUrl, 'http')}">
-                                                <img src="${b.imageUrl}" alt="Banner" 
-                                                     class="rounded shadow-sm" 
-                                                     style="width: 80px; height: 80px; object-fit: cover;">
-                                            </c:when>
-                                            <c:otherwise>
-                                                <img src="${pageContext.request.contextPath}/uploads/${b.imageUrl}" 
-                                                     alt="Banner" 
-                                                     class="rounded shadow-sm"
-                                                     style="width: 80px; height: 80px; object-fit: cover;">
-                                            </c:otherwise>
-                                        </c:choose>
+                                        <c:set var="bannerImgSrc" value="${b.imageUrl}"/>
+                                        <c:if test="${not empty bannerImgSrc}">
+                                            <c:choose>
+                                                <c:when test="${fn:startsWith(bannerImgSrc, 'http')}">
+                                                    <c:set var="bannerImgSrc" value="${b.imageUrl}"/>
+                                                </c:when>
+                                                <c:when test="${fn:startsWith(bannerImgSrc, 'uploads/')}">
+                                                    <c:set var="bannerImgSrc" value="${pageContext.request.contextPath}/${b.imageUrl}"/>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <c:set var="bannerImgSrc" value="${pageContext.request.contextPath}/uploads/${b.imageUrl}"/>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </c:if>
+                                        <img src="${empty bannerImgSrc ? 'https://via.placeholder.com/80' : bannerImgSrc}" 
+                                             alt="Banner" 
+                                             class="rounded shadow-sm"
+                                             style="width: 80px; height: 80px; object-fit: cover;"
+                                             onerror="this.src='https://via.placeholder.com/80'">
                                     </td>
                                     <td>
                                         <small class="text-muted">${b.imageUrl}</small>

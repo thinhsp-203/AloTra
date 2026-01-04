@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <%-- Header --%>
 <div class="d-flex justify-content-between align-items-center mb-4" style="margin-right: 20px;">
@@ -40,7 +41,7 @@
         </h6>
     </div>
     <div class="card-body p-4">
-        <form action="${pageContext.request.contextPath}/admin/rewards" method="POST">
+        <form action="${pageContext.request.contextPath}/admin/rewards" method="POST" enctype="multipart/form-data">
             <c:if test="${not empty reward}">
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="id" value="${reward.reward_id}">
@@ -73,9 +74,44 @@
                     </div>
                 </div>
                 <div class="col-md-12">
-                    <label for="image_url" class="form-label fw-semibold">URL hình ảnh</label>
-                    <input type="url" class="form-control" id="image_url" name="image_url" 
-                           value="${reward.image_url}" placeholder="https://...">
+                    <label class="form-label fw-semibold">Hình ảnh quà tặng</label>
+                    <div class="row">
+                        <!-- Preview ảnh -->
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label small text-muted">Ảnh hiện tại</label>
+                            <div class="border rounded p-3 bg-light text-center" style="min-height: 200px;">
+                                <c:set var="imageSrc" value="${reward.image_url}"/>
+                                <c:if test="${not empty imageSrc and not fn:startsWith(imageSrc, 'http')}">
+                                    <c:set var="imageSrc" value="${pageContext.request.contextPath}/${reward.image_url}"/>
+                                </c:if>
+                                
+                                <img src="${empty imageSrc ? 'https://via.placeholder.com/300x300?text=Chưa+có+ảnh' : imageSrc}" 
+                                     id="imagePreview"
+                                     class="img-fluid rounded border" 
+                                     style="max-width: 100%; max-height: 250px; object-fit: cover;"
+                                     alt="Preview"
+                                     onerror="this.src='https://via.placeholder.com/300x300?text=Chưa+có+ảnh'"/>
+                            </div>
+                        </div>
+                        
+                        <!-- Upload options -->
+                        <div class="col-md-7">
+                            <div class="mb-3">
+                                <label for="imageFile" class="form-label">Upload ảnh mới <span class="badge bg-primary">Ưu tiên</span></label>
+                                <input class="form-control" type="file" name="imageFile" id="imageFile" 
+                                       accept="image/jpeg,image/jpg,image/png,image/webp">
+                                <div class="form-text">Chọn file ảnh từ máy tính (JPG, PNG, WEBP). Kích thước đề xuất: 500x500px</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="image_url" class="form-label">Hoặc dán URL ảnh</label>
+                                <input type="url" class="form-control" id="image_url" name="image_url" 
+                                       value="${fn:startsWith(reward.image_url, 'http') ? reward.image_url : ''}" 
+                                       placeholder="https://...">
+                                <div class="form-text">Nhập URL ảnh nếu không upload file (ưu tiên thấp hơn)</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-12">
                     <div class="form-check">
@@ -117,6 +153,7 @@
                 <thead class="table-light">
                     <tr>
                         <th class="ps-4">ID</th>
+                        <th style="width: 80px;">Ảnh</th>
                         <th>Tên quà</th>
                         <th>Mô tả</th>
                         <th style="width: 120px;" class="text-end">Điểm cần</th>
@@ -129,7 +166,7 @@
                     <c:choose>
                         <c:when test="${empty rewards}">
                             <tr>
-                                <td colspan="7" class="text-center py-5">
+                                <td colspan="8" class="text-center py-5">
                                     <div class="py-4">
                                         <i class="fas fa-inbox fa-4x text-muted mb-3 d-block"></i>
                                         <h5 class="text-muted mb-2">Không có quà tặng nào</h5>
@@ -142,6 +179,17 @@
                             <c:forEach var="r" items="${rewards}">
                                 <tr class="border-bottom">
                                     <td class="ps-4">${r.reward_id}</td>
+                                    <td>
+                                        <c:set var="rewardImageSrc" value="${r.image_url}"/>
+                                        <c:if test="${not empty rewardImageSrc and not fn:startsWith(rewardImageSrc, 'http')}">
+                                            <c:set var="rewardImageSrc" value="${pageContext.request.contextPath}/${r.image_url}"/>
+                                        </c:if>
+                                        <img src="${empty rewardImageSrc ? 'https://via.placeholder.com/60x60?text=No+Image' : rewardImageSrc}" 
+                                             class="img-thumbnail" 
+                                             style="width: 60px; height: 60px; object-fit: cover;"
+                                             alt="${r.name}"
+                                             onerror="this.src='https://via.placeholder.com/60x60?text=No+Image'"/>
+                                    </td>
                                     <td>
                                         <div class="fw-semibold fs-5">${r.name}</div>
                                     </td>
@@ -195,3 +243,32 @@
         </div>
     </div>
 </div>
+
+<script>
+// Preview ảnh khi chọn file
+document.getElementById('imageFile')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('imagePreview');
+            if (preview) {
+                preview.src = e.target.result;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Preview ảnh khi nhập URL
+const imageUrlInput = document.getElementById('image_url');
+if (imageUrlInput) {
+    imageUrlInput.addEventListener('blur', function() {
+        const url = this.value.trim();
+        const preview = document.getElementById('imagePreview');
+        if (url && preview && url.startsWith('http')) {
+            preview.src = url;
+        }
+    });
+}
+</script>

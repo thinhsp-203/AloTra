@@ -78,8 +78,18 @@
                             <label class="form-label">Ảnh hiện tại</label>
                             <div class="border rounded p-3 bg-light text-center">
                                 <c:set var="thumbnailSrc" value="${p.thumbnail}"/>
-                                <c:if test="${not empty thumbnailSrc and not fn:startsWith(thumbnailSrc, 'http')}">
-                                    <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/uploads/${p.thumbnail}"/>
+                                <c:if test="${not empty thumbnailSrc}">
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(thumbnailSrc, 'http')}">
+                                            <c:set var="thumbnailSrc" value="${p.thumbnail}"/>
+                                        </c:when>
+                                        <c:when test="${fn:startsWith(thumbnailSrc, 'uploads/')}">
+                                            <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/${p.thumbnail}"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/uploads/products/${p.thumbnail}"/>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </c:if>
                                 
                                 <img src="${empty thumbnailSrc ? 'https://via.placeholder.com/300x300?text=Chưa+có+ảnh' : thumbnailSrc}" 

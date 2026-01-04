@@ -94,18 +94,24 @@
                 <%-- Image Section --%>
                 <div class="col-lg-6">
                     <div style="height: 100%; min-height: 500px; overflow: hidden; background-color: #f8f9fa;">
-                        <c:choose>
-                            <c:when test="${fn:startsWith(promotion.imageUrl, 'http')}">
-                                <img src="${promotion.imageUrl}" 
-                                     class="promotion-detail-image" 
-                                     alt="${promotion.title}">
-                            </c:when>
-                            <c:otherwise>
-                                <img src="${pageContext.request.contextPath}/uploads/${promotion.imageUrl}" 
-                                     class="promotion-detail-image" 
-                                     alt="${promotion.title}">
-                            </c:otherwise>
-                        </c:choose>
+                        <c:set var="promoDetailImgSrc" value="${promotion.imageUrl}"/>
+                        <c:if test="${not empty promoDetailImgSrc}">
+                            <c:choose>
+                                <c:when test="${fn:startsWith(promoDetailImgSrc, 'http')}">
+                                    <c:set var="promoDetailImgSrc" value="${promotion.imageUrl}"/>
+                                </c:when>
+                                <c:when test="${fn:startsWith(promoDetailImgSrc, 'uploads/')}">
+                                    <c:set var="promoDetailImgSrc" value="${pageContext.request.contextPath}/${promotion.imageUrl}"/>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:set var="promoDetailImgSrc" value="${pageContext.request.contextPath}/uploads/${promotion.imageUrl}"/>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:if>
+                        <img src="${empty promoDetailImgSrc ? 'https://via.placeholder.com/500?text=No+Image' : promoDetailImgSrc}" 
+                             class="promotion-detail-image" 
+                             alt="${promotion.title}"
+                             onerror="this.src='https://via.placeholder.com/500?text=No+Image'">
                     </div>
                 </div>
                 
@@ -189,20 +195,25 @@
                             <div class="card promotion-card-related shadow-sm h-100" 
                                  onclick="window.location.href='${pageContext.request.contextPath}/promotions?id=${relatedPromo.id}'">
                                 <div class="card-img-container" style="height: 200px; overflow: hidden;">
-                                    <c:choose>
-                                        <c:when test="${fn:startsWith(relatedPromo.imageUrl, 'http')}">
-                                            <img src="${relatedPromo.imageUrl}" 
-                                                 class="card-img-top" 
-                                                 alt="${relatedPromo.title}" 
-                                                 style="width: 100%; height: 100%; object-fit: cover;">
-                                        </c:when>
-                                        <c:otherwise>
-                                            <img src="${pageContext.request.contextPath}/uploads/${relatedPromo.imageUrl}" 
-                                                 class="card-img-top" 
-                                                 alt="${relatedPromo.title}"
-                                                 style="width: 100%; height: 100%; object-fit: cover;">
-                                        </c:otherwise>
-                                    </c:choose>
+                                    <c:set var="relatedPromoImgSrc" value="${relatedPromo.imageUrl}"/>
+                                    <c:if test="${not empty relatedPromoImgSrc}">
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(relatedPromoImgSrc, 'http')}">
+                                                <c:set var="relatedPromoImgSrc" value="${relatedPromo.imageUrl}"/>
+                                            </c:when>
+                                            <c:when test="${fn:startsWith(relatedPromoImgSrc, 'uploads/')}">
+                                                <c:set var="relatedPromoImgSrc" value="${pageContext.request.contextPath}/${relatedPromo.imageUrl}"/>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <c:set var="relatedPromoImgSrc" value="${pageContext.request.contextPath}/uploads/${relatedPromo.imageUrl}"/>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:if>
+                                    <img src="${empty relatedPromoImgSrc ? 'https://via.placeholder.com/300?text=No+Image' : relatedPromoImgSrc}" 
+                                         class="card-img-top" 
+                                         alt="${relatedPromo.title}"
+                                         style="width: 100%; height: 100%; object-fit: cover;"
+                                         onerror="this.src='https://via.placeholder.com/300?text=No+Image'">
                                 </div>
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title">${relatedPromo.title}</h5>

@@ -109,23 +109,66 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             stats.put("ordersToday", ordersToday != null ? ordersToday : 0L);
             
             // Đơn hàng theo trạng thái
-            Long pendingOrders = em.createQuery(
-                "SELECT COUNT(o) FROM Orders o WHERE o.order_status = 'Chờ xác nhận'", Long.class)
-                .getSingleResult();
+            // Clear any cache trước khi query
+            em.clear();
+            
+            // Thử native query để tránh vấn đề JPA cache/encoding
+            Long pendingOrders = 0L;
+            try {
+                Object result = em.createNativeQuery(
+                    "SELECT COUNT(*) FROM Orders WHERE order_status = N'Chờ xác nhận'")
+                    .getSingleResult();
+                pendingOrders = ((Number) result).longValue();
+            } catch (Exception e) {
+                System.out.println("[Dashboard] Error with native query: " + e.getMessage());
+                e.printStackTrace();
+                // Fallback về JPQL
+                try {
+                    pendingOrders = em.createQuery(
+                        "SELECT COUNT(o) FROM Orders o WHERE o.order_status = 'Chờ xác nhận'", Long.class)
+                        .getSingleResult();
+                } catch (Exception e2) {
+                    System.out.println("[Dashboard] Error with JPQL query: " + e2.getMessage());
+                }
+            }
+            
             stats.put("pendingOrders", pendingOrders != null ? pendingOrders : 0L);
             
-            Long processingOrders = em.createQuery(
-                "SELECT COUNT(o) FROM Orders o WHERE o.order_status = 'Đang xử lý'", Long.class)
-                .getSingleResult();
+            // Debug: Log để kiểm tra
+            System.out.println("[Dashboard] Pending orders count: " + pendingOrders);
+            
+            // Đếm đơn đang xử lý: Đang chuẩn bị + Đang giao
+            Long processingOrders = 0L;
+            try {
+                Object result = em.createNativeQuery(
+                    "SELECT COUNT(*) FROM Orders WHERE order_status IN (N'Đang chuẩn bị', N'Đang giao')")
+                    .getSingleResult();
+                processingOrders = ((Number) result).longValue();
+            } catch (Exception e) {
+                System.out.println("[Dashboard] Error with native query for processing: " + e.getMessage());
+                // Fallback về JPQL
+                try {
+                    processingOrders = em.createQuery(
+                        "SELECT COUNT(o) FROM Orders o WHERE o.order_status IN ('Đang chuẩn bị', 'Đang giao')", Long.class)
+                        .getSingleResult();
+                } catch (Exception e2) {
+                    System.out.println("[Dashboard] Error with JPQL query for processing: " + e2.getMessage());
+                }
+            }
+            
             stats.put("processingOrders", processingOrders != null ? processingOrders : 0L);
+            
+            // Debug: Log để kiểm tra
+            System.out.println("[Dashboard] Processing orders count: " + processingOrders);
             
             Long completedOrders = em.createQuery(
                 "SELECT COUNT(o) FROM Orders o WHERE o.order_status = 'Hoàn thành'", Long.class)
                 .getSingleResult();
             stats.put("completedOrders", completedOrders != null ? completedOrders : 0L);
             
+            // Đếm tất cả đơn đã hủy (bao gồm cả "Hủy Đơn" cũ để tương thích)
             Long cancelledOrders = em.createQuery(
-                "SELECT COUNT(o) FROM Orders o WHERE o.order_status = 'Hủy Đơn'", Long.class)
+                "SELECT COUNT(o) FROM Orders o WHERE o.order_status IN ('Hủy bởi khách', 'Hủy bởi shop', 'Từ chối', 'Hủy Đơn')", Long.class)
                 .getSingleResult();
             stats.put("cancelledOrders", cancelledOrders != null ? cancelledOrders : 0L);
             

@@ -58,10 +58,26 @@
         <div class="user-avatar">
             <c:choose>
                 <c:when test="${not empty sessionScope.currentUser.avatar}">
-                    <img src="${pageContext.request.contextPath}/uploads/${sessionScope.currentUser.avatar}" 
-                         alt="Avatar" class="img-fluid rounded-circle" 
-                         style="width: 100%; height: 100%; object-fit: cover;"
-                         onerror="this.onerror=null; this.src='https://via.placeholder.com/200/006633/FFFFFF?text=${fn:substring(sessionScope.currentUser.username, 0, 1)}';">
+                    <c:choose>
+                        <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'http')}">
+                            <img src="${sessionScope.currentUser.avatar}" 
+                                 alt="Avatar" class="img-fluid rounded-circle" 
+                                 style="width: 100%; height: 100%; object-fit: cover;"
+                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/200/006633/FFFFFF?text=${fn:substring(sessionScope.currentUser.username, 0, 1)}';">
+                        </c:when>
+                        <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'uploads/')}">
+                            <img src="${pageContext.request.contextPath}/${sessionScope.currentUser.avatar}" 
+                                 alt="Avatar" class="img-fluid rounded-circle" 
+                                 style="width: 100%; height: 100%; object-fit: cover;"
+                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/200/006633/FFFFFF?text=${fn:substring(sessionScope.currentUser.username, 0, 1)}';">
+                        </c:when>
+                        <c:otherwise>
+                            <img src="${pageContext.request.contextPath}/uploads/${sessionScope.currentUser.avatar}" 
+                                 alt="Avatar" class="img-fluid rounded-circle" 
+                                 style="width: 100%; height: 100%; object-fit: cover;"
+                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/200/006633/FFFFFF?text=${fn:substring(sessionScope.currentUser.username, 0, 1)}';">
+                        </c:otherwise>
+                    </c:choose>
                 </c:when>
                 <c:otherwise>
                     <i class="bi bi-person-circle"></i>

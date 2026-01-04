@@ -6,6 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import model.*;
 import service.*;
 import service.impl.*;
@@ -69,30 +70,82 @@ public class AdminOrderController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-        String action = req.getParameter("action");
-        int orderId = Integer.parseInt(req.getParameter("orderId"));
+        String path = req.getPathInfo();
+        HttpSession session = req.getSession(false);
+        User currentUser = (session != null) ? (User) session.getAttribute("currentUser") : null;
+        
+        if (currentUser == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            return;
+        }
         
         try {
-            if ("updateStatus".equals(action)) {
-                String newStatus = req.getParameter("status");
-                orderService.updateOrderStatus(orderId, newStatus);
-                req.getSession().setAttribute("success", "Đã cập nhật trạng thái đơn hàng thành công!");
+            if ("/confirm".equals(path)) {
+                // POST /admin/orders/confirm
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                orderService.confirmOrder(orderId, currentUser);
+                req.getSession().setAttribute("success", "Đã xác nhận đơn hàng thành công!");
+                resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
                 
-            } else if ("updatePayment".equals(action)) {
+            } else if ("/reject".equals(path)) {
+                // POST /admin/orders/reject
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                orderService.rejectOrder(orderId, currentUser);
+                req.getSession().setAttribute("success", "Đã từ chối đơn hàng!");
+                resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
+                
+            } else if ("/status/update".equals(path)) {
+                // POST /admin/orders/status/update
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                String newStatus = req.getParameter("status");
+                orderService.updateOrderStatusByAdmin(orderId, newStatus, currentUser);
+                req.getSession().setAttribute("success", "Đã cập nhật trạng thái đơn hàng thành công!");
+                resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
+                
+            } else if ("/payment/update".equals(path)) {
+                // POST /admin/orders/payment/update
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
                 String paymentStatus = req.getParameter("paymentStatus");
                 orderService.updatePaymentStatus(orderId, paymentStatus);
                 req.getSession().setAttribute("success", "Đã cập nhật trạng thái thanh toán thành công!");
+                resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
+                
+            } else {
+                // Legacy: POST /admin/orders (với action parameter)
+                String action = req.getParameter("action");
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                
+                if ("updateStatus".equals(action)) {
+                    String newStatus = req.getParameter("status");
+                    orderService.updateOrderStatus(orderId, newStatus);
+                    req.getSession().setAttribute("success", "Đã cập nhật trạng thái đơn hàng thành công!");
+                    
+                } else if ("updatePayment".equals(action)) {
+                    String paymentStatus = req.getParameter("paymentStatus");
+                    orderService.updatePaymentStatus(orderId, paymentStatus);
+                    req.getSession().setAttribute("success", "Đã cập nhật trạng thái thanh toán thành công!");
+                }
+                
+                resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
             }
-            
-            resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
             
         } catch (IllegalArgumentException e) {
             req.getSession().setAttribute("error", e.getMessage());
-            resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
+            String orderId = req.getParameter("orderId");
+            if (orderId != null) {
+                resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/orders");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             req.getSession().setAttribute("error", "Lỗi: " + e.getMessage());
-            resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
+            String orderId = req.getParameter("orderId");
+            if (orderId != null) {
+                resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/orders");
+            }
         }
     }
 }

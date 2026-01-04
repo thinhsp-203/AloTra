@@ -53,30 +53,26 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Xem trước</label>
                         <div class="border rounded p-3 bg-light text-center">
-                            <c:choose>
-                                <c:when test="${not empty banner.imageUrl and fn:startsWith(banner.imageUrl, 'http')}">
-                                    <img src="${banner.imageUrl}" 
-                                         class="img-fluid rounded border" 
-                                         style="max-width: 100%; max-height: 200px; object-fit: cover;"
-                                         alt="Preview"
-                                         id="bannerPreview"/>
-                                </c:when>
-                                <c:when test="${not empty banner.imageUrl}">
-                                    <img src="${pageContext.request.contextPath}/uploads/${banner.imageUrl}" 
-                                         class="img-fluid rounded border" 
-                                         style="max-width: 100%; max-height: 200px; object-fit: cover;"
-                                         alt="Preview"
-                                         id="bannerPreview"
-                                         onerror="this.src='https://via.placeholder.com/200x200?text=Chưa+có+ảnh'"/>
-                                </c:when>
-                                <c:otherwise>
-                                    <img src="https://via.placeholder.com/200x200?text=Chưa+có+ảnh"
-                                         class="img-fluid rounded border" 
-                                         style="max-width: 100%; max-height: 200px; object-fit: cover;"
-                                         alt="Preview"
-                                         id="bannerPreview"/>
-                                </c:otherwise>
-                            </c:choose>
+                            <c:set var="bannerPreviewSrc" value="${banner.imageUrl}"/>
+                            <c:if test="${not empty bannerPreviewSrc}">
+                                <c:choose>
+                                    <c:when test="${fn:startsWith(bannerPreviewSrc, 'http')}">
+                                        <c:set var="bannerPreviewSrc" value="${banner.imageUrl}"/>
+                                    </c:when>
+                                    <c:when test="${fn:startsWith(bannerPreviewSrc, 'uploads/')}">
+                                        <c:set var="bannerPreviewSrc" value="${pageContext.request.contextPath}/${banner.imageUrl}"/>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:set var="bannerPreviewSrc" value="${pageContext.request.contextPath}/uploads/${banner.imageUrl}"/>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:if>
+                            <img src="${empty bannerPreviewSrc ? 'https://via.placeholder.com/200x200?text=Chưa+có+ảnh' : bannerPreviewSrc}"
+                                 class="img-fluid rounded border" 
+                                 style="max-width: 100%; max-height: 200px; object-fit: cover;"
+                                 alt="Preview"
+                                 id="bannerPreview"
+                                 onerror="this.src='https://via.placeholder.com/200x200?text=Chưa+có+ảnh'"/>
                         </div>
                     </div>
                     <div class="mb-3">

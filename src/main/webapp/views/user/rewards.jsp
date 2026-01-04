@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <c:set var="pageTitle" value="Đổi Quà Tặng - Hội Viên" scope="request"/>
 
@@ -45,8 +46,21 @@
                         <div class="col">
                             <div class="card h-100 shadow-sm">
                                 <c:if test="${not empty reward.image_url}">
-                                    <img src="${reward.image_url}" class="card-img-top" alt="${reward.name}" 
-                                         style="height: 200px; object-fit: cover;">
+                                    <c:set var="rewardImgSrc" value="${reward.image_url}"/>
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(rewardImgSrc, 'http')}">
+                                            <c:set var="rewardImgSrc" value="${reward.image_url}"/>
+                                        </c:when>
+                                        <c:when test="${fn:startsWith(rewardImgSrc, 'uploads/')}">
+                                            <c:set var="rewardImgSrc" value="${pageContext.request.contextPath}/${reward.image_url}"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:set var="rewardImgSrc" value="${pageContext.request.contextPath}/uploads/${reward.image_url}"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <img src="${rewardImgSrc}" class="card-img-top" alt="${reward.name}" 
+                                         style="height: 200px; object-fit: cover;"
+                                         onerror="this.src='https://via.placeholder.com/200'">
                                 </c:if>
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title">${reward.name}</h5>

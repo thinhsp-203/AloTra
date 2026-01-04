@@ -204,52 +204,74 @@
                                 <div class="fw-bold">${order.order_status}</div>
                             </div>
                         </c:when>
-                        <c:otherwise>
+                        <c:when test="${order.order_status eq 'Hủy bởi khách'}">
+                            <div class="alert alert-warning mb-0 text-center py-3">
+                                <i class="fas fa-user-times fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.order_status}</div>
+                            </div>
+                        </c:when>
+                        <c:when test="${order.order_status eq 'Hủy bởi shop'}">
+                            <div class="alert alert-danger mb-0 text-center py-3">
+                                <i class="fas fa-store-slash fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.order_status}</div>
+                            </div>
+                        </c:when>
+                        <c:when test="${order.order_status eq 'Từ chối'}">
+                            <div class="alert alert-danger mb-0 text-center py-3">
+                                <i class="fas fa-ban fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.order_status}</div>
+                            </div>
+                        </c:when>
+                        <c:when test="${order.order_status eq 'Hủy Đơn'}">
+                            <%-- Fallback cho status cũ --%>
                             <div class="alert alert-danger mb-0 text-center py-3">
                                 <i class="fas fa-times-circle fa-2x mb-2"></i>
+                                <div class="fw-bold">${order.order_status}</div>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="alert alert-secondary mb-0 text-center py-3">
+                                <i class="fas fa-question-circle fa-2x mb-2"></i>
                                 <div class="fw-bold">${order.order_status}</div>
                             </div>
                         </c:otherwise>
                     </c:choose>
                 </div>
                 
+                <%-- UI theo workflow mới --%>
                 <c:choose>
-                    <c:when test="${order.order_status eq 'Hủy Đơn'}">
-                        <div class="alert alert-warning border-warning">
-                            <i class="fas fa-lock" style="margin-right: 10px;"></i>
-                            <strong>Đơn hàng đã bị hủy</strong>
-                            <p class="mb-0 mt-2 small">Không thể cập nhật trạng thái cho đơn hàng đã hủy.</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Trạng thái (chỉ xem)</label>
-                            <select class="form-select" disabled>
-                                <option value="Hủy Đơn" selected>Hủy Đơn</option>
-                            </select>
+                    <%-- Trạng thái: Chờ xác nhận -> Hiển thị 2 nút: Xác nhận / Từ chối --%>
+                    <c:when test="${order.order_status eq 'Chờ xác nhận'}">
+                        <div class="d-grid gap-2">
+                            <form method="post" action="${pageContext.request.contextPath}/admin/orders/confirm" 
+                                  onsubmit="return confirm('Xác nhận đơn hàng #${order.order_id}?')" style="margin: 0;">
+                                <input type="hidden" name="orderId" value="${order.order_id}">
+                                <button type="submit" class="btn btn-success w-100 btn-lg">
+                                    <i class="fas fa-check-circle" style="margin-right: 10px;"></i>Xác nhận đơn
+                                </button>
+                            </form>
+                            
+                            <form method="post" action="${pageContext.request.contextPath}/admin/orders/reject"
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn từ chối đơn hàng #${order.order_id}?')" style="margin: 0;">
+                                <input type="hidden" name="orderId" value="${order.order_id}">
+                                <button type="submit" class="btn btn-danger w-100 btn-lg">
+                                    <i class="fas fa-times-circle" style="margin-right: 10px;"></i>Không nhận đơn
+                                </button>
+                            </form>
                         </div>
                     </c:when>
-                    <c:otherwise>
-                        <form method="post" action="${pageContext.request.contextPath}/admin/orders">
-                            <input type="hidden" name="action" value="updateStatus">
+                    
+                    <%-- Trạng thái: Đang chuẩn bị -> Dropdown cập nhật: Đang giao / Hoàn thành / Hủy bởi shop --%>
+                    <c:when test="${order.order_status eq 'Đang chuẩn bị'}">
+                        <form method="post" action="${pageContext.request.contextPath}/admin/orders/status/update">
                             <input type="hidden" name="orderId" value="${order.order_id}">
                             
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Cập nhật trạng thái</label>
                                 <select class="form-select form-select-lg" name="status" required>
-                                    <option value="Chờ xác nhận" ${order.order_status eq 'Chờ xác nhận' ? 'selected' : ''}>
-                                        Chờ xác nhận
-                                    </option>
-                                    <option value="Đang chuẩn bị" ${order.order_status eq 'Đang chuẩn bị' ? 'selected' : ''}>
-                                        Đang chuẩn bị
-                                    </option>
-                                    <option value="Đang giao" ${order.order_status eq 'Đang giao' ? 'selected' : ''}>
-                                        Đang giao
-                                    </option>
-                                    <option value="Hoàn thành" ${order.order_status eq 'Hoàn thành' ? 'selected' : ''}>
-                                        Hoàn thành
-                                    </option>
-                                    <option value="Hủy Đơn" ${order.order_status eq 'Hủy Đơn' ? 'selected' : ''}>
-                                        Hủy Đơn
-                                    </option>
+                                    <option value="Đang giao">Đang giao</option>
+                                    <option value="Hoàn thành">Hoàn thành</option>
+                                    <option value="Hủy bởi shop">Hủy bởi shop</option>
                                 </select>
                             </div>
                             
@@ -257,6 +279,48 @@
                                 <i class="fas fa-save" style="margin-right: 10px;"></i>Cập nhật trạng thái
                             </button>
                         </form>
+                    </c:when>
+                    
+                    <%-- Trạng thái: Đang giao -> Chỉ có thể chuyển sang Hoàn thành hoặc Hủy bởi shop --%>
+                    <c:when test="${order.order_status eq 'Đang giao'}">
+                        <form method="post" action="${pageContext.request.contextPath}/admin/orders/status/update">
+                            <input type="hidden" name="orderId" value="${order.order_id}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Cập nhật trạng thái</label>
+                                <select class="form-select form-select-lg" name="status" required>
+                                    <option value="Hoàn thành">Hoàn thành</option>
+                                    <option value="Hủy bởi shop">Hủy bởi shop</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                <i class="fas fa-save" style="margin-right: 10px;"></i>Cập nhật trạng thái
+                            </button>
+                        </form>
+                    </c:when>
+                    
+                    <%-- Final states: Hoàn thành, Hủy bởi khách, Hủy bởi shop, Từ chối -> Chỉ xem --%>
+                    <c:when test="${order.order_status eq 'Hoàn thành' or order.order_status eq 'Hủy bởi khách' or order.order_status eq 'Hủy bởi shop' or order.order_status eq 'Từ chối' or order.order_status eq 'Hủy Đơn'}">
+                        <div class="alert alert-info border-info">
+                            <i class="fas fa-info-circle" style="margin-right: 10px;"></i>
+                            <strong>Đơn hàng đã kết thúc</strong>
+                            <p class="mb-0 mt-2 small">Không thể cập nhật trạng thái cho đơn hàng đã hoàn thành hoặc đã hủy.</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Trạng thái (chỉ xem)</label>
+                            <select class="form-select form-select-lg" disabled>
+                                <option value="${order.order_status}" selected>${order.order_status}</option>
+                            </select>
+                        </div>
+                    </c:when>
+                    
+                    <%-- Fallback: các trạng thái khác (nếu có) --%>
+                    <c:otherwise>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i>
+                            Trạng thái không xác định: ${order.order_status}
+                        </div>
                     </c:otherwise>
                 </c:choose>
             </div>
@@ -316,11 +380,12 @@
                 </div>
                 
                 <c:choose>
-                    <c:when test="${order.order_status eq 'Hủy Đơn'}">
-                        <div class="alert alert-warning border-warning">
-                            <i class="fas fa-lock" style="margin-right: 10px;"></i>
-                            <strong>Đơn hàng đã bị hủy</strong>
-                            <p class="mb-0 mt-2 small">Không thể cập nhật trạng thái thanh toán cho đơn hàng đã hủy.</p>
+                    <%-- Final states: không thể cập nhật payment status --%>
+                    <c:when test="${order.order_status eq 'Hoàn thành' or order.order_status eq 'Hủy bởi khách' or order.order_status eq 'Hủy bởi shop' or order.order_status eq 'Từ chối' or order.order_status eq 'Hủy Đơn'}">
+                        <div class="alert alert-info border-info">
+                            <i class="fas fa-info-circle" style="margin-right: 10px;"></i>
+                            <strong>Đơn hàng đã kết thúc</strong>
+                            <p class="mb-0 mt-2 small">Không thể cập nhật trạng thái thanh toán cho đơn hàng đã hoàn thành hoặc đã hủy.</p>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Trạng thái (chỉ xem)</label>
@@ -328,11 +393,12 @@
                                 <option value="${order.payment_status}" selected>${order.payment_status}</option>
                             </select>
                             <div class="form-text mt-2">
-                                <c:if test="${order.payment_method eq 'Online' && order.payment_status eq 'Đã thanh toán'}">
+                                <%-- Chỉ hiển thị thông báo khi đơn hàng BỊ HỦY (không phải Hoàn thành) --%>
+                                <c:if test="${(order.order_status eq 'Hủy bởi khách' or order.order_status eq 'Hủy bởi shop' or order.order_status eq 'Từ chối' or order.order_status eq 'Hủy Đơn') && order.payment_method eq 'Online' && order.payment_status eq 'Đã thanh toán'}">
                                     <i class="fas fa-info-circle text-info" style="margin-right: 5px;"></i>
                                     Đơn hàng đã thanh toán online, trạng thái đã được tự động chuyển sang "Đã hoàn tiền" khi hủy.
                                 </c:if>
-                                <c:if test="${order.payment_method eq 'COD'}">
+                                <c:if test="${(order.order_status eq 'Hủy bởi khách' or order.order_status eq 'Hủy bởi shop' or order.order_status eq 'Từ chối' or order.order_status eq 'Hủy Đơn') && order.payment_method eq 'COD' && order.payment_status eq 'Chưa thanh toán'}">
                                     <i class="fas fa-info-circle text-info" style="margin-right: 5px;"></i>
                                     Đơn hàng COD đã hủy, trạng thái là "Chưa thanh toán" vì chưa thu tiền.
                                 </c:if>
@@ -340,8 +406,7 @@
                         </div>
                     </c:when>
                     <c:otherwise>
-                        <form method="post" action="${pageContext.request.contextPath}/admin/orders">
-                            <input type="hidden" name="action" value="updatePayment">
+                        <form method="post" action="${pageContext.request.contextPath}/admin/orders/payment/update">
                             <input type="hidden" name="orderId" value="${order.order_id}">
                             
                             <div class="mb-3">
@@ -361,6 +426,10 @@
                                             Đã hoàn tiền
                                         </option>
                                     </c:if>
+                                    <option value="Thất bại" 
+                                            ${order.payment_status eq 'Thất bại' ? 'selected' : ''}>
+                                        Thất bại
+                                    </option>
                                 </select>
                             </div>
                             

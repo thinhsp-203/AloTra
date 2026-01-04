@@ -4,6 +4,9 @@ import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import model.*;
 import service.*;
+import utils.OrderStatus;
+import utils.PaymentStatus;
+import utils.Roles;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -186,6 +189,232 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 em.getTransaction().rollback();
             }
             throw new RuntimeException("Lỗi khi cập nhật thanh toán: " + e.getMessage(), e);
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public void confirmOrder(int orderId, User adminUser) {
+        // Validate admin role
+        if (adminUser == null || (adminUser.getRoleid() != Roles.ADMIN && adminUser.getRoleid() != Roles.STAFF)) {
+            throw new IllegalArgumentException("Chỉ admin/staff mới được xác nhận đơn hàng!");
+        }
+        
+        EntityManager em = JpaUtil.em();
+        try {
+            em.getTransaction().begin();
+            
+            Orders order = em.find(Orders.class, orderId);
+            if (order == null) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Đơn hàng không tồn tại!");
+            }
+            
+            // Chỉ cho phép xác nhận khi status = CHO_XAC_NHAN
+            OrderStatus currentStatus = OrderStatus.fromOldString(order.getOrder_status());
+            if (currentStatus != OrderStatus.CHO_XAC_NHAN) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Chỉ có thể xác nhận đơn hàng đang ở trạng thái 'Chờ xác nhận'!");
+            }
+            
+            order.setOrder_status(OrderStatus.DANG_CHUAN_BI.getDisplayName());
+            order.setUpdatedDate(LocalDateTime.now());
+            em.merge(order);
+            em.getTransaction().commit();
+            
+            // Tạo notification cho user
+            try {
+                if (order.getUser() != null) {
+                    String message = "Đơn hàng #" + orderId + " đã được xác nhận và đang được chuẩn bị!";
+                    String link = "/user/orders";
+                    notificationService.createNotification(order.getUser().getId(), message, link);
+                }
+            } catch (Exception e) {
+                System.err.println("Lỗi khi tạo notification cho đơn hàng #" + orderId + ": " + e.getMessage());
+            }
+            
+        } catch (IllegalArgumentException e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw new RuntimeException("Lỗi khi xác nhận đơn hàng: " + e.getMessage(), e);
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public void rejectOrder(int orderId, User adminUser) {
+        // Validate admin role
+        if (adminUser == null || (adminUser.getRoleid() != Roles.ADMIN && adminUser.getRoleid() != Roles.STAFF)) {
+            throw new IllegalArgumentException("Chỉ admin/staff mới được từ chối đơn hàng!");
+        }
+        
+        EntityManager em = JpaUtil.em();
+        try {
+            em.getTransaction().begin();
+            
+            Orders order = em.find(Orders.class, orderId);
+            if (order == null) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Đơn hàng không tồn tại!");
+            }
+            
+            // Chỉ cho phép từ chối khi status = CHO_XAC_NHAN
+            OrderStatus currentStatus = OrderStatus.fromOldString(order.getOrder_status());
+            if (currentStatus != OrderStatus.CHO_XAC_NHAN) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Chỉ có thể từ chối đơn hàng đang ở trạng thái 'Chờ xác nhận'!");
+            }
+            
+            order.setOrder_status(OrderStatus.TU_CHOI.getDisplayName());
+            order.setUpdatedDate(LocalDateTime.now());
+            
+            // Xử lý payment status khi từ chối
+            String currentPaymentStatus = order.getPayment_status();
+            if ("Đã thanh toán".equals(currentPaymentStatus) && "Online".equals(order.getPayment_method())) {
+                order.setPayment_status(PaymentStatus.HOAN_TIEN.getDisplayName());
+            } else {
+                order.setPayment_status(PaymentStatus.CHUA_THANH_TOAN.getDisplayName());
+            }
+            
+            em.merge(order);
+            em.getTransaction().commit();
+            
+            // Tạo notification cho user
+            try {
+                if (order.getUser() != null) {
+                    String message = "Đơn hàng #" + orderId + " đã bị từ chối bởi cửa hàng.";
+                    String link = "/user/orders";
+                    notificationService.createNotification(order.getUser().getId(), message, link);
+                }
+            } catch (Exception e) {
+                System.err.println("Lỗi khi tạo notification cho đơn hàng #" + orderId + ": " + e.getMessage());
+            }
+            
+        } catch (IllegalArgumentException e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw new RuntimeException("Lỗi khi từ chối đơn hàng: " + e.getMessage(), e);
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public void updateOrderStatusByAdmin(int orderId, String newStatus, User adminUser) {
+        // Validate admin role
+        if (adminUser == null || (adminUser.getRoleid() != Roles.ADMIN && adminUser.getRoleid() != Roles.STAFF)) {
+            throw new IllegalArgumentException("Chỉ admin/staff mới được cập nhật trạng thái đơn hàng!");
+        }
+        
+        EntityManager em = JpaUtil.em();
+        try {
+            em.getTransaction().begin();
+            
+            Orders order = em.find(Orders.class, orderId);
+            if (order == null) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Đơn hàng không tồn tại!");
+            }
+            
+            OrderStatus currentStatusEnum = OrderStatus.fromOldString(order.getOrder_status());
+            OrderStatus newStatusEnum = OrderStatus.fromOldString(newStatus);
+            
+            // Không cho phép chuyển sang final state nếu đã là final state
+            if (currentStatusEnum.isFinalState()) {
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Không thể cập nhật đơn hàng đã ở trạng thái kết thúc!");
+            }
+            
+            // Validation theo workflow:
+            // 1. Từ DANG_CHUAN_BI có thể chuyển sang: DANG_GIAO, HOAN_THANH, HUY_BOI_SHOP
+            // 2. Từ DANG_GIAO có thể chuyển sang: HOAN_THANH, HUY_BOI_SHOP
+            if (currentStatusEnum == OrderStatus.DANG_CHUAN_BI) {
+                // Từ "Đang chuẩn bị" có thể chuyển sang: Đang giao, Hoàn thành, Hủy bởi shop
+                if (newStatusEnum != OrderStatus.DANG_GIAO && 
+                    newStatusEnum != OrderStatus.HOAN_THANH && 
+                    newStatusEnum != OrderStatus.HUY_BOI_SHOP) {
+                    em.getTransaction().rollback();
+                    throw new IllegalArgumentException("Trạng thái không hợp lệ! Từ 'Đang chuẩn bị' chỉ có thể chuyển sang: Đang giao, Hoàn thành, hoặc Hủy bởi shop.");
+                }
+            } else if (currentStatusEnum == OrderStatus.DANG_GIAO) {
+                // Từ "Đang giao" có thể chuyển sang: Hoàn thành, Hủy bởi shop
+                if (newStatusEnum != OrderStatus.HOAN_THANH && 
+                    newStatusEnum != OrderStatus.HUY_BOI_SHOP) {
+                    em.getTransaction().rollback();
+                    throw new IllegalArgumentException("Trạng thái không hợp lệ! Từ 'Đang giao' chỉ có thể chuyển sang: Hoàn thành hoặc Hủy bởi shop.");
+                }
+            } else {
+                // Không cho phép cập nhật từ các trạng thái khác
+                em.getTransaction().rollback();
+                throw new IllegalArgumentException("Chỉ có thể cập nhật trạng thái từ 'Đang chuẩn bị' hoặc 'Đang giao'!");
+            }
+            
+            order.setOrder_status(newStatus);
+            order.setUpdatedDate(LocalDateTime.now());
+            
+            // Logic: Khi đơn hàng được set "Hoàn thành", tự động set payment_status = "Đã thanh toán"
+            if (newStatusEnum == OrderStatus.HOAN_THANH) {
+                order.setPayment_status(PaymentStatus.DA_THANH_TOAN.getDisplayName());
+                
+                // Tích điểm thành viên khi đơn hàng hoàn thành
+                try {
+                    if (order.getUser() != null && order.getTotal_amount() != null) {
+                        loyaltyService.earnPointsFromOrder(order.getUser(), order.getTotal_amount(), order.getOrder_id());
+                    }
+                } catch (Exception e) {
+                    System.err.println("Lỗi khi tích điểm cho đơn hàng #" + orderId + ": " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            
+            // Logic: Khi đơn hàng bị hủy bởi shop, xử lý payment status
+            if (newStatusEnum == OrderStatus.HUY_BOI_SHOP) {
+                String currentPaymentStatus = order.getPayment_status();
+                if ("Đã thanh toán".equals(currentPaymentStatus) && "Online".equals(order.getPayment_method())) {
+                    order.setPayment_status(PaymentStatus.HOAN_TIEN.getDisplayName());
+                } else {
+                    order.setPayment_status(PaymentStatus.CHUA_THANH_TOAN.getDisplayName());
+                }
+            }
+            
+            em.merge(order);
+            em.getTransaction().commit();
+            
+            // Tạo notification cho user
+            try {
+                if (order.getUser() != null) {
+                    String message = "Đơn hàng #" + orderId + " của bạn đã được cập nhật: " + newStatus;
+                    String link = "/user/orders";
+                    notificationService.createNotification(order.getUser().getId(), message, link);
+                }
+            } catch (Exception e) {
+                System.err.println("Lỗi khi tạo notification cho đơn hàng #" + orderId + ": " + e.getMessage());
+            }
+            
+        } catch (IllegalArgumentException e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw new RuntimeException("Lỗi khi cập nhật trạng thái đơn hàng: " + e.getMessage(), e);
         } finally {
             em.close();
         }

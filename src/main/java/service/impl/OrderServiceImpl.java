@@ -91,8 +91,10 @@ public class OrderServiceImpl implements OrderService {
             if (grandTotal.compareTo(BigDecimal.ZERO) < 0) grandTotal = BigDecimal.ZERO;
 
             User managedUser = em.find(User.class, user.getId());
-            String paymentStatus = "COD".equalsIgnoreCase(paymentMethod) ? "Chưa thanh toán" : "Chờ thanh toán";
-            String orderStatus = "Chờ xác nhận";
+            // Tất cả đơn hàng mới đều bắt đầu với "Chưa thanh toán"
+            // (COD: chưa thanh toán, Online: sẽ cập nhật sau khi thanh toán thành công)
+            String paymentStatus = utils.PaymentStatus.CHUA_THANH_TOAN.getDisplayName();
+            String orderStatus = utils.OrderStatus.CHO_XAC_NHAN.getDisplayName();
 
             Orders order = orderRepository.createOrder(managedUser, fullname, phone, address, note,
                     grandTotal, paymentMethod, paymentStatus, orderStatus, items, em);

@@ -167,10 +167,35 @@
             ${sessionScope.currentUser.username}
         </span>
 
-        <img class="img-profile rounded-circle"
-             src="${pageContext.request.contextPath}/uploads/${sessionScope.currentUser.avatar}"
-             onerror="this.src='https://via.placeholder.com/60/4e73df/FFFFFF?text=U'"
-             style="width:2rem;height:2rem">
+        <c:choose>
+            <c:when test="${not empty sessionScope.currentUser.avatar}">
+                <c:choose>
+                    <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'http')}">
+                        <img class="img-profile rounded-circle"
+                             src="${sessionScope.currentUser.avatar}"
+                             onerror="this.src='https://via.placeholder.com/60/4e73df/FFFFFF?text=U'"
+                             style="width:2rem;height:2rem">
+                    </c:when>
+                    <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'uploads/')}">
+                        <img class="img-profile rounded-circle"
+                             src="${pageContext.request.contextPath}/${sessionScope.currentUser.avatar}"
+                             onerror="this.src='https://via.placeholder.com/60/4e73df/FFFFFF?text=U'"
+                             style="width:2rem;height:2rem">
+                    </c:when>
+                    <c:otherwise>
+                        <img class="img-profile rounded-circle"
+                             src="${pageContext.request.contextPath}/uploads/${sessionScope.currentUser.avatar}"
+                             onerror="this.src='https://via.placeholder.com/60/4e73df/FFFFFF?text=U'"
+                             style="width:2rem;height:2rem">
+                    </c:otherwise>
+                </c:choose>
+            </c:when>
+            <c:otherwise>
+                <img class="img-profile rounded-circle"
+                     src="https://via.placeholder.com/60/4e73df/FFFFFF?text=U"
+                     style="width:2rem;height:2rem">
+            </c:otherwise>
+        </c:choose>
     </a>
 
     <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in">

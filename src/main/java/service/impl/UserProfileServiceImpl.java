@@ -181,11 +181,13 @@ public class UserProfileServiceImpl implements UserProfileService {
                 throw new IllegalArgumentException("Đơn hàng không thuộc về bạn!");
             }
             
-            if (!"Chờ xác nhận".equals(order.getOrder_status())) {
-                throw new IllegalArgumentException("Không thể hủy đơn hàng này!");
+            // Kiểm tra quyền hủy: chỉ được hủy khi status = CHO_XAC_NHAN
+            utils.OrderStatus currentStatus = utils.OrderStatus.fromOldString(order.getOrder_status());
+            if (currentStatus != utils.OrderStatus.CHO_XAC_NHAN) {
+                throw new IllegalArgumentException("Bạn chỉ có thể hủy đơn hàng khi đơn đang ở trạng thái 'Chờ xác nhận'!");
             }
             
-            order.setOrder_status("Hủy Đơn");
+            order.setOrder_status(utils.OrderStatus.HUY_BOI_KHACH.getDisplayName());
             order.setUpdatedDate(java.time.LocalDateTime.now());
             em.merge(order);
             

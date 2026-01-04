@@ -16,8 +16,13 @@
 		</h1>
 		<p class="text-muted mb-0">Tổng quan doanh thu, đơn hàng và khách hàng</p>
 	</div>
-	<fmt:formatDate value="<%=new java.util.Date()%>" pattern="EEEE, dd MMMM yyyy" var="todayFormatted"/>
-	<span class="text-muted"><c:out value="${todayFormatted}"/></span>
+	<div class="d-flex align-items-center gap-2">
+		<fmt:formatDate value="<%=new java.util.Date()%>" pattern="EEEE, dd MMMM yyyy" var="todayFormatted"/>
+		<span class="text-muted"><c:out value="${todayFormatted}"/></span>
+		<button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()" title="Làm mới dữ liệu">
+			<i class="fas fa-sync-alt"></i>
+		</button>
+	</div>
 </div>
 
 <%-- Alert Messages --%>
@@ -408,6 +413,22 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    // ========== AUTO REFRESH DASHBOARD MỖI 30 GIÂY ==========
+    // Tự động reload trang để cập nhật số liệu mới nhất
+    let autoRefreshInterval = setInterval(function() {
+        // Chỉ refresh nếu không có modal nào đang mở
+        if (!document.querySelector('.modal.show')) {
+            location.reload();
+        }
+    }, 30000); // 30 giây
+    
+    // Dọn dẹp khi rời trang
+    window.addEventListener('beforeunload', function() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+    });
+    
     // ========== BIỂU ĐỒ DOANH THU THEO GIỜ ==========
     const hourlyData = [
         <c:forEach var="item" items="${stats.hourlyRevenue}">

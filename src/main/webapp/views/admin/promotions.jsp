@@ -83,19 +83,24 @@
                     <c:if test="${not empty promotion and not empty promotion.imageUrl}">
                         <div class="mt-3" id="currentImageContainer">
                             <small class="text-muted d-block mb-2">Ảnh hiện tại:</small>
-                            <c:choose>
-                                <c:when test="${fn:startsWith(promotion.imageUrl, 'http')}">
-                                    <img src="${promotion.imageUrl}" alt="Current" id="currentImage"
-                                         class="border rounded" 
-                                         style="max-width: 200px; max-height: 200px; object-fit: cover;">
-                                </c:when>
-                                <c:otherwise>
-                                    <img src="${pageContext.request.contextPath}/uploads/${promotion.imageUrl}" 
-                                         alt="Current" id="currentImage"
-                                         class="border rounded" 
-                                         style="max-width: 200px; max-height: 200px; object-fit: cover;">
-                                </c:otherwise>
-                            </c:choose>
+                            <c:set var="promoPreviewSrc" value="${promotion.imageUrl}"/>
+                            <c:if test="${not empty promoPreviewSrc}">
+                                <c:choose>
+                                    <c:when test="${fn:startsWith(promoPreviewSrc, 'http')}">
+                                        <c:set var="promoPreviewSrc" value="${promotion.imageUrl}"/>
+                                    </c:when>
+                                    <c:when test="${fn:startsWith(promoPreviewSrc, 'uploads/')}">
+                                        <c:set var="promoPreviewSrc" value="${pageContext.request.contextPath}/${promotion.imageUrl}"/>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:set var="promoPreviewSrc" value="${pageContext.request.contextPath}/uploads/${promotion.imageUrl}"/>
+                                    </c:otherwise>
+                                </c:choose>
+                                <img src="${promoPreviewSrc}" alt="Current" id="currentImage"
+                                     class="border rounded" 
+                                     style="max-width: 200px; max-height: 200px; object-fit: cover;"
+                                     onerror="this.src='https://via.placeholder.com/200?text=Chưa+có+ảnh'">
+                            </c:if>
                         </div>
                     </c:if>
                 </div>
@@ -177,19 +182,25 @@
                             <c:forEach items="${promotions}" var="p">
                                 <tr class="border-bottom">
                                     <td class="ps-4">
-                                        <c:choose>
-                                            <c:when test="${fn:startsWith(p.imageUrl, 'http')}">
-                                                <img src="${p.imageUrl}" alt="Promotion" 
-                                                     class="rounded shadow-sm"
-                                                     style="width: 80px; height: 80px; object-fit: cover;">
-                                            </c:when>
-                                            <c:otherwise>
-                                                <img src="${pageContext.request.contextPath}/uploads/${p.imageUrl}" 
-                                                     alt="Promotion" 
-                                                     class="rounded shadow-sm"
-                                                     style="width: 80px; height: 80px; object-fit: cover;">
-                                            </c:otherwise>
-                                        </c:choose>
+                                        <c:set var="promoImgSrc" value="${p.imageUrl}"/>
+                                        <c:if test="${not empty promoImgSrc}">
+                                            <c:choose>
+                                                <c:when test="${fn:startsWith(promoImgSrc, 'http')}">
+                                                    <c:set var="promoImgSrc" value="${p.imageUrl}"/>
+                                                </c:when>
+                                                <c:when test="${fn:startsWith(promoImgSrc, 'uploads/')}">
+                                                    <c:set var="promoImgSrc" value="${pageContext.request.contextPath}/${p.imageUrl}"/>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <c:set var="promoImgSrc" value="${pageContext.request.contextPath}/uploads/${p.imageUrl}"/>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </c:if>
+                                        <img src="${empty promoImgSrc ? 'https://via.placeholder.com/80' : promoImgSrc}" 
+                                             alt="Promotion" 
+                                             class="rounded shadow-sm"
+                                             style="width: 80px; height: 80px; object-fit: cover;"
+                                             onerror="this.src='https://via.placeholder.com/80'">
                                     </td>
                                     <td>
                                         <div class="fw-semibold fs-5">${p.title}</div>

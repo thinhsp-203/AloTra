@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <fmt:setLocale value="vi_VN"/>
 
 <style>
@@ -441,7 +442,21 @@
                                      data-sugar-level="${item.sugarLevel}"
                                      data-ice-level="${item.iceLevel}"
                                      data-toppings="${item.toppingsCsv}">
-                                    <img src="${item.thumbnail}" class="item-image" alt="${item.productName}">
+                                    <c:set var="itemThumbnailSrc" value="${item.thumbnail}"/>
+                                    <c:if test="${not empty itemThumbnailSrc}">
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(itemThumbnailSrc, 'http')}">
+                                                <c:set var="itemThumbnailSrc" value="${item.thumbnail}"/>
+                                            </c:when>
+                                            <c:when test="${fn:startsWith(itemThumbnailSrc, 'uploads/')}">
+                                                <c:set var="itemThumbnailSrc" value="${pageContext.request.contextPath}/${item.thumbnail}"/>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <c:set var="itemThumbnailSrc" value="${pageContext.request.contextPath}/uploads/products/${item.thumbnail}"/>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:if>
+                                    <img src="${empty itemThumbnailSrc ? 'https://via.placeholder.com/80' : itemThumbnailSrc}" class="item-image" alt="${item.productName}">
                                     
                                     <div class="item-details">
                                         <div class="item-name">${item.productName}</div>
@@ -796,13 +811,29 @@ document.addEventListener("DOMContentLoaded", function() {
             }).join('');
         }
 
+        // Chỉ hiển thị "Mức đá" và "Độ ngọt" cho đồ uống (isDrink === true)
+        const isDrink = data.product.isDrink === true;
+        
         const sizesBlock = sizesHtml ? '<div class="mb-3"><h6>Kích cỡ</h6><div class="row g-2">' + sizesHtml + '</div></div>' : '';
-        const sugarBlock = createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều'], currentSugar);
-        const iceBlock = createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'], currentIce);
+        const sugarBlock = isDrink ? createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều'], currentSugar) : '';
+        const iceBlock = isDrink ? createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'], currentIce) : '';
         const toppingsBlock = toppingsHtml ? '<div class="mb-3"><h6>Topping</h6>' + toppingsHtml + '</div>' : '';
 
+        // Xử lý thumbnail URL
+        let thumbnailUrl = data.product.thumbnail || '';
+        if (thumbnailUrl && !thumbnailUrl.startsWith('http')) {
+            if (thumbnailUrl.startsWith('uploads/')) {
+                thumbnailUrl = contextPath + '/' + thumbnailUrl;
+            } else {
+                thumbnailUrl = contextPath + '/uploads/products/' + thumbnailUrl;
+            }
+        }
+        if (!thumbnailUrl) {
+            thumbnailUrl = 'https://via.placeholder.com/400?text=No+Image';
+        }
+
         content.innerHTML = '<div class="row g-4">' +
-            '<div class="col-md-5"><img src="' + escapeHtml(data.product.thumbnail) + '" ' +
+            '<div class="col-md-5"><img src="' + escapeHtml(thumbnailUrl) + '" ' +
             'class="img-fluid rounded" alt="' + escapeHtml(data.product.name) + '"></div>' +
             '<div class="col-md-7">' +
             '<h4>' + escapeHtml(data.product.name) + '</h4>' +
@@ -810,7 +841,7 @@ document.addEventListener("DOMContentLoaded", function() {
             currencyFormatter.format(data.product.basePrice) + '</p>' +
             '<div style="max-height: 300px; overflow-y: auto;">' +
             sizesBlock + sugarBlock + iceBlock + toppingsBlock +
-            (!sizesBlock && !toppingsBlock ? '<p class="text-muted">Sản phẩm này không có tùy chọn.</p>' : '') +
+            (!sizesBlock && !sugarBlock && !iceBlock && !toppingsBlock ? '<p class="text-muted">Sản phẩm này không có tùy chọn.</p>' : '') +
             '</div></div></div>';
 
         content.querySelectorAll('input[name="edit-size"]').forEach(r => 
@@ -856,17 +887,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const newSugar = document.querySelector('input[name="edit-sweetness"]:checked');
         const newIce = document.querySelector('input[name="edit-ice"]:checked');
+        
+        // Kiểm tra xem có input sweetness/ice không (nếu không có thì không phải đồ uống)
+        const isDrink = (newSugar !== null || newIce !== null || 
+                         document.querySelector('input[name="edit-sweetness"]') !== null ||
+                         document.querySelector('input[name="edit-ice"]') !== null);
 
         const params = new URLSearchParams({
             oldProductId: currentEditingItem.dataset.productId,
             oldSize: currentEditingItem.dataset.size || "Mặc định",
-            oldSugarLevel: currentEditingItem.dataset.sugarLevel || "Bình thường",
-            oldIceLevel: currentEditingItem.dataset.iceLevel || "Bình thường",
+            oldSugarLevel: currentEditingItem.dataset.sugarLevel || (isDrink ? "Bình thường" : ""),
+            oldIceLevel: currentEditingItem.dataset.iceLevel || (isDrink ? "Bình thường" : ""),
             oldToppingsCsv: currentEditingItem.dataset.toppings || "",
             quantity: currentEditingItem.querySelector('.quantity-mini input').value,
             newSize: newSize ? newSize.value : "Mặc định",
-            newSugarLevel: newSugar ? newSugar.value : "Bình thường",
-            newIceLevel: newIce ? newIce.value : "Bình thường",
+            newSugarLevel: (newSugar && isDrink) ? newSugar.value : (isDrink ? "Bình thường" : ""),
+            newIceLevel: (newIce && isDrink) ? newIce.value : (isDrink ? "Bình thường" : ""),
             newToppings: newToppings
         });
 

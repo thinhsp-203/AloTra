@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ page import="config.JpaUtil" %>
 <%@ page import="jakarta.persistence.EntityManager" %>
 <%@ page import="model.Product" %>
@@ -50,7 +51,22 @@
       <c:forEach var="product" items="${recentlyViewed}">
         <div class="col">
           <div class="card h-100">
-            <img src="${product.thumbnail}" class="card-img-top" alt="${product.product_name}" 
+            <c:set var="productThumbnailSrc" value="${product.thumbnail}"/>
+            <c:if test="${not empty productThumbnailSrc}">
+                <c:choose>
+                    <c:when test="${fn:startsWith(productThumbnailSrc, 'http')}">
+                        <c:set var="productThumbnailSrc" value="${product.thumbnail}"/>
+                    </c:when>
+                    <c:when test="${fn:startsWith(productThumbnailSrc, 'uploads/')}">
+                        <c:set var="productThumbnailSrc" value="${pageContext.request.contextPath}/${product.thumbnail}"/>
+                    </c:when>
+                    <c:otherwise>
+                        <c:set var="productThumbnailSrc" value="${pageContext.request.contextPath}/uploads/products/${product.thumbnail}"/>
+                    </c:otherwise>
+                </c:choose>
+            </c:if>
+            <img src="${empty productThumbnailSrc ? 'https://via.placeholder.com/200' : productThumbnailSrc}" 
+                 class="card-img-top" alt="${product.product_name}" 
                  style="height:150px;object-fit:cover;">
             <div class="card-body">
               <h6 class="card-title small mb-1">${product.product_name}</h6>
