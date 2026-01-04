@@ -17,12 +17,13 @@ public class Voucher {
   @GeneratedValue(strategy=GenerationType.IDENTITY)
   private Integer voucher_id; // Tên cũ là "id", model của bạn là "voucher_id"
 
-  @Column(nullable=false, length=50, unique=true)
+  @Column(nullable=false, length=50, unique=true, columnDefinition="NVARCHAR(50)")
   private String code;
 
-  @Column(name="description", length=500)
+  @Column(name="description", length=500, columnDefinition="NVARCHAR(500)")
   private String description;
 
+  @Column(columnDefinition="NVARCHAR(20)")
   private String discount_type; // Percent | Fixed
 
   @Column(nullable=false, precision=18, scale=2)
@@ -54,5 +55,17 @@ public class Voucher {
   public Date getEnd_dateAsDate() {
     if (this.end_date == null) return null;
     return Date.from(this.end_date.atZone(ZoneId.systemDefault()).toInstant());
+  }
+  
+  @Transient
+  public String getStart_dateAsLocalDateTimeString() {
+    if (this.start_date == null) return "";
+    return this.start_date.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
+  }
+  
+  @Transient
+  public String getEnd_dateAsLocalDateTimeString() {
+    if (this.end_date == null) return "";
+    return this.end_date.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
   }
 }

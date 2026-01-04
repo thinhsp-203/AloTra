@@ -12,7 +12,7 @@ public class CartServiceImpl implements CartService {
     
     @Override
     public CartItem addToCart(List<CartItem> cart, int productId, int quantity, 
-                             String sizeName, String toppingParam) {
+                             String sizeName, String sugarLevel, String iceLevel, String toppingParam) {
         EntityManager em = JpaUtil.em();
         try {
             // 1. LẤY THÔNG TIN SẢN PHẨM
@@ -70,7 +70,11 @@ public class CartServiceImpl implements CartService {
                 }
             }
             
-            // 4. TẠO CART ITEM MỚI
+            // 4. XỬ LÝ ĐỘ NGỌT VÀ MỨC ĐÁ
+            String finalSugarLevel = (sugarLevel == null || sugarLevel.isBlank()) ? "Bình thường" : sugarLevel;
+            String finalIceLevel = (iceLevel == null || iceLevel.isBlank()) ? "Bình thường" : iceLevel;
+            
+            // 5. TẠO CART ITEM MỚI
             CartItem newItem = new CartItem();
             newItem.setProductId(productId);
             newItem.setProductName(p.getProduct_name());
@@ -79,11 +83,13 @@ public class CartServiceImpl implements CartService {
             newItem.setUnitPrice(p.getPrice());
             newItem.setSizeName(finalSizeName);
             newItem.setSizeAdj(sizeAdjustment);
+            newItem.setSugarLevel(finalSugarLevel);
+            newItem.setIceLevel(finalIceLevel);
             newItem.setToppingsCost(toppingsCost);
             newItem.setToppingsCsv(toppingsCsv);
             
-            // 5. KIỂM TRA ITEM ĐÃ TỒN TẠI
-            CartItem existingItem = findCartItem(cart, productId, finalSizeName, toppingsCsv);
+            // 6. KIỂM TRA ITEM ĐÃ TỒN TẠI
+            CartItem existingItem = findCartItem(cart, productId, finalSizeName, finalSugarLevel, finalIceLevel, toppingsCsv);
             
             if (existingItem != null) {
                 // Cộng dồn số lượng
@@ -102,16 +108,18 @@ public class CartServiceImpl implements CartService {
     
     @Override
     public void updateQuantity(List<CartItem> cart, int productId, String sizeName, 
-                              String toppingsCsv, int newQuantity) {
+                              String sugarLevel, String iceLevel, String toppingsCsv, int newQuantity) {
         String finalSize = normalizeSizeName(sizeName);
+        String finalSugar = (sugarLevel == null || sugarLevel.isBlank()) ? "Bình thường" : sugarLevel;
+        String finalIce = (iceLevel == null || iceLevel.isBlank()) ? "Bình thường" : iceLevel;
         String finalToppings = normalizeToppings(toppingsCsv);
         
         if (newQuantity <= 0) {
-            removeItem(cart, productId, finalSize, finalToppings);
+            removeItem(cart, productId, finalSize, finalSugar, finalIce, finalToppings);
             return;
         }
         
-        CartItem item = findCartItem(cart, productId, finalSize, finalToppings);
+        CartItem item = findCartItem(cart, productId, finalSize, finalSugar, finalIce, finalToppings);
         if (item != null) {
             item.setQuantity(newQuantity);
         }
@@ -119,26 +127,32 @@ public class CartServiceImpl implements CartService {
     
     @Override
     public void removeItem(List<CartItem> cart, int productId, String sizeName, 
-                          String toppingsCsv) {
+                          String sugarLevel, String iceLevel, String toppingsCsv) {
         String finalSize = normalizeSizeName(sizeName);
+        String finalSugar = (sugarLevel == null || sugarLevel.isBlank()) ? "Bình thường" : sugarLevel;
+        String finalIce = (iceLevel == null || iceLevel.isBlank()) ? "Bình thường" : iceLevel;
         String finalToppings = normalizeToppings(toppingsCsv);
         
         cart.removeIf(item -> 
             item.getProductId().equals(productId) &&
             Objects.equals(item.getSizeName(), finalSize) &&
+            Objects.equals(item.getSugarLevel(), finalSugar) &&
+            Objects.equals(item.getIceLevel(), finalIce) &&
             Objects.equals(item.getToppingsCsv(), finalToppings)
         );
     }
     
     @Override
     public boolean updateItemDetails(List<CartItem> cart, int oldProductId, 
-                                    String oldSize, String oldToppingsCsv,
-                                    String newSize, String newToppingParam, 
+                                    String oldSize, String oldSugarLevel, String oldIceLevel, String oldToppingsCsv,
+                                    String newSize, String newSugarLevel, String newIceLevel, String newToppingParam, 
                                     int quantity) {
         EntityManager em = JpaUtil.em();
         try {
             // 1. CHUẨN HÓA DỮ LIỆU CŨ
             String finalOldSize = normalizeSizeName(oldSize);
+            String finalOldSugar = (oldSugarLevel == null || oldSugarLevel.isBlank()) ? "Bình thường" : oldSugarLevel;
+            String finalOldIce = (oldIceLevel == null || oldIceLevel.isBlank()) ? "Bình thường" : oldIceLevel;
             String finalOldToppingsCsv = normalizeToppings(oldToppingsCsv);
             
             // 2. LẤY THÔNG TIN SẢN PHẨM
@@ -149,6 +163,8 @@ public class CartServiceImpl implements CartService {
             
             // 3. TÍNH TOÁN THUỘC TÍNH MỚI
             String finalNewSize = (newSize == null || newSize.isBlank()) ? "Mặc định" : newSize;
+            String finalNewSugar = (newSugarLevel == null || newSugarLevel.isBlank()) ? "Bình thường" : newSugarLevel;
+            String finalNewIce = (newIceLevel == null || newIceLevel.isBlank()) ? "Bình thường" : newIceLevel;
             BigDecimal sizeAdjustment = BigDecimal.ZERO;
             
             if (!"Mặc định".equals(finalNewSize)) {
@@ -192,7 +208,7 @@ public class CartServiceImpl implements CartService {
             }
             
             // 5. XÓA ITEM CŨ
-            removeItem(cart, oldProductId, finalOldSize, finalOldToppingsCsv);
+            removeItem(cart, oldProductId, finalOldSize, finalOldSugar, finalOldIce, finalOldToppingsCsv);
             
             // 6. TẠO ITEM MỚI
             CartItem newItem = new CartItem();
@@ -203,12 +219,16 @@ public class CartServiceImpl implements CartService {
             newItem.setUnitPrice(p.getPrice());
             newItem.setSizeName(finalNewSize);
             newItem.setSizeAdj(sizeAdjustment);
+            newItem.setSugarLevel(finalNewSugar);
+            newItem.setIceLevel(finalNewIce);
             newItem.setToppingsCsv(newToppingsCsv);
             newItem.setToppingsCost(toppingsCost);
             
             // 7. MERGE VỚI ITEM TƯƠNG TỰ (NẾU CÓ)
             CartItem existingSimilar = findCartItem(cart, newItem.getProductId(), 
                                                     newItem.getSizeName(), 
+                                                    newItem.getSugarLevel(),
+                                                    newItem.getIceLevel(),
                                                     newItem.getToppingsCsv());
             
             if (existingSimilar != null) {
@@ -227,14 +247,16 @@ public class CartServiceImpl implements CartService {
     // ==================== PRIVATE HELPER METHODS ====================
     
     /**
-     * Tìm CartItem trong giỏ theo productId, size, toppings
+     * Tìm CartItem trong giỏ theo productId, size, sugar, ice, toppings
      */
     private CartItem findCartItem(List<CartItem> cart, int productId, 
-                                  String sizeName, String toppingsCsv) {
+                                  String sizeName, String sugarLevel, String iceLevel, String toppingsCsv) {
         return cart.stream()
             .filter(item -> 
                 item.getProductId().equals(productId) &&
                 Objects.equals(item.getSizeName(), sizeName) &&
+                Objects.equals(item.getSugarLevel(), sugarLevel) &&
+                Objects.equals(item.getIceLevel(), iceLevel) &&
                 Objects.equals(item.getToppingsCsv(), toppingsCsv)
             )
             .findFirst()

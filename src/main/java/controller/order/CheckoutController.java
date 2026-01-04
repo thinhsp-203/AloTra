@@ -9,19 +9,23 @@ import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import model.*;
 import service.OrderService;
+import service.VoucherService;
 import service.impl.OrderServiceImpl;
 import service.impl.VNPayService;
+import service.impl.VoucherServiceImpl;
 
 @WebServlet(urlPatterns = {"/checkout", "/checkout/*"})
 public class CheckoutController extends HttpServlet {
 
     // SỬA 1: Khai báo repository ở đây (stateless)
     private OrderService orderService;
+    private VoucherService voucherService;
 
     // SỬA 2: Thêm hàm init()
     @Override
     public void init() throws ServletException {
         orderService = new OrderServiceImpl();
+        voucherService = new VoucherServiceImpl();
     }
 
     @SuppressWarnings("unchecked")
@@ -42,9 +46,20 @@ public class CheckoutController extends HttpServlet {
             return;
         }
 
-        if (cart(session).isEmpty()) {
+        var cartItems = cart(session);
+        if (cartItems.isEmpty()) {
             resp.sendRedirect(req.getContextPath() + "/products");
             return;
+        }
+
+        // Load danh sách voucher khả dụng
+        try {
+            var availableVouchers = voucherService.getAvailableVouchers(cartItems);
+            req.setAttribute("availableVouchers", availableVouchers);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Nếu lỗi khi load voucher, vẫn tiếp tục với danh sách rỗng
+            req.setAttribute("availableVouchers", new ArrayList<>());
         }
 
         req.getRequestDispatcher("/views/order/checkout.jsp").forward(req, resp);
@@ -106,7 +121,7 @@ public class CheckoutController extends HttpServlet {
                         rollbackEm.getTransaction().begin();
                         Orders rollbackOrder = rollbackEm.find(Orders.class, order.getOrder_id());
                         if (rollbackOrder != null) {
-                            rollbackOrder.setOrder_status("Đã hủy");
+                            rollbackOrder.setOrder_status("Hủy Đơn");
                             rollbackOrder.setPayment_status("Thất bại");
                             rollbackEm.merge(rollbackOrder);
                         }
@@ -126,10 +141,11 @@ public class CheckoutController extends HttpServlet {
                 }
             }
 
-            // COD payment - success (Logic này OK)
-            session.removeAttribute("CART");
+            // COD payment - success (không tích điểm ở đây, sẽ tích khi đơn hàng hoàn thành)
             session.setAttribute("orderSuccess",
                     "Đơn hàng #" + order.getOrder_id() + " đã được đặt thành công! Bạn sẽ thanh toán khi nhận hàng.");
+            
+            session.removeAttribute("CART");
             resp.sendRedirect(req.getContextPath() + "/user/orders");
 
         } catch (Exception e) {

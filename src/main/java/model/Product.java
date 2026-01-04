@@ -27,7 +27,7 @@ public class Product {
   @Column(precision=5, scale=2)
   private BigDecimal discount;
 
-  private Integer stock;
+  @Column(columnDefinition="NVARCHAR(500)")
   private String thumbnail;
 
   @Column(columnDefinition="NVARCHAR(MAX)")
@@ -36,9 +36,6 @@ public class Product {
   @ManyToOne 
   @JoinColumn(name="cate_id", referencedColumnName="cate_id") // Sửa tại đây
   private Category category;
-
-  @ManyToOne @JoinColumn(name="supplier_id")
-  private Supplier supplier;
 
   private Integer views;
 

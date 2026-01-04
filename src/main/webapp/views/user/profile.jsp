@@ -46,7 +46,17 @@ class="alert alert-success alert-dismissible fade show">
                             <c:set var="avatarSrc">
                                 <c:choose>
                                     <c:when test="${not empty user.avatar}">
-                                        ${pageContext.request.contextPath}/uploads/${user.avatar}
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(user.avatar, 'http')}">
+                                                ${user.avatar}
+                                            </c:when>
+                                            <c:when test="${fn:startsWith(user.avatar, 'uploads/')}">
+                                                ${pageContext.request.contextPath}/${user.avatar}
+                                            </c:when>
+                                            <c:otherwise>
+                                                ${pageContext.request.contextPath}/uploads/${user.avatar}
+                                            </c:otherwise>
+                                        </c:choose>
                                     </c:when>
                                     <c:otherwise>
                                         https://via.placeholder.com/200/006633/FFFFFF?text=${fn:substring(user.username, 0, 1)}

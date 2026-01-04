@@ -1,13 +1,43 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<h1 class="h3 mb-4 text-gray-800">Thêm danh mục mới</h1>
+<%-- Header --%>
+<div class="d-flex justify-content-between align-items-center mb-4" style="margin-right: 20px;">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">
+            <i class="fas fa-tags text-primary" style="margin-right: 10px;"></i>Thêm danh mục mới
+        </h1>
+        <p class="text-muted mb-0">Thêm danh mục sản phẩm mới vào hệ thống</p>
+    </div>
+    <a href="${pageContext.request.contextPath}/admin/category/list" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left" style="margin-right: 10px;"></i>Quay lại
+    </a>
+</div>
+
+<%-- Alert Messages --%>
+<c:if test="${not empty sessionScope.error}">
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-exclamation-circle" style="margin-right: 10px;"></i><strong>Lỗi!</strong> ${sessionScope.error}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <c:remove var="error" scope="session"/>
+</c:if>
+
+<c:if test="${not empty sessionScope.success}">
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle" style="margin-right: 10px;"></i><strong>Thành công!</strong> ${sessionScope.success}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <c:remove var="success" scope="session"/>
+</c:if>
 
 <div class="row">
   <div class="col-lg-8">
-    <div class="card shadow mb-4">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Thông tin danh mục</h6>
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white border-bottom py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-info-circle" style="margin-right: 10px;"></i>Thông tin danh mục
+        </h6>
       </div>
       <div class="card-body">
         <form action="${pageContext.request.contextPath}/admin/category/add"
@@ -15,48 +45,88 @@
               enctype="multipart/form-data"
             id="categoryForm">
           
-          <div class="mb-3">
-            <label class="form-label">
-              Tên danh mục <span class="text-danger">*</span>
+          <div class="mb-4">
+            <label class="form-label fw-semibold mb-2">
+              <i class="fas fa-tag text-primary" style="margin-right: 10px;"></i>Tên danh mục <span class="text-danger">*</span>
             </label>
             <input type="text" 
-         class="form-control" 
+                   class="form-control" 
                    name="name" 
                    placeholder="Ví dụ: Trà sữa, Cà phê, Bánh ngọt..." 
                    required 
-                   autofocus/>
-        <div class="form-text">Tên danh mục sẽ hiển thị trên trang chủ và menu</div>
-          </div>
-          
-          <div class="mb-3">
-            <label class="form-label">Ảnh đại diện</label>
-            <input type="file" 
-                   class="form-control" 
-                  name="icon" 
-                   accept="image/*"
-                   id="iconInput"/>
-            <div class="form-text">Định dạng: JPG, PNG. Kích thước đề xuất: 200x200px</div>
-          </div>
-          
-          <div class="mb-3" id="previewContainer" style="display: none;">
-            <label class="form-label">Xem trước</label>
-            <div>
-              <img id="imagePreview" 
-            class="rounded border" 
-                   style="max-width: 200px; max-height: 200px; object-fit: cover;"
-alt="Preview"/>
+                   autofocus
+                   style="font-size: 1rem; padding: 0.75rem;"/>
+            <div class="form-text mt-2">
+              <i class="fas fa-info-circle text-info" style="margin-right: 5px;"></i>Tên danh mục sẽ hiển thị trên trang chủ và menu
             </div>
           </div>
           
-          <hr>
+          <div class="mb-4">
+            <label class="form-label fw-semibold mb-2">
+              <i class="fas fa-list text-primary" style="margin-right: 10px;"></i>Loại danh mục <span class="text-danger">*</span>
+            </label>
+            <div class="form-check mb-2">
+              <input class="form-check-input" 
+                     type="radio" 
+                     name="isDrink" 
+                     id="isDrink_true" 
+                     value="true" 
+                     checked
+                     required>
+              <label class="form-check-label" for="isDrink_true">
+                <i class="bi bi-cup-straw text-primary"></i> Thức uống
+              </label>
+              <div class="form-text ms-4">Sản phẩm thuộc danh mục này sẽ có size (S/M/L)</div>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" 
+                     type="radio" 
+                     name="isDrink" 
+                     id="isDrink_false" 
+                     value="false"
+                     required>
+              <label class="form-check-label" for="isDrink_false">
+                <i class="bi bi-cake2 text-warning"></i> Bánh & Đồ ăn vặt
+              </label>
+              <div class="form-text ms-4">Sản phẩm thuộc danh mục này không có size</div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold mb-2">
+              <i class="fas fa-image text-primary" style="margin-right: 10px;"></i>Ảnh đại diện
+            </label>
+            <div class="row">
+              <div class="col-md-5 mb-3">
+                <label class="form-label">Xem trước</label>
+                <div class="border rounded p-3 bg-light text-center">
+                  <img id="imagePreview" 
+                       src="https://via.placeholder.com/200x200?text=Chưa+có+ảnh"
+                       class="img-fluid rounded border" 
+                       style="max-width: 100%; max-height: 200px; object-fit: cover;"
+                       alt="Preview"/>
+                </div>
+              </div>
+              <div class="col-md-7">
+                <input type="file" 
+                       class="form-control mb-2" 
+                       name="icon" 
+                       accept="image/*"
+                       id="iconInput"/>
+                <div class="form-text">Định dạng: JPG, PNG. Kích thước đề xuất: 200x200px</div>
+              </div>
+            </div>
+          </div>
           
-          <div class="d-flex gap-2">
+          <hr class="my-4">
+          
+          <div class="d-flex gap-3">
             <button type="submit" class="btn btn-primary">
-              <i class="fas fa-save fa-sm"></i> Lưu danh mục
-          </button>
+              <i class="fas fa-save" style="margin-right: 10px;"></i>Lưu danh mục
+            </button>
             <a href="${pageContext.request.contextPath}/admin/category/list" 
                class="btn btn-outline-secondary">
-              Hủy
+              <i class="fas fa-times" style="margin-right: 10px;"></i>Hủy bỏ
             </a>
           </div>
         </form>
@@ -65,10 +135,10 @@ alt="Preview"/>
   </div>
   
 <div class="col-lg-4">
-    <div class="card shadow-sm mb-4">
-      <div class="card-header py-3">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white border-bottom py-3">
         <h6 class="m-0 font-weight-bold text-primary">
-          <i class="fas fa-lightbulb fa-sm"></i> Gợi ý
+          <i class="fas fa-lightbulb" style="margin-right: 10px;"></i>Gợi ý
         </h6>
       </div>
       <div class="card-body">
@@ -84,18 +154,16 @@ alt="Preview"/>
 </div>
 
 <script>
-// Preview ảnh khi chọn file
-document.getElementById('iconInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      document.getElementById('imagePreview').src = e.target.result;
-      document.getElementById('previewContainer').style.display = 'block';
+// Script preview ảnh khi chọn file
+document.getElementById('iconInput')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('imagePreview');
+    if (file && preview) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
-    reader.readAsDataURL(file);
-} else {
-    document.getElementById('previewContainer').style.display = 'none';
-  }
 });
 </script>

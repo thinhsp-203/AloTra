@@ -88,10 +88,6 @@ public class ProductQueryRepositoryImpl implements ProductQueryRepository {
                 ql.append(" AND p.category.id = :cateId");
                 params.put("cateId", cateId);
             }
-            if (suppId != null) {
-                ql.append(" AND p.supplier.id = :suppId");
-                params.put("suppId", suppId);
-            }
             if (minPrice != null) {
                 ql.append(" AND p.price >= :minPrice");
                 params.put("minPrice", minPrice);
@@ -132,10 +128,6 @@ public class ProductQueryRepositoryImpl implements ProductQueryRepository {
             if (cateId != null) {
                 ql.append(" AND p.category.id = :cateId");
                 params.put("cateId", cateId);
-            }
-            if (suppId != null) {
-                ql.append(" AND p.supplier.id = :suppId");
-                params.put("suppId", suppId);
             }
             if (minPrice != null) {
                 ql.append(" AND p.price >= :minPrice");

@@ -134,13 +134,20 @@ try (var em = JpaUtil.em()) {
     background: transparent;
     border: none;
     color: #6c757d;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+    pointer-events: none;
+}
+
+.search-form:focus-within .input-group-text {
+    color: var(--bs-primary);
 }
 </style>
 
 <header class="sticky-top bg-white shadow-sm">
     <div class="container py-2">
-        <div class="row align-items-center g-2">
-            <div class="col-auto">
+        <div class="header-top-wrapper">
+            <div class="header-left">
                 <a class="navbar-brand" href="${pageContext.request.contextPath}/home">
 				    <c:choose>
 				        <c:when test="${not empty siteSettings.LOGO_URL}">
@@ -148,18 +155,16 @@ try (var em = JpaUtil.em()) {
 				        </c:when>
 				    </c:choose>
 				</a>
-            </div>
-            <div class="col-auto" style="max-width: 500px;">
                 <div class="search-autocomplete-container">
                     <form action="${pageContext.request.contextPath}/products" method="get" class="search-form position-relative">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-              <input class="form-control" 
-                     type="search" 
-                     name="q" 
-                     id="searchInput"
-                     placeholder="Bạn muốn mua gì..." 
-                     value="${param.q}"
-                     autocomplete="off">
+                        <input class="form-control" 
+                               type="search" 
+                               name="q" 
+                               id="searchInput"
+                               placeholder="Bạn muốn mua gì..." 
+                               value="${param.q}"
+                               autocomplete="off">
                     </form>
                     <div class="search-suggestions" id="searchSuggestions">
                         <div class="suggestions-header">
@@ -183,7 +188,10 @@ try (var em = JpaUtil.em()) {
                     </div>
                 </div>
             </div>
-            <div class="col-auto ms-auto">
+            <div class="header-center">
+                <h1 class="site-title mb-0">AloTra</h1>
+            </div>
+            <div class="header-right">
                 <div class="d-flex align-items-center gap-3">
                     <a href="${pageContext.request.contextPath}/cart/view" 
                        class="nav-link position-relative">
@@ -192,6 +200,35 @@ try (var em = JpaUtil.em()) {
                             ${not empty sessionScope.cart ? fn:length(sessionScope.cart.items) : 0}
                         </span>
                     </a>
+                    <c:if test="${not empty sessionScope.currentUser}">
+                        <div class="nav-item dropdown" id="notificationDropdown">
+                            <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" id="notificationIcon">
+                                <i class="bi bi-bell fs-4"></i>
+                                <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle" id="notification-badge" style="display: none;">
+                                    <span id="notification-count">0</span>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" style="width: 350px; max-height: 500px; overflow-y: auto;" id="notificationDropdownMenu">
+                                <li class="px-3 py-2 border-bottom">
+                                    <h6 class="mb-0"><i class="bi bi-bell me-2"></i>Thông báo</h6>
+                                </li>
+                                <li>
+                                    <div id="notification-list" class="p-2">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="border-top">
+                                    <a class="dropdown-item text-center text-primary fw-semibold" href="${pageContext.request.contextPath}/user/notifications">
+                                        <i class="bi bi-arrow-right-circle me-2"></i>Xem tất cả thông báo
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </c:if>
                     <c:choose>
                         <c:when test="${empty sessionScope.currentUser}">
                             <a class="btn btn-primary btn-sm" href="${pageContext.request.contextPath}/login">Đăng nhập</a>
@@ -226,11 +263,17 @@ try (var em = JpaUtil.em()) {
         <div class="container">
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav mx-auto">
+                    <c:set var="requestURI" value="${pageContext.request.requestURI}" />
+                    <c:set var="contextPath" value="${pageContext.request.contextPath}" />
+                    <c:set var="currentPath" value="${fn:replace(requestURI, contextPath, '')}" />
+                    
                    <li class="nav-item">
-                        <a class="nav-link fw-bold" href="${pageContext.request.contextPath}/home">TRANG CHỦ</a>
+                        <a class="nav-link fw-bold ${fn:endsWith(currentPath, '/home') || fn:endsWith(currentPath, '/') || currentPath == '' ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/home">TRANG CHỦ</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link fw-bold dropdown-toggle" href="${pageContext.request.contextPath}/products" id="menuDropdown">
+                        <a class="nav-link fw-bold dropdown-toggle ${fn:contains(currentPath, '/products') || fn:contains(currentPath, '/p?id=') ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/products" id="menuDropdown">
                             MENU
                         </a>
                         <c:if test="${not empty navbarCategories}">
@@ -240,8 +283,7 @@ try (var em = JpaUtil.em()) {
                                         <div class="col-lg-4 col-md-6">
                                             <h6 class="dropdown-header"><i class="bi bi-cup-straw"></i> Thức uống</h6>
                                             <c:forEach var="cat" items="${navbarCategories}">
-                                                <c:set var="lowerName" value="${fn:toLowerCase(cat.name)}" />
-                                                <c:if test="${fn:contains(lowerName, 'trà') || fn:contains(lowerName, 'cà phê') || fn:contains(lowerName, 'sinh tố') || fn:contains(lowerName, 'nước')}">
+                                                <c:if test="${cat.isDrink}">
                                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/products?cate=${cat.id}">
                                                         ${cat.name}
                                                     </a>
@@ -251,26 +293,12 @@ try (var em = JpaUtil.em()) {
                                         <div class="col-lg-4 col-md-6">
                                             <h6 class="dropdown-header"><i class="bi bi-cake2"></i> Bánh & Đồ ăn vặt</h6>
                                             <c:forEach var="cat" items="${navbarCategories}">
-                                                <c:set var="lowerName" value="${fn:toLowerCase(cat.name)}" />
-                                                <c:if test="${fn:contains(lowerName, 'bánh') || fn:contains(lowerName, 'ăn vặt') || fn:contains(lowerName, 'snack')}">
+                                                <c:if test="${not cat.isDrink}">
                                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/products?cate=${cat.id}">
                                                         ${cat.name}
                                                     </a>
                                                 </c:if>
                                             </c:forEach>
-                                        </div>
-                                        <div class="col-lg-4 col-md-12">
-                                            <div class="p-3">
-                                                <c:choose>
-                                                    <c:when test="${not empty siteSettings.MENU_BANNER_URL}">
-                                                        <img src="${siteSettings.MENU_BANNER_URL}" class="img-fluid rounded" alt="Promo">
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <img src="https://static.phuclong.com.vn/storage/5/2024/5/2/663305417df89_bsttraxanhtraicayvuongtronvinangluong.jpg" 
-                                                             class="img-fluid rounded" alt="Promo">
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -278,16 +306,20 @@ try (var em = JpaUtil.em()) {
                         </c:if>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-bold" href="${pageContext.request.contextPath}/promotions">KHUYẾN MÃI</a>
+                        <a class="nav-link fw-bold ${fn:contains(currentPath, '/promotions') ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/promotions">KHUYẾN MÃI</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-bold" href="${pageContext.request.contextPath}/stores">DANH SÁCH CỬA HÀNG</a>
+                        <a class="nav-link fw-bold ${fn:contains(currentPath, '/stores') ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/stores">DANH SÁCH CỬA HÀNG</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-bold" href="#">VỀ CHÚNG TÔI</a>
+                        <a class="nav-link fw-bold ${fn:contains(currentPath, '/about') || fn:contains(currentPath, '/ve-chung-toi') ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/about">VỀ CHÚNG TÔI</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-bold" href="#">HỘI VIÊN</a>
+                        <a class="nav-link fw-bold ${fn:contains(currentPath, '/user/loyalty') || fn:contains(currentPath, '/user/rewards') ? 'active' : ''}" 
+                           href="${pageContext.request.contextPath}/user/loyalty">HỘI VIÊN</a>
                     </li>
                 </ul>
             </div>

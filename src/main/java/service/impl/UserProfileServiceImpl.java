@@ -7,15 +7,11 @@ import jakarta.servlet.http.Part;
 import model.Orders;
 import model.User;
 import service.UserProfileService;
-import utils.Constant;
 import utils.PasswordUtil;
+import utils.UploadType;
+import utils.UploadUtil;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
 public class UserProfileServiceImpl implements UserProfileService {
     
@@ -123,7 +119,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
     
     @Override
-    public void changeAvatar(int userId, Part avatarFile) {
+    public void changeAvatar(int userId, Part avatarFile, jakarta.servlet.ServletContext servletContext) {
         if (avatarFile == null || avatarFile.getSize() == 0) {
             throw new IllegalArgumentException("Vui lòng chọn một file ảnh!");
         }
@@ -137,36 +133,19 @@ public class UserProfileServiceImpl implements UserProfileService {
                 throw new IllegalArgumentException("User không tồn tại!");
             }
             
-            // Xử lý upload
-            String originalFileName = Paths.get(avatarFile.getSubmittedFileName())
-                .getFileName().toString();
-            String extension = "";
-            int i = originalFileName.lastIndexOf('.');
-            if (i > 0) {
-                extension = originalFileName.substring(i);
-            }
-            
-            String finalFileName = "user-" + userId + "-" + UUID.randomUUID().toString() + extension;
-            
-            File uploadDir = new File(Constant.UPLOAD_DIRECTORY);
-            if (!uploadDir.exists()) uploadDir.mkdirs();
-            File fileToSave = new File(uploadDir, finalFileName);
-            
             // Xóa avatar cũ
             if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
-                File oldFile = new File(uploadDir, user.getAvatar());
-                if (oldFile.exists()) {
-                    oldFile.delete();
-                }
+                UploadUtil.deleteOldImage(user.getAvatar(), servletContext);
             }
             
-            // Lưu file mới
-            try (InputStream input = avatarFile.getInputStream()) {
-                Files.copy(input, fileToSave.toPath());
+            // Upload file mới
+            String uploadedPath = UploadUtil.save(avatarFile, UploadType.USERS, servletContext);
+            if (uploadedPath == null) {
+                throw new IllegalArgumentException("Không thể upload file!");
             }
             
-            // Cập nhật DB
-            user.setAvatar(finalFileName);
+            // Cập nhật DB - lưu relative path: "uploads/users/filename"
+            user.setAvatar(uploadedPath);
             em.merge(user);
             
             em.getTransaction().commit();
@@ -202,11 +181,13 @@ public class UserProfileServiceImpl implements UserProfileService {
                 throw new IllegalArgumentException("Đơn hàng không thuộc về bạn!");
             }
             
-            if (!"Chờ xác nhận".equals(order.getOrder_status())) {
-                throw new IllegalArgumentException("Không thể hủy đơn hàng này!");
+            // Kiểm tra quyền hủy: chỉ được hủy khi status = CHO_XAC_NHAN
+            utils.OrderStatus currentStatus = utils.OrderStatus.fromOldString(order.getOrder_status());
+            if (currentStatus != utils.OrderStatus.CHO_XAC_NHAN) {
+                throw new IllegalArgumentException("Bạn chỉ có thể hủy đơn hàng khi đơn đang ở trạng thái 'Chờ xác nhận'!");
             }
             
-            order.setOrder_status("Đã hủy");
+            order.setOrder_status(utils.OrderStatus.HUY_BOI_KHACH.getDisplayName());
             order.setUpdatedDate(java.time.LocalDateTime.now());
             em.merge(order);
             

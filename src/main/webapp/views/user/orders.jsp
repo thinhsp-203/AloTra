@@ -106,9 +106,9 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${cs eq 'Đã hủy' ? 'active' : ''}" 
-                   href="${pageContext.request.contextPath}/user/orders?status=Đã hủy">
-                    <i class="bi bi-x-circle"></i> Đã hủy
+                <a class="nav-link ${cs eq 'Hủy Đơn' ? 'active' : ''}" 
+                   href="${pageContext.request.contextPath}/user/orders?status=Hủy Đơn">
+                    <i class="bi bi-x-circle"></i> Hủy Đơn
                 </a>
             </li>
         </ul>
@@ -261,6 +261,7 @@
                                     <!-- Order Actions -->
                                     <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                                         <div>
+                                            <%-- User chỉ có thể hủy khi status = CHO_XAC_NHAN --%>
                                             <c:if test="${order.order_status eq 'Chờ xác nhận'}">
                                                 <form method="post" 
                                                       action="${pageContext.request.contextPath}/user/profile" 
@@ -272,6 +273,11 @@
                                                         <i class="bi bi-x-circle"></i> Hủy đơn
                                                     </button>
                                                 </form>
+                                            </c:if>
+                                            <c:if test="${order.order_status ne 'Chờ xác nhận' and order.order_status ne 'Hủy bởi khách' and order.order_status ne 'Hủy bởi shop' and order.order_status ne 'Từ chối' and order.order_status ne 'Hủy Đơn'}">
+                                                <span class="text-muted small">
+                                                    <i class="bi bi-info-circle"></i> Đơn đã được xác nhận, không thể hủy
+                                                </span>
                                             </c:if>
                                             <c:if test="${order.order_status eq 'Hoàn thành'}">
                                                 <a href="${pageContext.request.contextPath}/user/reorder?orderId=${order.order_id}" 

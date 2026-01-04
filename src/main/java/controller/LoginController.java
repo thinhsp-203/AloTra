@@ -9,7 +9,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = "/login")
+@WebServlet(urlPatterns = "/login", asyncSupported = false)
 public class LoginController extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private UserService userService;
@@ -28,6 +28,13 @@ public class LoginController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/home");
             return;
         }
+        
+        // Xử lý alert từ query parameter
+        String alertParam = req.getParameter("alert");
+        if (alertParam != null && !alertParam.isEmpty()) {
+            req.setAttribute("alert", alertParam);
+        }
+        
         req.getRequestDispatcher("views/login.jsp").forward(req, resp);
     }
 

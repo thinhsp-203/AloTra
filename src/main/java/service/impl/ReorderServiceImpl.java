@@ -32,9 +32,8 @@ public class ReorderServiceImpl implements ReorderService {
             for (OrderDetail detail : order.getOrderDetails()) {
                 Product p = detail.getProduct();
                 
-                // Kiểm tra sản phẩm còn hoạt động và còn hàng
-                if (p == null || p.getIsActive() == null || !p.getIsActive() ||
-                    p.getStock() == null || p.getStock() < detail.getQuantity()) {
+                // Kiểm tra sản phẩm còn hoạt động
+                if (p == null || p.getIsActive() == null || !p.getIsActive()) {
                     unavailableItems++;
                     continue;
                 }

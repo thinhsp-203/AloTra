@@ -3,6 +3,7 @@ package controller.admin;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -65,10 +66,23 @@ public class AdminVoucherController extends HttpServlet {
 	                    ? voucherService.getVoucherById(Integer.parseInt(idParam)) 
 	                    : new Voucher();
 	                
-	                v.setCode(req.getParameter("code").toUpperCase());
-	                v.setDescription(req.getParameter("description"));
-	                v.setDiscount_type(req.getParameter("discount_type"));
-	                v.setDiscount_value(new BigDecimal(req.getParameter("discount_value")));
+                v.setCode(req.getParameter("code").toUpperCase());
+                v.setDescription(req.getParameter("description"));
+                String discountType = req.getParameter("discount_type");
+                v.setDiscount_type(discountType);
+                
+                // Validate discount_value based on discount_type
+                BigDecimal discountValue = new BigDecimal(req.getParameter("discount_value"));
+                if ("PERCENT".equals(discountType)) {
+                    if (discountValue.compareTo(BigDecimal.ZERO) < 0 || discountValue.compareTo(BigDecimal.valueOf(100)) > 0) {
+                        throw new IllegalArgumentException("Giá trị giảm giá theo % phải từ 0 đến 100");
+                    }
+                } else if ("AMOUNT".equals(discountType)) {
+                    if (discountValue.compareTo(BigDecimal.ZERO) < 0) {
+                        throw new IllegalArgumentException("Giá trị giảm giá phải lớn hơn 0");
+                    }
+                }
+                v.setDiscount_value(discountValue);
 	                
 	                String minOrder = req.getParameter("min_order_value");
 	                v.setMin_order_value((minOrder == null || minOrder.isEmpty()) ? null : new BigDecimal(minOrder));
@@ -76,12 +90,47 @@ public class AdminVoucherController extends HttpServlet {
 	                String maxDiscount = req.getParameter("max_discount");
 	                v.setMax_discount((maxDiscount == null || maxDiscount.isEmpty()) ? null : new BigDecimal(maxDiscount));
 	                
-	                String usageLimit = req.getParameter("usage_limit");
-	                v.setUsage_limit((usageLimit == null || usageLimit.isEmpty()) ? null : Integer.parseInt(usageLimit));
-	                
-	                v.setStart_date(LocalDateTime.parse(req.getParameter("start_date")));
-	                v.setEnd_date(LocalDateTime.parse(req.getParameter("end_date")));
-	                v.setIsActive(req.getParameter("isActive") != null);
+                String usageLimit = req.getParameter("usage_limit");
+                v.setUsage_limit((usageLimit == null || usageLimit.isEmpty()) ? null : Integer.parseInt(usageLimit));
+                
+                // Parse datetime-local format (yyyy-MM-ddTHH:mm or yyyy-MM-ddTHH:mm:ss)
+                String startDateStr = req.getParameter("start_date");
+                if (startDateStr != null && !startDateStr.isEmpty()) {
+                    try {
+                        // Try with seconds first, then without
+                        DateTimeFormatter formatter = startDateStr.length() > 16 
+                            ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+                            : DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                        v.setStart_date(LocalDateTime.parse(startDateStr, formatter));
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("Ngày bắt đầu không hợp lệ: " + e.getMessage());
+                    }
+                } else {
+                    throw new IllegalArgumentException("Ngày bắt đầu là bắt buộc");
+                }
+                
+                String endDateStr = req.getParameter("end_date");
+                if (endDateStr != null && !endDateStr.isEmpty()) {
+                    try {
+                        // Try with seconds first, then without
+                        DateTimeFormatter formatter = endDateStr.length() > 16 
+                            ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+                            : DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                        v.setEnd_date(LocalDateTime.parse(endDateStr, formatter));
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("Ngày kết thúc không hợp lệ: " + e.getMessage());
+                    }
+                } else {
+                    throw new IllegalArgumentException("Ngày kết thúc là bắt buộc");
+                }
+                
+                // Validate: end_date must be after start_date
+                if (v.getStart_date() != null && v.getEnd_date() != null 
+                    && !v.getEnd_date().isAfter(v.getStart_date())) {
+                    throw new IllegalArgumentException("Ngày kết thúc phải sau ngày bắt đầu");
+                }
+                
+                v.setIsActive(req.getParameter("isActive") != null);
 	                
 	                voucherService.saveVoucher(v);
 	                req.getSession().setAttribute("success", "Đã lưu voucher thành công!");

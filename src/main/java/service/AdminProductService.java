@@ -28,18 +28,33 @@ public interface AdminProductService {
      * @param product Entity Product
      * @param thumbnailFile File upload từ form (có thể null)
      * @param thumbnailUrl URL ảnh từ text input (có thể null)
+     * @param servletContext ServletContext để lấy đường dẫn upload
      * @throws IllegalArgumentException nếu cả 2 đều null hoặc dữ liệu không hợp lệ
      */
-    void saveProduct(Product product, Part thumbnailFile, String thumbnailUrl);
+    void saveProduct(Product product, Part thumbnailFile, String thumbnailUrl, jakarta.servlet.ServletContext servletContext);
     
     /**
-     * Xóa sản phẩm (Soft delete: set isActive = false)
+     * Ngừng bán sản phẩm (Soft delete: set isActive = false)
+     * @param servletContext ServletContext (không dùng trong disable, chỉ để đồng nhất signature)
      */
-    void deleteProduct(int id);
+    void disableProduct(int id, jakarta.servlet.ServletContext servletContext);
     
     /**
-     * Lấy dữ liệu cho form (Categories, Suppliers)
-     * @return Map với key "categories" và "suppliers"
+     * Kích hoạt/Hiển thị sản phẩm (set isActive = true)
+     * @param servletContext ServletContext (không dùng trong enable, chỉ để đồng nhất signature)
+     */
+    void enableProduct(int id, jakarta.servlet.ServletContext servletContext);
+    
+    /**
+     * Xóa sản phẩm vĩnh viễn (Hard delete)
+     * @param servletContext ServletContext để xóa file ảnh
+     * @throws IllegalArgumentException nếu sản phẩm đã có đơn hàng
+     */
+    void deleteProduct(int id, jakarta.servlet.ServletContext servletContext);
+    
+    /**
+     * Lấy dữ liệu cho form (Categories)
+     * @return Map với key "categories"
      */
     Map<String, List<?>> getFormData();
 }

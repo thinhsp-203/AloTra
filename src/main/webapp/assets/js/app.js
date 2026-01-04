@@ -1,3 +1,12 @@
+// Hàm hiển thị modal yêu cầu đăng nhập (toàn cục)
+function showLoginRequiredModal() {
+    const loginModalEl = document.getElementById('loginRequiredModal');
+    if (loginModalEl) {
+        const loginModal = new bootstrap.Modal(loginModalEl);
+        loginModal.show();
+    }
+}
+
 (function () {
     'use strict';
 
@@ -64,8 +73,9 @@
 	// --- PRODUCT MODAL LOGIC ---
 	    const productModal = document.getElementById('productModal');
 	    if (productModal) {
-	        let modalData = null; 
+	        let modalData = null;
 	        
+	        // Product modal layout: name and price on left, above image
 	        productModal.addEventListener('show.bs.modal', function (event) {
 	            const button = event.relatedTarget;
 	            const productId = button.dataset.productId;
@@ -81,17 +91,20 @@
 	                    return;
 	                }
 	                
-	                modalData = data; 
-	                
-	                let sizesHtml = data.sizes.map((s, index) => `
-	                    <div class="col-auto">
-	                        <input type="radio" class="btn-check" name="size" id="modal-size-${index}" value="${escapeHtml(s.name)}" data-price-adj="${s.priceAdjustment}" ${s.priceAdjustment == 0 ? 'checked' : ''}>
-	                        <label class="btn btn-outline-primary btn-size" for="modal-size-${index}">
-	                            ${escapeHtml(s.name)}
-	                            <div class="small fw-normal">${s.priceAdjustment == 0 ? '0 đ' : (s.priceAdjustment > 0 ? '+' : '') + new Intl.NumberFormat('vi-VN').format(s.priceAdjustment) + ' đ'}</div>
-	                        </label>
-	                    </div>
-	                `).join('');
+                modalData = data; 
+                
+                // Render tất cả sizes trong cùng một container để thẳng hàng đều
+                // Tìm size có price = 0 để check mặc định
+                const defaultSizeIndex = data.sizes.findIndex(s => s.priceAdjustment == 0);
+                const sizesHtml = data.sizes.map((s, index) => `
+                    <div class="col-auto">
+                        <input type="radio" class="btn-check" name="size" id="modal-size-${index}" value="${escapeHtml(s.name)}" data-price-adj="${s.priceAdjustment}" ${(defaultSizeIndex >= 0 ? index === defaultSizeIndex : index === 0) ? 'checked' : ''}>
+                        <label class="btn btn-outline-primary btn-size" for="modal-size-${index}">
+                            ${escapeHtml(s.name)}
+                            <div class="small fw-normal">${s.priceAdjustment == 0 ? '0 đ' : (s.priceAdjustment > 0 ? '+' : '') + new Intl.NumberFormat('vi-VN').format(s.priceAdjustment) + ' đ'}</div>
+                        </label>
+                    </div>
+                `).join('');
 
 	                // === START FIX: Conditionally render toppings ===
 	                let toppingsHtml = '';
@@ -106,60 +119,121 @@
 	                            </div>
 	                        </div>
 	                    `).join('');
-	                    toppingsHtml = `<div class="mb-3"><h6>Chọn Topping</h6><div id="modalToppingsList">${toppingItems}</div></div>`;
+	                    toppingsHtml = `<div class="option-group"><h6>Chọn Topping</h6><div id="modalToppingsList">${toppingItems}</div></div>`;
 	                }
 	                // === END FIX ===
 	                
 	                const createOptionGroup = (title, name, options) => `
-	                    <div class="mb-3">
-	                        <h6>${title}</h6>
-	                        <div class="row row-cols-3 g-2">
+	                    <div class="mb-4 d-flex align-items-center gap-3">
+	                        <h6 class="fw-semibold mb-0" style="min-width: 60px;">${title}:</h6>
+	                        <div class="d-flex gap-2 flex-wrap">
 	                            ${options.map((opt, index) => `
-	                                <div class="col">
+	                                <div>
 	                                    <input type="radio" class="btn-check" name="${name}" id="modal-${name}-${index}" value="${opt}" ${index === 1 ? 'checked' : ''}>
-	                                    <label class="btn btn-outline-primary w-100" for="modal-${name}-${index}">${opt}</label>
+	                                    <label class="btn btn-outline-primary" for="modal-${name}-${index}">${opt}</label>
 	                                </div>
 	                            `).join('')}
 	                        </div>
 	                    </div>
 	                `;
 	                
-	                let teaOptionsHtml = '';
-	                if (data.product.categoryName && data.product.categoryName.toLowerCase().includes('trà')) {
-	                    teaOptionsHtml = createOptionGroup('Mức trà', 'tea', ['Ít', 'Bình thường', 'Nhiều']);
-	                }
-
+					// Chỉ hiển thị "Mức đá" và "Độ ngọt" cho đồ uống (isDrink === true)
+					const isDrink = data.product.isDrink === true;
+					
+					// Xử lý thumbnail URL
+					let thumbnailUrl = data.product.thumbnail || '';
+					if (thumbnailUrl && !thumbnailUrl.startsWith('http')) {
+					    if (thumbnailUrl.startsWith('uploads/')) {
+					        thumbnailUrl = contextPath + '/' + thumbnailUrl;
+					    } else {
+					        thumbnailUrl = contextPath + '/uploads/products/' + thumbnailUrl;
+					    }
+					}
+					if (!thumbnailUrl) {
+					    thumbnailUrl = 'https://via.placeholder.com/400x400?text=No+Image';
+					}
+					
 					modalContent.innerHTML = `
 					    <div class="row g-4">
+					        <!-- Left: Image (Fixed Size) -->
 					        <div class="col-md-5">
-					            <img src="${escapeHtml(data.product.thumbnail)}" 
-					                 class="img-fluid rounded" 
-					                 alt="${escapeHtml(data.product.name)}"
-					                 style="position: sticky; top: 0;">
+					            <div class="product-image-container" style="width: 100%; height: 320px; overflow: hidden; border-radius: 0.5rem; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+					                <img src="${escapeHtml(thumbnailUrl)}" 
+					                     alt="${escapeHtml(data.product.name)}"
+					                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;"
+					                     onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
+					            </div>
 					        </div>
+					        
+					        <!-- Right: Product Info & Options -->
 					        <div class="col-md-7">
-					            <div style="max-height: calc(80vh - 250px); overflow-y: auto; padding-right: 10px;">
-					                <h4 id="modalProductName">${escapeHtml(data.product.name)}</h4>
-					                <p class="h5 text-primary fw-bold mb-4" id="modalBasePrice" data-price="${data.product.basePrice}">
+					            <!-- Product Name -->
+					            <div class="d-flex justify-content-between align-items-start mb-3">
+					                <h4 id="modalProductName" class="mb-0">${escapeHtml(data.product.name)}</h4>
+					                <button class="btn btn-outline-danger btn-sm btn-wishlist ms-2" 
+					                        data-product-id="${data.product.id}"
+					                        title="Thêm vào yêu thích"
+					                        type="button"
+					                        style="flex-shrink: 0; padding: 0.5rem;">
+					                    <i class="bi bi-heart" style="font-size: 1.1rem;"></i>
+					                </button>
+					            </div>
+					            
+					            <!-- Price & Quantity Selector on same row -->
+					            <div class="d-flex justify-content-between align-items-center mb-4">
+					                <p class="h5 text-primary fw-bold mb-0" id="modalBasePrice" data-price="${data.product.basePrice}">
 					                    ${currencyFormatter.format(data.product.basePrice)}
 					                </p>
-					                <hr>
-					                ${data.sizes.length > 1 ? `
-					                    <div class="mb-3 option-group">
-					                        <h6>Chọn kích cỡ</h6>
-					                        <div class="row g-2">${sizesHtml}</div>
+					                <div class="d-flex align-items-center">
+					                    <button class="btn btn-outline-secondary" type="button" id="modalQtyDecrease" style="width: 36px; height: 36px; padding: 0;">
+					                        <i class="bi bi-dash-lg"></i>
+					                    </button>
+					                    <input type="number" class="form-control text-center" id="modalQuantity" value="1" min="1" 
+					                           style="width: 50px; height: 36px; margin: 0 5px; padding: 0.25rem;" readonly>
+					                    <button class="btn btn-outline-secondary" type="button" id="modalQtyIncrease" style="width: 36px; height: 36px; padding: 0;">
+					                        <i class="bi bi-plus-lg"></i>
+					                    </button>
+					                </div>
+					            </div>
+					            
+					            <!-- Options -->
+					            <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+								                ${(data.sizes && data.sizes.length > 0 && (data.product.isDrink || data.sizes.length > 1)) ? `
+					                    <div class="mb-4 option-group">
+					                        <h6 class="fw-semibold mb-2">Chọn kích cỡ</h6>
+					                        <div class="row g-2 align-items-center">${sizesHtml}</div>
 					                    </div>
 					                ` : ''}
-					                ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều'])}
-					                ${teaOptionsHtml}
-					                ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
-					                ${toppingsHtml}
+					                ${isDrink ? createOptionGroup('Trà', 'tea', ['Ít', 'Bình thường', 'Nhiều']) : ''}
+					                ${isDrink ? createOptionGroup('Ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều']) : ''}
+					                ${isDrink ? createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều']) : ''}
+					                ${toppingsHtml ? `<div class="mb-0">${toppingsHtml}</div>` : ''}
 					            </div>
 					        </div>
 					    </div>
 					`;
 
                 modalContent.querySelectorAll('input[type="radio"]').forEach(input => input.addEventListener('change', updateModalPrice));
+                
+                // Quantity selector handlers
+                const qtyInput = document.getElementById('modalQuantity');
+                const qtyDecrease = document.getElementById('modalQtyDecrease');
+                const qtyIncrease = document.getElementById('modalQtyIncrease');
+                
+                qtyDecrease.addEventListener('click', function() {
+                    let qty = parseInt(qtyInput.value) || 1;
+                    if (qty > 1) {
+                        qtyInput.value = qty - 1;
+                        updateModalPrice();
+                    }
+                });
+                
+                qtyIncrease.addEventListener('click', function() {
+                    let qty = parseInt(qtyInput.value) || 1;
+                    qtyInput.value = qty + 1;
+                    updateModalPrice();
+                });
+                
                 window.updateModalToppingQty = (id, change) => {
                     const qtyInput = document.getElementById(`modal-topping-qty-${id}`);
                     let currentQty = parseInt(qtyInput.value) + change;
@@ -173,9 +247,24 @@
                 addToCartBtn.disabled = false;
                 
                 addToCartBtn.onclick = function() {
-                    const params = new URLSearchParams({ productId: productId, quantity: 1 });
+                    const quantity = parseInt(qtyInput.value) || 1;
+                    const params = new URLSearchParams({ productId: productId, quantity: quantity });
                     const sizeInput = modalContent.querySelector('input[name="size"]:checked');
                     if (sizeInput) params.append('size', sizeInput.value);
+                    
+                    // Lấy trà (tea) - nếu có
+                    const teaInput = modalContent.querySelector('input[name="tea"]:checked');
+                    if (teaInput && isDrink) params.append('tea', teaInput.value);
+                    
+                    // Lấy độ ngọt (sweetness)
+                    const sweetnessInput = modalContent.querySelector('input[name="sweetness"]:checked');
+                    if (sweetnessInput && isDrink) params.append('sweetness', sweetnessInput.value);
+                    
+                    // Lấy mức đá (ice)
+                    const iceInput = modalContent.querySelector('input[name="ice"]:checked');
+                    if (iceInput && isDrink) params.append('ice', iceInput.value);
+                    
+                    // Lấy toppings
                     const toppings = [];
                     modalContent.querySelectorAll('input[data-topping-id]').forEach(input => {
                         const qty = parseInt(input.value);
@@ -194,11 +283,13 @@
             const sizeInput = document.querySelector('input[name="size"]:checked');
             const sizeAdj = sizeInput ? (parseFloat(sizeInput.dataset.priceAdj) || 0) : 0;
             let toppingsPrice = 0;
-            document.querySelectorAll('#modalToppingsList input[data-topping-id]').forEach(input => {
+            // Tìm tất cả input topping trong modal
+            document.querySelectorAll('#productModalContent input[data-topping-id]').forEach(input => {
                 toppingsPrice += (parseFloat(input.dataset.price) || 0) * (parseInt(input.value) || 0);
             });
-            const finalPrice = basePrice + sizeAdj + toppingsPrice;
-            document.getElementById('modalAddToCartBtn').textContent = `Thêm vào giỏ - ${currencyFormatter.format(finalPrice)}`;
+            const quantity = parseInt(document.getElementById('modalQuantity')?.value || 1) || 1;
+            const finalPrice = (basePrice + sizeAdj + toppingsPrice) * quantity;
+            document.getElementById('modalAddToCartBtn').textContent = `Thêm vào giỏ hàng : ${currencyFormatter.format(finalPrice)}`;
         }
     }
 
@@ -210,7 +301,8 @@
                 return; 
             }
             if (data && data.redirect) { 
-                window.location.href = data.redirect; 
+                // Thay vì redirect ngay, hiển thị modal yêu cầu đăng nhập
+                showLoginRequiredModal();
                 return; 
             }
             if (data && data.ok) {
@@ -275,16 +367,13 @@
                 </div>
             `;
             
-            let teaOptionsHtml = '';
-            if (data.product.categoryName && data.product.categoryName.toLowerCase().includes('trà')) {
-                teaOptionsHtml = createOptionGroup('Mức trà', 'tea', ['Ít', 'Bình thường', 'Nhiều']);
-            }
-
+            // Chỉ hiển thị "Mức đá" và "Độ ngọt" cho đồ uống (isDrink === true)
+            const isDrink = data.product.isDrink === true;
+            
             optionsContainer.innerHTML = `
-                ${data.sizes.length > 1 ? `<div class="mb-4 option-group"><h6>Chọn kích cỡ</h6><div class="row g-2">${sizesHtml}</div></div>` : ''}
-                ${createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'])}
-                ${createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều', 'Không'])}
-                ${teaOptionsHtml}
+                ${(data.sizes && data.sizes.length > 0 && (data.product.isDrink || data.sizes.length > 1)) ? `<div class="mb-4 option-group"><h6>Chọn kích cỡ</h6><div class="row g-2">${sizesHtml}</div></div>` : ''}
+                ${isDrink ? createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều']) : ''}
+                ${isDrink ? createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều', 'Không']) : ''}
                 ${toppingsHtml ? `<div class="mb-4 option-group"><h6>Chọn Topping</h6>${toppingsHtml}</div>` : ''}
             `;
 
@@ -309,6 +398,16 @@
                 const params = new URLSearchParams({ productId: productId, quantity: 1 });
                 const sizeInput = optionsContainer.querySelector('input[name="size"]:checked');
                 if (sizeInput) params.append('size', sizeInput.value);
+                
+                // Lấy độ ngọt (sweetness)
+                const sweetnessInput = optionsContainer.querySelector('input[name="sweetness"]:checked');
+                if (sweetnessInput) params.append('sweetness', sweetnessInput.value);
+                
+                // Lấy mức đá (ice)
+                const iceInput = optionsContainer.querySelector('input[name="ice"]:checked');
+                if (iceInput) params.append('ice', iceInput.value);
+                
+                // Lấy toppings
                 const toppings = [];
                 optionsContainer.querySelectorAll('input[data-topping-id]').forEach(input => {
                     const qty = parseInt(input.value);
@@ -373,9 +472,207 @@
         });
         button.style.display = 'none';
     }
+    
+    // Function để show thêm sản phẩm ở trang product list (theo logic của trang home)
+    window.showMoreProducts = function(button) {
+        const container = document.getElementById('productsContainer');
+        const items = container.querySelectorAll('.hidden-product-item');
+        items.forEach(item => {
+            item.style.display = 'block';
+            item.classList.add('animate__animated', 'animate__fadeIn');
+        });
+        button.style.display = 'none';
+        
+        // Update wishlist hearts sau khi show thêm sản phẩm
+        if (typeof updateWishlistHearts === 'function') {
+            updateWishlistHearts();
+        }
+    }
+
+    // --- NOTIFICATION DROPDOWN LOGIC ---
+    let notificationLoadingInProgress = false;
+    
+    function initNotifications() {
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationIcon = document.getElementById('notificationIcon');
+        const notificationBadge = document.getElementById('notification-badge');
+        const notificationCount = document.getElementById('notification-count');
+        const notificationList = document.getElementById('notification-list');
+        
+        if (!notificationDropdown || !notificationIcon || !notificationList) {
+            console.log('Notification elements not found, skipping initialization');
+            return;
+        }
+        
+        // Function to load notifications
+        function ensureNotificationsLoaded() {
+            console.log('ensureNotificationsLoaded called', {
+                loadingInProgress: notificationLoadingInProgress,
+                notificationList: !!notificationList,
+                contextPath: contextPath
+            });
+            if (notificationLoadingInProgress) {
+                console.log('Already loading, skipping');
+                return;
+            }
+            if (!notificationList) {
+                console.error('Notification list element not found');
+                return;
+            }
+            
+            notificationLoadingInProgress = true;
+            console.log('Starting to load notifications...');
+            loadNotifications();
+        }
+        
+        // Listen for click event on the icon
+        notificationIcon.addEventListener('click', function(e) {
+            console.log('Notification icon clicked');
+            ensureNotificationsLoaded();
+        });
+        
+        // Also listen for Bootstrap dropdown shown event
+        notificationDropdown.addEventListener('shown.bs.dropdown', function() {
+            console.log('Dropdown shown event triggered');
+            ensureNotificationsLoaded();
+        });
+        
+        // Load initial count on page load
+        if (notificationBadge) {
+            get(`${contextPath}/api/notifications/recent`, (err, data) => {
+                if (!err && data) {
+                    const unreadCount = data.unreadCount || 0;
+                    if (unreadCount > 0 && notificationCount) {
+                        notificationCount.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                        notificationBadge.style.display = 'block';
+                    }
+                }
+            });
+        }
+    }
+    
+    function formatNotificationDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) return 'Vừa xong';
+        if (diffMins < 60) return diffMins + ' phút trước';
+        if (diffHours < 24) return diffHours + ' giờ trước';
+        if (diffDays < 7) return diffDays + ' ngày trước';
+        
+        return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+    
+    function loadNotifications() {
+        const notificationList = document.getElementById('notification-list');
+        if (!notificationList) {
+            notificationLoadingInProgress = false;
+            return;
+        }
+        
+        notificationList.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+        
+        const apiUrl = `${contextPath}/api/notifications/recent`;
+        console.log('Loading notifications from:', apiUrl);
+        
+        get(apiUrl, (err, data) => {
+            notificationLoadingInProgress = false;
+            
+            if (err) {
+                console.error('Error loading notifications:', err);
+                notificationList.innerHTML = '<div class="text-center py-3 text-muted"><small>Không thể tải thông báo: ' + (err.message || 'Lỗi kết nối') + '</small></div>';
+                return;
+            }
+            
+            if (!data) {
+                console.error('No data received from API');
+                notificationList.innerHTML = '<div class="text-center py-3 text-muted"><small>Không có dữ liệu</small></div>';
+                return;
+            }
+            
+            console.log('Notifications loaded:', data);
+            
+            const notifications = data.notifications || [];
+            const unreadCount = data.unreadCount || 0;
+            const notificationBadge = document.getElementById('notification-badge');
+            const notificationCount = document.getElementById('notification-count');
+            
+            // Update badge
+            if (notificationBadge && notificationCount) {
+                if (unreadCount > 0) {
+                    notificationCount.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    notificationBadge.style.display = 'block';
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+            }
+            
+            // Render notifications
+            if (notifications.length === 0) {
+                notificationList.innerHTML = '<div class="text-center py-4 text-muted"><i class="bi bi-bell-slash fs-4 d-block mb-2"></i><small>Chưa có thông báo nào</small></div>';
+                return;
+            }
+            
+            notificationList.innerHTML = notifications.map(notif => {
+                const isRead = notif.isRead || false;
+                const link = notif.link ? `${contextPath}${notif.link}` : '#';
+                const dateStr = formatNotificationDate(notif.createdDate);
+                const unreadClass = !isRead ? 'bg-light' : '';
+                const unreadDot = !isRead ? '<span class="badge bg-primary rounded-pill me-2" style="width: 8px; height: 8px; padding: 0;"></span>' : '';
+                
+                return `
+                    <a href="${link}" class="dropdown-item ${unreadClass} notification-item" data-id="${notif.id}" data-read="${isRead}" style="white-space: normal; padding: 0.75rem 1rem;">
+                        <div class="d-flex align-items-start">
+                            ${unreadDot}
+                            <div class="flex-grow-1">
+                                <div class="small ${!isRead ? 'fw-semibold' : ''}">${escapeHtml(notif.message || '')}</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">${dateStr}</div>
+                            </div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+            
+            // Add click handlers to mark as read
+            notificationList.querySelectorAll('.notification-item[data-read="false"]').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    const notifId = this.dataset.id;
+                    if (notifId) {
+                        post(`${contextPath}/user/notifications`, `action=markAsRead&id=${notifId}`, (err, result) => {
+                            if (!err) {
+                                this.classList.remove('bg-light');
+                                this.dataset.read = 'true';
+                                const dot = this.querySelector('.badge');
+                                if (dot) dot.remove();
+                                const messageDiv = this.querySelector('.small');
+                                if (messageDiv) messageDiv.classList.remove('fw-semibold');
+                                
+                                const currentCount = parseInt(notificationCount.textContent) || 0;
+                                const newCount = Math.max(0, currentCount - 1);
+                                if (newCount > 0) {
+                                    notificationCount.textContent = newCount > 99 ? '99+' : newCount;
+                                    notificationBadge.style.display = 'block';
+                                } else {
+                                    notificationBadge.style.display = 'none';
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
 
     // --- INITIALIZATION ---
     document.addEventListener("DOMContentLoaded", function(){
+        // Initialize notifications
+        initNotifications();
+        
         // Menu dropdown hover
         const dropdowns = document.querySelectorAll('.main-nav .dropdown');
         dropdowns.forEach(function(dropdown) {
@@ -720,23 +1017,34 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // 1. Tô màu các nút đã "thích" khi tải trang
     function updateWishlistHearts() {
-        fetch(`${contextPath}/api/wishlist/ids`)
+        const contextPathForWishlist = document.body.dataset.contextPath || '';
+        fetch(`${contextPathForWishlist}/api/wishlist/ids`)
             .then(resp => resp.json())
             .then(data => {
                 const wishlistIds = data.wishlistIds || [];
-                if (wishlistIds.length > 0) {
-                    document.querySelectorAll('.btn-wishlist').forEach(btn => {
-                        const productId = btn.dataset.productId;
-                        if (wishlistIds.includes(parseInt(productId))) {
-                            btn.classList.add('active');
-                        } else {
-                            btn.classList.remove('active');
+                document.querySelectorAll('.btn-wishlist').forEach(btn => {
+                    const productId = btn.dataset.productId;
+                    const icon = btn.querySelector('i');
+                    if (productId && wishlistIds.includes(parseInt(productId))) {
+                        btn.classList.add('active');
+                        if (icon && icon.classList.contains('bi-heart')) {
+                            icon.classList.remove('bi-heart');
+                            icon.classList.add('bi-heart-fill');
                         }
-                    });
-                }
+                    } else {
+                        btn.classList.remove('active');
+                        if (icon && icon.classList.contains('bi-heart-fill')) {
+                            icon.classList.remove('bi-heart-fill');
+                            icon.classList.add('bi-heart');
+                        }
+                    }
+                });
             })
             .catch(err => console.error("Lỗi khi lấy ID wishlist:", err));
     }
+    
+    // Export hàm ra global scope để có thể gọi từ jQuery
+    window.updateWishlistHearts = updateWishlistHearts;
     
     updateWishlistHearts(); // Chạy khi tải trang
 
@@ -751,6 +1059,10 @@ document.addEventListener("DOMContentLoaded", function() {
             e.stopPropagation(); // Ngăn các sự kiện khác
             
             const productId = wishlistBtn.dataset.productId;
+            if (!productId) {
+                console.error("Product ID không tồn tại");
+                return;
+            }
             
             fetch(`${contextPath}/api/wishlist/toggle?productId=${productId}`, {
                 method: 'POST',
@@ -758,30 +1070,50 @@ document.addEventListener("DOMContentLoaded", function() {
                     'Accept': 'application/json'
                 }
             })
-            .then(resp => {
-                if (resp.status === 401) { // Lỗi chưa đăng nhập
-                    window.location.href = `${contextPath}/login`;
-                    return null;
+            .then(resp => resp.json().then(data => ({ status: resp.status, data: data })))
+            .then(result => {
+                // Kiểm tra status code 401 hoặc error về đăng nhập
+                if (result.status === 401 || (result.data.status === 'error' && result.data.message && result.data.message.includes('đăng nhập'))) {
+                    showLoginRequiredModal();
+                    return;
                 }
-                return resp.json();
-            })
-            .then(data => {
-                if (data) {
-                    console.log(data.message);
-                    if (data.status === 'added') {
-                        wishlistBtn.classList.add('active');
-                    } else if (data.status === 'removed') {
-                        wishlistBtn.classList.remove('active');
-                        
-                        // Nếu đang ở trang wishlist, xóa card
-                        const card = wishlistBtn.closest('.col');
-                        if (card && window.location.pathname.includes('/user/wishlist')) {
-                            card.remove();
+                
+                // Xử lý thành công
+                const data = result.data;
+                console.log(data.message);
+                
+                // Update tất cả các nút wishlist có cùng productId (trên card, modal, detail page)
+                const allWishlistBtns = document.querySelectorAll(`.btn-wishlist[data-product-id="${productId}"]`);
+                
+                if (data.status === 'added') {
+                    allWishlistBtns.forEach(btn => {
+                        btn.classList.add('active');
+                        const icon = btn.querySelector('i');
+                        if (icon && icon.classList.contains('bi-heart')) {
+                            icon.classList.remove('bi-heart');
+                            icon.classList.add('bi-heart-fill');
                         }
+                    });
+                } else if (data.status === 'removed') {
+                    allWishlistBtns.forEach(btn => {
+                        btn.classList.remove('active');
+                        const icon = btn.querySelector('i');
+                        if (icon && icon.classList.contains('bi-heart-fill')) {
+                            icon.classList.remove('bi-heart-fill');
+                            icon.classList.add('bi-heart');
+                        }
+                    });
+                    
+                    // Nếu đang ở trang wishlist, xóa card
+                    const card = wishlistBtn.closest('.col');
+                    if (card && window.location.pathname.includes('/user/wishlist')) {
+                        card.remove();
                     }
                 }
             })
-            .catch(err => console.error("Lỗi toggle wishlist:", err));
+            .catch(err => {
+                console.error("Lỗi toggle wishlist:", err);
+            });
         }
     });
 

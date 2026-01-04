@@ -1,5 +1,6 @@
 package service;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.Part;
 import model.Orders;
 import model.User;
@@ -27,7 +28,7 @@ public interface UserProfileService {
      * Đổi avatar
      * @throws IllegalArgumentException nếu file không hợp lệ
      */
-    void changeAvatar(int userId, Part avatarFile);
+    void changeAvatar(int userId, Part avatarFile, ServletContext servletContext);
     
     /**
      * Hủy đơn hàng (chỉ được hủy nếu đơn đang "Chờ xác nhận")

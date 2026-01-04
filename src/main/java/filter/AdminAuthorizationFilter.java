@@ -8,7 +8,7 @@ import utils.Roles;
 
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/admin/*", "/api/admin/*"})
+@WebFilter(urlPatterns = {"/admin/*", "/api/admin/*"}, asyncSupported = false)
 public class AdminAuthorizationFilter implements Filter {
 
     @Override
@@ -49,7 +49,6 @@ public class AdminAuthorizationFilter implements Filter {
 
             if (uri.contains("/admin/users") ||
                 uri.contains("/admin/reports") ||
-                uri.contains("/admin/settings") ||
                 uri.contains("/admin/vouchers") ||
                 uri.contains("/admin/payment-config")) {
 

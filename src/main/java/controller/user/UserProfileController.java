@@ -21,7 +21,7 @@ import java.util.List;
     maxFileSize = 10*1024*1024, 
     maxRequestSize = 50*1024*1024
 )
-@WebServlet(urlPatterns = {"/user/profile", "/user/orders", "/user/change-password"})
+@WebServlet(urlPatterns = {"/user/profile", "/user/orders", "/user/change-password"}, asyncSupported = false)
 public class UserProfileController extends HttpServlet {
     
     /**
@@ -139,7 +139,7 @@ public class UserProfileController extends HttpServlet {
         int orderId = Integer.parseInt(req.getParameter("orderId"));
         
         profileService.cancelOrder(currentUser.getId(), orderId);
-        req.getSession().setAttribute("orderSuccess", "Đã hủy đơn hàng #" + orderId);
+        req.getSession().setAttribute("orderSuccess", "Hủy đơn hàng #" + orderId);
         
         resp.sendRedirect(req.getContextPath() + "/user/orders");
     }
@@ -177,7 +177,7 @@ public class UserProfileController extends HttpServlet {
             throws ServletException, IOException {
         Part avatarFile = req.getPart("avatar");
         
-        profileService.changeAvatar(currentUser.getId(), avatarFile);
+        profileService.changeAvatar(currentUser.getId(), avatarFile, req.getServletContext());
         
         // Update session
         User updatedUser = profileService.getUserById(currentUser.getId());

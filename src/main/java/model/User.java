@@ -44,7 +44,10 @@ public class User {
   private String code;
 
   @Column(name = "is_active")
-  private Boolean isActive; 
+  private Boolean isActive;
+  
+  @Column(name = "loyalty_points")
+  private Integer loyalty_points; // Điểm tích lũy của user
 
   public String getCode() {
       return code;

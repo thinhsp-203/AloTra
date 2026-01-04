@@ -15,16 +15,38 @@
   }
   
   @media (min-width: 992px) {
+    .auth-row {
+       box-shadow: 0 1rem 3rem rgba(0,0,0,.175);
+       border-radius: 0.5rem;
+       align-items: stretch;
+       display: flex;
+    }
     .auth-card {
       border-radius: 0 0.5rem 0.5rem 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .auth-card .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
     .auth-image-col {
       border-radius: 0.5rem 0 0 0.5rem;
       min-height: auto;
+      height: 100%;
+      display: flex;
+      align-items: stretch;
+      justify-content: stretch;
+      padding: 0;
+      overflow: hidden;
     }
-    .auth-row {
-       box-shadow: 0 1rem 3rem rgba(0,0,0,.175);
-       border-radius: 0.5rem;
+    .auth-image-col img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
 </style>
@@ -32,11 +54,10 @@
 <div class="container my-5 auth-wrapper">
     <div class="row g-0 justify-content-center auth-row">
         
-        <div class="col-lg-6 d-none d-lg-block auth-image-col d-flex align-items-center justify-content-center p-5">
+        <div class="col-lg-6 d-none d-lg-block auth-image-col">
             <img src="${pageContext.request.contextPath}/uploads/products/logo.png" 
                  alt="AloTra Logo" 
                  class="img-fluid"
-                 style="max-width: 100%; max-height: 100%; object-fit: contain;"
                  onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/placeholder.png'; console.error('Logo không tải được:', this.src);">
         </div>
 
@@ -60,10 +81,20 @@
         
             
                     <c:if test="${not empty alert}">
-                        <div class="alert alert-danger alert-dismissible fade show">
-                            <i class="bi bi-exclamation-triangle"></i> ${alert}
-                       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
+                        <c:choose>
+                            <c:when test="${alert.contains('thành công') or alert.contains('success')}">
+                                <div class="alert alert-success alert-dismissible fade show">
+                                    <i class="bi bi-check-circle"></i> ${alert}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <i class="bi bi-exclamation-triangle"></i> ${alert}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
                     </c:if>
 
                     <form action="login" method="post">

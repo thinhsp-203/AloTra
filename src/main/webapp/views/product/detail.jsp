@@ -17,8 +17,18 @@
     <div class="row g-4">
         <div class="col-lg-5">
             <c:set var="thumbnailSrc" value="${p.thumbnail}"/>
-            <c:if test="${not empty thumbnailSrc and not fn:startsWith(thumbnailSrc, 'http')}">
-               <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/uploads/${p.thumbnail}"/>
+            <c:if test="${not empty thumbnailSrc}">
+                <c:choose>
+                    <c:when test="${fn:startsWith(thumbnailSrc, 'http')}">
+                        <c:set var="thumbnailSrc" value="${p.thumbnail}"/>
+                    </c:when>
+                    <c:when test="${fn:startsWith(thumbnailSrc, 'uploads/')}">
+                        <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/${p.thumbnail}"/>
+                    </c:when>
+                    <c:otherwise>
+                        <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/uploads/products/${p.thumbnail}"/>
+                    </c:otherwise>
+                </c:choose>
             </c:if>
             <c:if test="${empty thumbnailSrc}">
                <c:set var="thumbnailSrc" value="https://via.placeholder.com/400"/>
@@ -66,7 +76,7 @@
             <form>
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Số lượng:</label>
-                    <input type="number" class="form-control" value="1" min="1" max="${p.stock}" style="width: 100px;">
+                    <input type="number" class="form-control" value="1" min="1" style="width: 100px;">
                 </div>
                 
                 <div class="d-flex gap-2">

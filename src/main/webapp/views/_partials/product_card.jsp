@@ -7,8 +7,18 @@
     <a href="${pageContext.request.contextPath}/p?id=${p.product_id}" class="card-link text-decoration-none text-dark">
         <div class="card-img-container">
             <c:set var="thumbnailSrc" value="${p.thumbnail}"/>
-            <c:if test="${not empty thumbnailSrc and not fn:startsWith(thumbnailSrc, 'http')}">
-               <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/uploads/${p.thumbnail}"/>
+            <c:if test="${not empty thumbnailSrc}">
+                <c:choose>
+                    <c:when test="${fn:startsWith(thumbnailSrc, 'http')}">
+                        <c:set var="thumbnailSrc" value="${p.thumbnail}"/>
+                    </c:when>
+                    <c:when test="${fn:startsWith(thumbnailSrc, 'uploads/')}">
+                        <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/${p.thumbnail}"/>
+                    </c:when>
+                    <c:otherwise>
+                        <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/uploads/products/${p.thumbnail}"/>
+                    </c:otherwise>
+                </c:choose>
             </c:if>
             <c:if test="${empty thumbnailSrc}">
                <c:set var="thumbnailSrc" value="https://via.placeholder.com/200"/>
@@ -25,7 +35,7 @@
                 <button class="btn btn-outline-danger btn-sm btn-wishlist" 
                         data-product-id="${p.product_id}"
                         title="Thêm vào yêu thích"
-                        onclick="event.preventDefault(); event.stopPropagation();">
+                        type="button">
                     <i class="bi bi-heart"></i>
                 </button>
             </div>

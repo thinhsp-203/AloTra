@@ -11,6 +11,8 @@ public class CartItem {
   private String productName;
   private String thumbnail; 
   private String sizeName;
+  private String sugarLevel; // Độ ngọt: Ít, Bình thường, Nhiều
+  private String iceLevel; // Mức đá: Ít, Bình thường, Nhiều
   private String toppingsCsv;
   private int quantity;
   private BigDecimal unitPrice;
@@ -28,10 +30,14 @@ public class CartItem {
 	    if(this==o) return true;
 	    if(!(o instanceof CartItem)) return false;
 	    CartItem that=(CartItem)o;
-	    // So sánh cả productId và chuỗi topping
+	    // So sánh cả productId, size, sugar, ice và toppings
 	    return Objects.equals(productId,that.productId) &&
 	           Objects.equals(sizeName,that.sizeName) &&
+	           Objects.equals(sugarLevel,that.sugarLevel) &&
+	           Objects.equals(iceLevel,that.iceLevel) &&
 	           Objects.equals(toppingsCsv,that.toppingsCsv);
 	  }
-	  @Override public int hashCode(){ return Objects.hash(productId,sizeName,toppingsCsv); }
+	  @Override public int hashCode(){ 
+	    return Objects.hash(productId,sizeName,sugarLevel,iceLevel,toppingsCsv); 
+	  }
 	}

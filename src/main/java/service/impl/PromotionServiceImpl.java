@@ -4,6 +4,7 @@ import config.JpaUtil;
 import dao.PromotionRepository;
 import dao.impl.PromotionRepositoryImpl;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import model.Promotion;
 import service.PromotionService;
 
@@ -28,6 +29,22 @@ public class PromotionServiceImpl implements PromotionService {
         EntityManager em = JpaUtil.em();
         try {
             return promotionRepository.findById(id, em).orElse(null);
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<Promotion> getRelatedPromotions(int excludeId, int limit) {
+        EntityManager em = JpaUtil.em();
+        try {
+            TypedQuery<Promotion> query = em.createQuery(
+                "SELECT p FROM Promotion p WHERE p.isActive = true AND p.id != :excludeId ORDER BY p.createdDate DESC", 
+                Promotion.class
+            );
+            query.setParameter("excludeId", excludeId);
+            query.setMaxResults(limit);
+            return query.getResultList();
         } finally {
             em.close();
         }

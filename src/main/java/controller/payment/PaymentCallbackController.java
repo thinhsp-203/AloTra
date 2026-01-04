@@ -30,6 +30,8 @@ public class PaymentCallbackController extends HttpServlet {
         
         if (uri.endsWith("/vnpay-return")) {
             handleVNPayReturn(req, resp);
+        } else if (uri.endsWith("/momo-return")) {
+            handleMOMOReturn(req, resp);
         } else {
             resp.sendError(404);
         }
@@ -76,7 +78,7 @@ public class PaymentCallbackController extends HttpServlet {
         } else {
             // Payment failed
             String errorMessage = VNPayService.getResponseDescription(responseCode);
-            updateOrderStatus(txnRef, "Thất bại", "Đã hủy", req, resp);
+            updateOrderStatus(txnRef, "Thất bại", "Hủy Đơn", req, resp);
             
             req.getSession().setAttribute("checkoutError", 
                 "Thanh toán thất bại: " + errorMessage);
@@ -98,16 +100,51 @@ public class PaymentCallbackController extends HttpServlet {
 
             req.getSession().removeAttribute("CART");
 
-            if ("Đã thanh toán".equals(paymentStatus)) {
-                req.getSession().setAttribute("orderSuccess",
-                    "Thanh toán thành công! Đơn hàng #" + orderId + " đã được xác nhận.");
-            }
+            // Thông báo thành công (không tích điểm ở đây, sẽ tích khi đơn hàng hoàn thành)
+            req.getSession().setAttribute("orderSuccess",
+                "Thanh toán thành công! Đơn hàng #" + orderId + " đã được xác nhận.");
 
             resp.sendRedirect(req.getContextPath() + "/user/orders");
             
         } catch (NumberFormatException e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/");
+        }
+    }
+    
+    /**
+     * Handle MOMO payment return
+     * Note: MOMO callback parameters may vary, adjust based on actual MOMO integration
+     */
+    private void handleMOMOReturn(HttpServletRequest req, HttpServletResponse resp) 
+            throws IOException, ServletException {
+        // Get all parameters
+        Map<String, String> params = new HashMap<>();
+        req.getParameterMap().forEach((key, values) -> {
+            if (values != null && values.length > 0) {
+                params.put(key, values[0]);
+            }
+        });
+        
+        // MOMO typically uses orderId or partnerRefId as transaction reference
+        String txnRef = params.get("orderId") != null ? params.get("orderId") : 
+                       params.get("partnerRefId") != null ? params.get("partnerRefId") :
+                       params.get("requestId");
+        String resultCode = params.get("resultCode");
+        
+        System.out.println("MOMO Return - TxnRef: " + txnRef + ", ResultCode: " + resultCode);
+        
+        // MOMO success code is typically "0"
+        if (txnRef != null && "0".equals(resultCode)) {
+            // Payment successful
+            updateOrderStatus(txnRef, "Đã thanh toán", "Đang chuẩn bị", req, resp);
+        } else {
+            // Payment failed
+            updateOrderStatus(txnRef != null ? txnRef : "0", "Thất bại", "Hủy Đơn", req, resp);
+            
+            req.getSession().setAttribute("checkoutError", 
+                "Thanh toán MOMO thất bại.");
+            resp.sendRedirect(req.getContextPath() + "/checkout");
         }
     }
     

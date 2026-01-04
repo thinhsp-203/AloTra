@@ -11,6 +11,7 @@
 
     <link href="${pageContext.request.contextPath}/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/assets/css/custom.css" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -18,14 +19,6 @@
 
 <!-- ================= SIDEBAR ================= -->
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-    <a class="sidebar-brand d-flex align-items-center justify-content-center"
-       href="${pageContext.request.contextPath}/admin/dashboard">
-        <div class="sidebar-brand-icon rotate-n-15">
-            <i class="fas fa-mug-hot"></i>
-        </div>
-        <div class="sidebar-brand-text mx-3">AloTra Admin</div>
-    </a>
 
     <hr class="sidebar-divider my-0">
 
@@ -50,7 +43,7 @@
 
         <li class="nav-item">
             <a class="nav-link" href="${pageContext.request.contextPath}/admin/orders">
-                <i class="fas fa-fw fa-cart-shopping"></i>
+                <i class="fas fa-fw fa-shopping-cart"></i>
                 <span>Đơn hàng</span>
             </a>
         </li>
@@ -79,38 +72,10 @@
 
     <hr class="sidebar-divider">
 
-    <!-- HỆ THỐNG (ADMIN ONLY) -->
-    <div class="sidebar-heading">Hệ thống</div>
+    <!-- MARKETING & NỘI DUNG (ADMIN ONLY) -->
+    <div class="sidebar-heading">Marketing & Nội dung</div>
 
     <c:if test="${sessionScope.currentUser.roleid == Roles.ADMIN}">
-
-        <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/users">
-                <i class="fas fa-fw fa-users"></i>
-                <span>Người dùng</span>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/vouchers">
-                <i class="fas fa-fw fa-ticket-alt"></i>
-                <span>Vouchers</span>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/reports">
-                <i class="fas fa-fw fa-chart-area"></i>
-                <span>Báo cáo</span>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/payment-config">
-                <i class="fas fa-fw fa-credit-card"></i>
-                <span>Cấu hình TT</span>
-            </a>
-        </li>
 
         <li class="nav-item">
             <a class="nav-link" href="${pageContext.request.contextPath}/admin/banners">
@@ -127,6 +92,43 @@
         </li>
 
         <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/vouchers">
+                <i class="fas fa-fw fa-ticket-alt"></i>
+                <span>Vouchers</span>
+            </a>
+        </li>
+    </c:if>
+
+    <hr class="sidebar-divider">
+
+    <!-- QUẢN LÝ KHÁCH HÀNG (ADMIN ONLY) -->
+    <div class="sidebar-heading">Quản lý Khách hàng</div>
+
+    <c:if test="${sessionScope.currentUser.roleid == Roles.ADMIN}">
+
+        <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/users">
+                <i class="fas fa-fw fa-users"></i>
+                <span>Người dùng</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/rewards">
+                <i class="fas fa-fw fa-gift"></i>
+                <span>Quà tặng Hội viên</span>
+            </a>
+        </li>
+    </c:if>
+
+    <hr class="sidebar-divider">
+
+    <!-- CỬA HÀNG & THÔNG TIN (ADMIN ONLY) -->
+    <div class="sidebar-heading">Cửa hàng & Thông tin</div>
+
+    <c:if test="${sessionScope.currentUser.roleid == Roles.ADMIN}">
+
+        <li class="nav-item">
             <a class="nav-link" href="${pageContext.request.contextPath}/admin/stores">
                 <i class="fas fa-fw fa-store"></i>
                 <span>Cửa hàng</span>
@@ -134,9 +136,31 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/settings">
-                <i class="fas fa-fw fa-cog"></i>
-                <span>Cài đặt</span>
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/about">
+                <i class="fas fa-fw fa-info-circle"></i>
+                <span>Về chúng tôi</span>
+            </a>
+        </li>
+    </c:if>
+
+    <hr class="sidebar-divider">
+
+    <!-- HỆ THỐNG & BÁO CÁO (ADMIN ONLY) -->
+    <div class="sidebar-heading">Hệ thống & Báo cáo</div>
+
+    <c:if test="${sessionScope.currentUser.roleid == Roles.ADMIN}">
+
+        <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/reports">
+                <i class="fas fa-fw fa-chart-area"></i>
+                <span>Báo cáo</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/payment-config">
+                <i class="fas fa-fw fa-credit-card"></i>
+                <span>Cấu hình TT</span>
             </a>
         </li>
     </c:if>
@@ -144,12 +168,22 @@
 </ul>
 
 <!-- ================= CONTENT ================= -->
-<div id="content-wrapper" class="d-flex flex-column">
+<div id="content-wrapper" class="d-flex flex-column" style="margin-left: 0 !important;">
 <div id="content">
 
 <!-- TOPBAR -->
-<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
-<ul class="navbar-nav ml-auto">
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow position-relative">
+    <!-- Centered Title -->
+    <div class="admin-title-center position-absolute start-50">
+        <a class="text-decoration-none" href="${pageContext.request.contextPath}/admin/dashboard">
+            <span class="admin-title-pill">
+                <i class="fas fa-mug-hot"></i> ALOTRA ADMIN
+            </span>
+        </a>
+    </div>
+    <!-- User Dropdown (Right) -->
+    <div class="ms-auto d-flex align-items-center">
+        <ul class="navbar-nav">
 
 <li class="nav-item dropdown no-arrow">
     <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
@@ -157,10 +191,35 @@
             ${sessionScope.currentUser.username}
         </span>
 
-        <img class="img-profile rounded-circle"
-             src="${pageContext.request.contextPath}/uploads/${sessionScope.currentUser.avatar}"
-             onerror="this.src='https://via.placeholder.com/60/4e73df/FFFFFF?text=U'"
-             style="width:2rem;height:2rem">
+        <c:choose>
+            <c:when test="${not empty sessionScope.currentUser.avatar}">
+                <c:choose>
+                    <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'http')}">
+                        <img class="img-profile rounded-circle"
+                             src="${sessionScope.currentUser.avatar}"
+                             onerror="this.src='https://via.placeholder.com/60/4e73df/FFFFFF?text=U'"
+                             style="width:2rem;height:2rem">
+                    </c:when>
+                    <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'uploads/')}">
+                        <img class="img-profile rounded-circle"
+                             src="${pageContext.request.contextPath}/${sessionScope.currentUser.avatar}"
+                             onerror="this.src='https://via.placeholder.com/60/4e73df/FFFFFF?text=U'"
+                             style="width:2rem;height:2rem">
+                    </c:when>
+                    <c:otherwise>
+                        <img class="img-profile rounded-circle"
+                             src="${pageContext.request.contextPath}/uploads/${sessionScope.currentUser.avatar}"
+                             onerror="this.src='https://via.placeholder.com/60/4e73df/FFFFFF?text=U'"
+                             style="width:2rem;height:2rem">
+                    </c:otherwise>
+                </c:choose>
+            </c:when>
+            <c:otherwise>
+                <img class="img-profile rounded-circle"
+                     src="https://via.placeholder.com/60/4e73df/FFFFFF?text=U"
+                     style="width:2rem;height:2rem">
+            </c:otherwise>
+        </c:choose>
     </a>
 
     <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in">
@@ -176,7 +235,8 @@
     </div>
 </li>
 
-</ul>
+        </ul>
+    </div>
 </nav>
 
 <div class="container-fluid">

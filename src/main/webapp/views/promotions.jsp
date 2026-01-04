@@ -26,17 +26,24 @@
                              onmouseover="this.style.transform='translateY(-5px)'"
                              onmouseout="this.style.transform='translateY(0)'">
                             <div class="card-img-container" style="height: 280px; overflow: hidden;">
-                                <c:choose>
-                                    <c:when test="${fn:startsWith(promo.imageUrl, 'http')}">
-                                        <img src="${promo.imageUrl}" class="card-img-top" alt="${promo.title}" 
-                                             style="width: 100%; height: 100%; object-fit: cover;">
-                                    </c:when>
-                                    <c:otherwise>
-                                        <img src="${pageContext.request.contextPath}/uploads/${promo.imageUrl}" 
-                                             class="card-img-top" alt="${promo.title}"
-                                             style="width: 100%; height: 100%; object-fit: cover;">
-                                    </c:otherwise>
-                                </c:choose>
+                                <c:set var="promoListImgSrc" value="${promo.imageUrl}"/>
+                                <c:if test="${not empty promoListImgSrc}">
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(promoListImgSrc, 'http')}">
+                                            <c:set var="promoListImgSrc" value="${promo.imageUrl}"/>
+                                        </c:when>
+                                        <c:when test="${fn:startsWith(promoListImgSrc, 'uploads/')}">
+                                            <c:set var="promoListImgSrc" value="${pageContext.request.contextPath}/${promo.imageUrl}"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:set var="promoListImgSrc" value="${pageContext.request.contextPath}/uploads/${promo.imageUrl}"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:if>
+                                <img src="${empty promoListImgSrc ? 'https://via.placeholder.com/300?text=No+Image' : promoListImgSrc}" 
+                                     class="card-img-top" alt="${promo.title}"
+                                     style="width: 100%; height: 100%; object-fit: cover;"
+                                     onerror="this.src='https://via.placeholder.com/300?text=No+Image'">
                             </div>
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">${promo.title}</h5>

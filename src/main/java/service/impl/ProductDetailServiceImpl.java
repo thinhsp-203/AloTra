@@ -48,7 +48,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         EntityManager em = JpaUtil.em();
         try {
             TypedQuery<Review> query = em.createQuery(
-                    "SELECT r FROM Review r WHERE r.product.product_id = :pid AND r.isApproved = true ORDER BY r.createdDate DESC",
+                    "SELECT r FROM Review r JOIN FETCH r.user WHERE r.product.product_id = :pid AND r.isApproved = true ORDER BY r.createdDate DESC",
                     Review.class);
             query.setParameter("pid", productId);
             return query.getResultList();

@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <fmt:setLocale value="vi_VN"/>
 
 <style>
@@ -169,6 +170,89 @@
     margin-top: 0.5rem;
     font-size: 0.85rem;
 }
+
+.voucher-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.voucher-item {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.voucher-item:hover {
+    border-color: var(--bs-primary);
+    box-shadow: 0 2px 8px rgba(0, 102, 51, 0.1);
+}
+
+.voucher-item.selected {
+    border-color: var(--bs-primary);
+    background: rgba(0, 102, 51, 0.05);
+}
+
+.voucher-item.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f5f5f5;
+}
+
+.voucher-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.voucher-code {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--bs-primary);
+}
+
+.voucher-discount {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #28a745;
+}
+
+.voucher-description {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.voucher-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.voucher-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.voucher-info-item i {
+    color: var(--bs-primary);
+}
+
+.voucher-warning {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #fff3cd;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #856404;
+}
 </style>
 
 <div class="checkout-container">
@@ -257,16 +341,18 @@
                         </label>
                     </div>
 
-                    <!-- VOUCHER SECTION - THÊM VÀO ĐÂY -->
+                    <!-- VOUCHER SECTION -->
                     <div class="section-card">
                         <div class="section-header">
                             <i class="bi bi-tag"></i> Mã giảm giá
                         </div>
-                        <div class="voucher-input-group">
+                        
+                        <!-- Input để nhập mã thủ công (nếu có) -->
+                        <div class="voucher-input-group mb-3">
                             <input class="form-control form-control-sm" 
                                    name="voucher" 
-                                   id="voucher-code" 
-                                   placeholder="Nhập mã giảm giá"/>
+                                   id="voucher-code-input" 
+                                   placeholder="Nhập mã giảm giá (nếu có)"/>
                             <button class="btn btn-outline-primary btn-sm" 
                                     type="button" 
                                     id="apply-voucher-btn">
@@ -274,6 +360,69 @@
                             </button>
                         </div>
                         <div id="voucher-message" class="voucher-message"></div>
+                        
+                        <!-- Danh sách voucher khả dụng -->
+                        <c:choose>
+                            <c:when test="${empty availableVouchers}">
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mb-0 mt-2">Hiện tại không có mã giảm giá nào</p>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="voucher-list">
+                                    <c:forEach var="vInfo" items="${availableVouchers}">
+                                        <c:set var="v" value="${vInfo.voucher()}"/>
+                                        <div class="voucher-item ${vInfo.canUse() ? '' : 'disabled'}" 
+                                             data-code="${v.code}"
+                                             <c:if test="${vInfo.canUse()}">onclick="selectVoucher(this, '${v.code}')"</c:if>>
+                                            <div class="voucher-header">
+                                                <div class="voucher-code">${v.code}</div>
+                                                <div class="voucher-discount">${vInfo.discountDisplay()}</div>
+                                            </div>
+                                            <c:if test="${not empty v.description}">
+                                                <div class="voucher-description">${v.description}</div>
+                                            </c:if>
+                                            <div class="voucher-info">
+                                                <c:if test="${not empty v.min_order_value}">
+                                                    <div class="voucher-info-item">
+                                                        <i class="bi bi-cart-check"></i>
+                                                        <span>Đơn tối thiểu: <fmt:formatNumber value="${v.min_order_value}" pattern="#,##0" />₫</span>
+                                                    </div>
+                                                </c:if>
+                                                <c:choose>
+                                                    <c:when test="${v.usage_limit != null}">
+                                                        <div class="voucher-info-item">
+                                                            <i class="bi bi-people"></i>
+                                                            <span>Còn lại: ${vInfo.remainingUses()} lượt</span>
+                                                        </div>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <div class="voucher-info-item">
+                                                            <i class="bi bi-people"></i>
+                                                            <span>Không giới hạn lượt</span>
+                                                        </div>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                <div class="voucher-info-item">
+                                                    <i class="bi bi-calendar-event"></i>
+                                                    <span>
+                                                        <fmt:formatDate value="${v.start_dateAsDate}" pattern="dd/MM/yyyy"/> - 
+                                                        <fmt:formatDate value="${v.end_dateAsDate}" pattern="dd/MM/yyyy"/>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <c:if test="${not vInfo.canUse()}">
+                                                <div class="voucher-warning">
+                                                    <i class="bi bi-exclamation-triangle"></i> 
+                                                    Đơn hàng chưa đủ điều kiện (cần tối thiểu <fmt:formatNumber value="${v.min_order_value}" pattern="#,##0" />₫)
+                                                </div>
+                                            </c:if>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
 
@@ -289,17 +438,40 @@
                             
                             <c:forEach var="item" items="${sessionScope.CART}">
                                 <div class="cart-item-simple" data-product-id="${item.productId}" 
-                                     data-size="${item.sizeName}" data-toppings="${item.toppingsCsv}">
-                                    <img src="${item.thumbnail}" class="item-image" alt="${item.productName}">
+                                     data-size="${item.sizeName}" 
+                                     data-sugar-level="${item.sugarLevel}"
+                                     data-ice-level="${item.iceLevel}"
+                                     data-toppings="${item.toppingsCsv}">
+                                    <c:set var="itemThumbnailSrc" value="${item.thumbnail}"/>
+                                    <c:if test="${not empty itemThumbnailSrc}">
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(itemThumbnailSrc, 'http')}">
+                                                <c:set var="itemThumbnailSrc" value="${item.thumbnail}"/>
+                                            </c:when>
+                                            <c:when test="${fn:startsWith(itemThumbnailSrc, 'uploads/')}">
+                                                <c:set var="itemThumbnailSrc" value="${pageContext.request.contextPath}/${item.thumbnail}"/>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <c:set var="itemThumbnailSrc" value="${pageContext.request.contextPath}/uploads/products/${item.thumbnail}"/>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:if>
+                                    <img src="${empty itemThumbnailSrc ? 'https://via.placeholder.com/80' : itemThumbnailSrc}" class="item-image" alt="${item.productName}">
                                     
                                     <div class="item-details">
                                         <div class="item-name">${item.productName}</div>
                                         <div class="item-options">
                                             <c:if test="${not empty item.sizeName && item.sizeName ne 'Mặc định'}">
-                                                Kích cỡ: ${item.sizeName}
+                                                Kích cỡ: ${item.sizeName}<br>
+                                            </c:if>
+                                            <c:if test="${not empty item.sugarLevel}">
+                                                Độ ngọt: ${item.sugarLevel}<br>
+                                            </c:if>
+                                            <c:if test="${not empty item.iceLevel}">
+                                                Mức đá: ${item.iceLevel}<br>
                                             </c:if>
                                             <c:if test="${not empty item.toppingsCsv}">
-                                                <br>Đá: ${item.toppingsCsv}
+                                                Topping: ${item.toppingsCsv}
                                             </c:if>
                                         </div>
                                     </div>
@@ -420,6 +592,8 @@ document.addEventListener("DOMContentLoaded", function() {
             const params = new URLSearchParams({
                 productId: card.dataset.productId,
                 size: card.dataset.size || "Mặc định",
+                sugarLevel: card.dataset.sugarLevel || "Bình thường",
+                iceLevel: card.dataset.iceLevel || "Bình thường",
                 toppings: card.dataset.toppings || "",
                 quantity: newQty
             });
@@ -450,15 +624,34 @@ document.addEventListener("DOMContentLoaded", function() {
             form.action = contextPath + '/cart/remove';
             form.innerHTML = '<input name="productId" value="' + card.dataset.productId + '">' +
                            '<input name="size" value="' + (card.dataset.size || 'Mặc định') + '">' +
+                           '<input name="sugarLevel" value="' + (card.dataset.sugarLevel || 'Bình thường') + '">' +
+                           '<input name="iceLevel" value="' + (card.dataset.iceLevel || 'Bình thường') + '">' +
                            '<input name="toppings" value="' + (card.dataset.toppings || '') + '">';
             document.body.appendChild(form);
             form.submit();
         });
     });
 
-    // VOUCHER APPLICATION - THÊM VÀO ĐÂY
+    // Function để chọn voucher từ danh sách
+    window.selectVoucher = function(element, code) {
+        // Bỏ chọn các voucher khác
+        document.querySelectorAll('.voucher-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Chọn voucher này
+        element.classList.add('selected');
+        
+        // Điền mã vào input
+        document.getElementById('voucher-code-input').value = code;
+        
+        // Tự động áp dụng voucher
+        document.getElementById('apply-voucher-btn').click();
+    };
+    
+    // VOUCHER APPLICATION
     document.getElementById('apply-voucher-btn')?.addEventListener('click', function() {
-        const code = document.getElementById('voucher-code').value.trim();
+        const code = document.getElementById('voucher-code-input').value.trim();
         const msgEl = document.getElementById('voucher-message');
         const discountEl = document.getElementById('discount-display');
         const totalEl = document.getElementById('grand-total-display');
@@ -474,7 +667,7 @@ document.addEventListener("DOMContentLoaded", function() {
         this.disabled = true;
         this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang kiểm tra...';
         
-        fetch(contextPath + '/api/voucher/apply', {
+        fetch(contextPath + '/api/voucher', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: 'code=' + encodeURIComponent(code)
@@ -484,17 +677,37 @@ document.addEventListener("DOMContentLoaded", function() {
             if (data.ok) {
                 msgEl.className = 'voucher-message text-success';
                 msgEl.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + data.message;
-                discountEl.textContent = '-' + data.discountFormatted;
+                
+                // Format discount amount
+                const discountAmount = parseFloat(data.discount) || 0;
+                const discountFormatted = new Intl.NumberFormat('vi-VN').format(discountAmount);
+                discountEl.textContent = '-' + discountFormatted + '₫';
                 discountEl.parentElement.classList.remove('text-success');
                 discountEl.parentElement.classList.add('text-danger');
-                totalEl.textContent = data.newTotalFormatted;
+                
+                // Format new total
+                const newTotal = parseFloat(data.newTotal) || 0;
+                const newTotalFormatted = new Intl.NumberFormat('vi-VN').format(newTotal);
+                totalEl.textContent = newTotalFormatted + '₫';
+                
+                // Đánh dấu voucher đã chọn trong danh sách
+                document.querySelectorAll('.voucher-item').forEach(item => {
+                    if (item.dataset.code === code) {
+                        item.classList.add('selected');
+                    }
+                });
             } else {
                 msgEl.className = 'voucher-message text-danger';
                 msgEl.innerHTML = '<i class="bi bi-x-circle-fill"></i> ' + data.message;
-                discountEl.textContent = '0 đ';
+                discountEl.textContent = '0₫';
                 discountEl.parentElement.classList.remove('text-danger');
                 discountEl.parentElement.classList.add('text-success');
                 totalEl.textContent = subtotalEl.textContent;
+                
+                // Bỏ chọn voucher nếu có
+                document.querySelectorAll('.voucher-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
             }
         })
         .catch(error => {
@@ -546,7 +759,22 @@ document.addEventListener("DOMContentLoaded", function() {
     function renderEditModal(data, card) {
         const content = document.getElementById('editModalContent');
         const currentSize = card.dataset.size || "Mặc định";
+        const currentSugar = card.dataset.sugarLevel || "Bình thường";
+        const currentIce = card.dataset.iceLevel || "Bình thường";
         const currentToppingsStr = card.dataset.toppings || "";
+        
+        const createOptionGroup = (title, name, options, currentValue) => {
+            return '<div class="mb-3"><h6>' + title + '</h6>' +
+                '<div class="row row-cols-3 g-2">' +
+                options.map((opt, idx) => {
+                    const checked = (opt === currentValue) ? 'checked' : '';
+                    return '<div class="col">' +
+                        '<input type="radio" class="btn-check" name="edit-' + name + '" id="edit-' + name + '-' + idx + '" value="' + escapeHtml(opt) + '" ' + checked + '>' +
+                        '<label class="btn btn-outline-primary w-100" for="edit-' + name + '-' + idx + '">' + escapeHtml(opt) + '</label>' +
+                        '</div>';
+                }).join('') +
+                '</div></div>';
+        };
 
         let sizesHtml = '';
         if (data.sizes && data.sizes.length > 0) {
@@ -583,19 +811,37 @@ document.addEventListener("DOMContentLoaded", function() {
             }).join('');
         }
 
-        const sizesBlock = sizesHtml ? '<div class="mb-3"><h6>Size</h6><div class="row g-2">' + sizesHtml + '</div></div>' : '';
+        // Chỉ hiển thị "Mức đá" và "Độ ngọt" cho đồ uống (isDrink === true)
+        const isDrink = data.product.isDrink === true;
+        
+        const sizesBlock = sizesHtml ? '<div class="mb-3"><h6>Kích cỡ</h6><div class="row g-2">' + sizesHtml + '</div></div>' : '';
+        const sugarBlock = isDrink ? createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều'], currentSugar) : '';
+        const iceBlock = isDrink ? createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều'], currentIce) : '';
         const toppingsBlock = toppingsHtml ? '<div class="mb-3"><h6>Topping</h6>' + toppingsHtml + '</div>' : '';
 
+        // Xử lý thumbnail URL
+        let thumbnailUrl = data.product.thumbnail || '';
+        if (thumbnailUrl && !thumbnailUrl.startsWith('http')) {
+            if (thumbnailUrl.startsWith('uploads/')) {
+                thumbnailUrl = contextPath + '/' + thumbnailUrl;
+            } else {
+                thumbnailUrl = contextPath + '/uploads/products/' + thumbnailUrl;
+            }
+        }
+        if (!thumbnailUrl) {
+            thumbnailUrl = 'https://via.placeholder.com/400?text=No+Image';
+        }
+
         content.innerHTML = '<div class="row g-4">' +
-            '<div class="col-md-5"><img src="' + escapeHtml(data.product.thumbnail) + '" ' +
+            '<div class="col-md-5"><img src="' + escapeHtml(thumbnailUrl) + '" ' +
             'class="img-fluid rounded" alt="' + escapeHtml(data.product.name) + '"></div>' +
             '<div class="col-md-7">' +
             '<h4>' + escapeHtml(data.product.name) + '</h4>' +
             '<p class="h5 text-primary fw-bold mb-3" id="edit-base-price" data-price="' + data.product.basePrice + '">' +
             currencyFormatter.format(data.product.basePrice) + '</p>' +
             '<div style="max-height: 300px; overflow-y: auto;">' +
-            sizesBlock + toppingsBlock +
-            (!sizesBlock && !toppingsBlock ? '<p class="text-muted">Sản phẩm này không có tùy chọn.</p>' : '') +
+            sizesBlock + sugarBlock + iceBlock + toppingsBlock +
+            (!sizesBlock && !sugarBlock && !iceBlock && !toppingsBlock ? '<p class="text-muted">Sản phẩm này không có tùy chọn.</p>' : '') +
             '</div></div></div>';
 
         content.querySelectorAll('input[name="edit-size"]').forEach(r => 
@@ -639,12 +885,24 @@ document.addEventListener("DOMContentLoaded", function() {
             .map(inp => inp.dataset.toppingId + ':' + inp.value)
             .join(',');
 
+        const newSugar = document.querySelector('input[name="edit-sweetness"]:checked');
+        const newIce = document.querySelector('input[name="edit-ice"]:checked');
+        
+        // Kiểm tra xem có input sweetness/ice không (nếu không có thì không phải đồ uống)
+        const isDrink = (newSugar !== null || newIce !== null || 
+                         document.querySelector('input[name="edit-sweetness"]') !== null ||
+                         document.querySelector('input[name="edit-ice"]') !== null);
+
         const params = new URLSearchParams({
             oldProductId: currentEditingItem.dataset.productId,
             oldSize: currentEditingItem.dataset.size || "Mặc định",
+            oldSugarLevel: currentEditingItem.dataset.sugarLevel || (isDrink ? "Bình thường" : ""),
+            oldIceLevel: currentEditingItem.dataset.iceLevel || (isDrink ? "Bình thường" : ""),
             oldToppingsCsv: currentEditingItem.dataset.toppings || "",
             quantity: currentEditingItem.querySelector('.quantity-mini input').value,
             newSize: newSize ? newSize.value : "Mặc định",
+            newSugarLevel: (newSugar && isDrink) ? newSugar.value : (isDrink ? "Bình thường" : ""),
+            newIceLevel: (newIce && isDrink) ? newIce.value : (isDrink ? "Bình thường" : ""),
             newToppings: newToppings
         });
 

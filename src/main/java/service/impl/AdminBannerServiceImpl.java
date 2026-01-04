@@ -1,21 +1,15 @@
 package service.impl;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
 
 import config.JpaUtil;
 import jakarta.persistence.EntityManager;
 import model.Banner;
 import service.AdminBannerService;
-import utils.Constant;
+import utils.UploadType;
+import utils.UploadUtil;
 
 public class AdminBannerServiceImpl implements AdminBannerService {
-    private static final String BANNER_SUBDIR = "banners";
     
     @Override
     public List<Banner> getAllBanners() {
@@ -38,17 +32,35 @@ public class AdminBannerServiceImpl implements AdminBannerService {
     }
     
     @Override
-    public void saveBanner(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl) {
+    public int getMaxSortOrder() {
+        EntityManager em = JpaUtil.em();
         try {
-            String finalImageUrl = handleImageUpload(banner, imageFile, imageUrl);
-            if (finalImageUrl != null) {
-                banner.setImageUrl(finalImageUrl);
-            } else if (banner.getId() == null) {
-                throw new IllegalArgumentException("Bạn phải cung cấp ảnh!");
-            }
-            
+            Object result = em.createQuery("SELECT MAX(b.sortOrder) FROM Banner b").getSingleResult();
+            return result != null ? ((Integer) result) : -1;
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public void saveBanner(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl, jakarta.servlet.ServletContext servletContext) {
+        try {
             EntityManager em = JpaUtil.em();
             try {
+                // Tự động set thứ tự khi tạo mới
+                if (banner.getId() == null) {
+                    Object maxResult = em.createQuery("SELECT MAX(b.sortOrder) FROM Banner b").getSingleResult();
+                    int maxSortOrder = (maxResult != null) ? ((Integer) maxResult) : -1;
+                    banner.setSortOrder(maxSortOrder + 1);
+                }
+                
+                String finalImageUrl = handleImageUpload(banner, imageFile, imageUrl, servletContext);
+                if (finalImageUrl != null) {
+                    banner.setImageUrl(finalImageUrl);
+                } else if (banner.getId() == null) {
+                    throw new IllegalArgumentException("Bạn phải cung cấp ảnh!");
+                }
+                
                 em.getTransaction().begin();
                 
                 if (banner.getId() == null) {
@@ -67,7 +79,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
     }
     
     @Override
-    public void deleteBanner(int id) {
+    public void deleteBanner(int id, jakarta.servlet.ServletContext servletContext) {
         EntityManager em = JpaUtil.em();
         try {
             em.getTransaction().begin();
@@ -75,18 +87,8 @@ public class AdminBannerServiceImpl implements AdminBannerService {
             Banner banner = em.find(Banner.class, id);
             if (banner != null) {
                 // Xóa file ảnh
-                if (banner.getImageUrl() != null && !banner.getImageUrl().startsWith("http")) {
-                    try {
-                        String fileName = Paths.get(banner.getImageUrl()).getFileName().toString();
-                        String uploadDirPhysical = Paths.get(Constant.UPLOAD_DIRECTORY, BANNER_SUBDIR)
-                            .toFile().getAbsolutePath();
-                        File fileToDelete = new File(uploadDirPhysical, fileName);
-                        if (fileToDelete.exists()) {
-                            fileToDelete.delete();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                if (banner.getImageUrl() != null) {
+                    UploadUtil.deleteOldImage(banner.getImageUrl(), servletContext);
                 }
                 em.remove(banner);
             }
@@ -102,40 +104,28 @@ public class AdminBannerServiceImpl implements AdminBannerService {
         }
     }
     
-    private String handleImageUpload(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl) {
+    private String handleImageUpload(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl, jakarta.servlet.ServletContext servletContext) {
         try {
-            String originalFileName = (imageFile != null) 
-                ? Paths.get(imageFile.getSubmittedFileName()).getFileName().toString() 
-                : null;
-            
-            if (originalFileName != null && !originalFileName.isEmpty()) {
-                String extension = "";
-                int i = originalFileName.lastIndexOf('.');
-                if (i > 0) {
-                    extension = originalFileName.substring(i);
+            // TRƯỜNG HỢP 1: Upload file (ưu tiên)
+            String uploadedPath = UploadUtil.save(imageFile, UploadType.BANNERS, servletContext);
+            if (uploadedPath != null) {
+                // Xóa ảnh cũ nếu đang edit
+                if (banner.getId() != null && banner.getImageUrl() != null) {
+                    UploadUtil.deleteOldImage(banner.getImageUrl(), servletContext);
                 }
-                String finalFileName = "banner-" + UUID.randomUUID().toString() + extension;
-                
-                String uploadDirPhysical = Paths.get(Constant.UPLOAD_DIRECTORY, BANNER_SUBDIR)
-                    .toFile().getAbsolutePath();
-                File uploadDir = new File(uploadDirPhysical);
-                if (!uploadDir.exists()) uploadDir.mkdirs();
-                
-                File fileToSave = new File(uploadDirPhysical, finalFileName);
-                
-                try (InputStream input = imageFile.getInputStream()) {
-                    Files.copy(input, fileToSave.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                }
-                
-                return BANNER_SUBDIR + "/" + finalFileName;
+                return uploadedPath;
             }
             
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                return imageUrl;
+            // TRƯỜNG HỢP 2: URL từ text input
+            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                return imageUrl.trim();
             }
             
+            // TRƯỜNG HỢP 3: Giữ nguyên ảnh cũ
             return null;
             
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi upload ảnh: " + e.getMessage(), e);
         }
