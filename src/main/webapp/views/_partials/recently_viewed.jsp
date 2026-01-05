@@ -2,9 +2,9 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
-<%@ page import="config.JpaUtil" %>
+<%@ page import="stnw.config.JpaUtil" %>
 <%@ page import="jakarta.persistence.EntityManager" %>
-<%@ page import="model.Product" %>
+<%@ page import="stnw.model.Product" %>
 <%@ page import="java.util.*" %>
 
 <%

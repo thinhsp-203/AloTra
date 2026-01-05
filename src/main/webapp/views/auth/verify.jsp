@@ -28,8 +28,8 @@
                             <input type="hidden" name="email" value="${param.email != null ? param.email : email}">
                             <input type="hidden" name="action" value="${param.action != null ? param.action : 'forgot'}">
 
-                            <div class="form-group">
-                                <label>Mã OTP (6 số):</label>
+                            <div class="mb-3">
+                                <label class="form-label">Mã OTP (6 số):</label>
                                 <input type="text" name="otp" class="form-control" placeholder="Nhập mã OTP..." required>
                             </div>
                             

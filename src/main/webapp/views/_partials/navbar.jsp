@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
-<%@ page import="config.JpaUtil, model.Category, java.util.List" %>
+<%@ page import="stnw.config.JpaUtil, stnw.model.Category, java.util.List" %>
 
 <%
 
