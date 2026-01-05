@@ -17,7 +17,7 @@ public interface OrderService {
      * Tạo đơn hàng và trả về Orders đã persist (đã commit).
      */
     Orders placeOrder(User user, List<CartItem> items, String fullname, String phone, String address,
-                      String note, String voucherCode, String paymentMethod);
+                      String note, String voucherCode, String paymentMethod, String shippingType);
 
     Optional<Orders> findById(int orderId);
 }

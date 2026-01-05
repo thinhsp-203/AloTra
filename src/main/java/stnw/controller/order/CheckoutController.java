@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.util.*;
 import stnw.model.*;
 import stnw.service.OrderService;
+import stnw.service.ShippingFeeService;
 import stnw.service.VoucherService;
 import stnw.service.impl.OrderServiceImpl;
+import stnw.service.impl.ShippingFeeServiceImpl;
 import stnw.service.impl.VoucherServiceImpl;
 
 @WebServlet(urlPatterns = {"/checkout", "/checkout/*"})
@@ -16,11 +18,13 @@ public class CheckoutController extends HttpServlet {
 
     private OrderService orderService;
     private VoucherService voucherService;
+    private ShippingFeeService shippingFeeService;
 
     @Override
     public void init() throws ServletException {
         orderService = new OrderServiceImpl();
         voucherService = new VoucherServiceImpl();
+        shippingFeeService = new ShippingFeeServiceImpl();
     }
 
     @SuppressWarnings("unchecked")
@@ -56,6 +60,10 @@ public class CheckoutController extends HttpServlet {
             // Nếu lỗi khi load voucher, vẫn tiếp tục với danh sách rỗng
             req.setAttribute("availableVouchers", new ArrayList<>());
         }
+        
+        // Truyền thông tin shipping fee vào JSP
+        req.setAttribute("standardShippingFee", shippingFeeService.getStandardShippingFee());
+        req.setAttribute("priorityShippingFee", shippingFeeService.getPriorityShippingFee());
 
         req.getRequestDispatcher("/views/order/checkout.jsp").forward(req, resp);
     }
@@ -84,10 +92,11 @@ public class CheckoutController extends HttpServlet {
         String note = req.getParameter("note");
         String voucherCode = req.getParameter("voucher");
         String payment = Optional.ofNullable(req.getParameter("payment")).orElse("COD");
+        String shippingType = Optional.ofNullable(req.getParameter("shippingType")).orElse("STANDARD");
 
         Orders order;
         try {
-            order = orderService.placeOrder(currentUser, items, fullname, phone, address, note, voucherCode, payment);
+            order = orderService.placeOrder(currentUser, items, fullname, phone, address, note, voucherCode, payment, shippingType);
 
             // Đơn hàng đã được tạo thành công, chỉ lưu tên phương thức thanh toán
             String successMessage = "Đơn hàng #" + order.getOrder_id() + " đã được đặt thành công!";

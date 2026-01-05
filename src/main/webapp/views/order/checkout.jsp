@@ -341,6 +341,29 @@
                         </label>
                     </div>
 
+                    <!-- Shipping Method -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <i class="bi bi-truck"></i> Phương thức giao hàng
+                        </div>
+                        
+                        <label class="payment-option active" id="shipping-standard">
+                            <input type="radio" name="shippingType" value="STANDARD" checked>
+                            <i class="bi bi-truck"></i> Ship tiêu chuẩn
+                            <span class="ms-auto text-primary fw-bold">
+                                <fmt:formatNumber value="${standardShippingFee}" pattern="#,##0₫"/>
+                            </span>
+                        </label>
+                        
+                        <label class="payment-option" id="shipping-priority">
+                            <input type="radio" name="shippingType" value="PRIORITY">
+                            <i class="bi bi-lightning-charge"></i> Ship ưu tiên
+                            <span class="ms-auto text-primary fw-bold">
+                                <fmt:formatNumber value="${priorityShippingFee}" pattern="#,##0₫"/>
+                            </span>
+                        </label>
+                    </div>
+
                     <!-- VOUCHER SECTION -->
                     <div class="section-card">
                         <div class="section-header">
@@ -511,9 +534,11 @@
                                 </strong>
                             </div>
                             
-                            <div class="summary-row text-muted">
+                            <div class="summary-row" id="shipping-fee-row">
                                 <span>Phí vận chuyển</span>
-                                <strong>0 đ</strong>
+                                <strong id="shipping-fee-display">
+                                    <fmt:formatNumber value="${standardShippingFee}" pattern="#,##0₫"/>
+                                </strong>
                             </div>
                             
                             <div class="summary-row text-success">
@@ -573,9 +598,33 @@ document.addEventListener("DOMContentLoaded", function() {
     // Payment method selection
     document.querySelectorAll('.payment-option').forEach(option => {
         option.addEventListener('click', function() {
-            document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('active'));
-            this.classList.add('active');
-            this.querySelector('input[type="radio"]').checked = true;
+            // Chỉ xử lý nếu là payment option (không phải shipping option)
+            if (this.querySelector('input[name="payment"]')) {
+                document.querySelectorAll('input[name="payment"]').forEach(inp => {
+                    inp.closest('.payment-option').classList.remove('active');
+                });
+                this.classList.add('active');
+                this.querySelector('input[type="radio"]').checked = true;
+            }
+        });
+    });
+    
+    // Shipping method selection
+    document.querySelectorAll('input[name="shippingType"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            updateShippingAndTotal();
+        });
+    });
+    
+    // Click handler cho shipping option labels
+    document.querySelectorAll('#shipping-standard, #shipping-priority').forEach(label => {
+        label.addEventListener('click', function(e) {
+            // Nếu click vào label (không phải radio), trigger change
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio && e.target !== radio) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+            }
         });
     });
 
@@ -649,6 +698,38 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('apply-voucher-btn').click();
     };
     
+    // Shipping fee constants
+    const STANDARD_SHIPPING_FEE = ${standardShippingFee != null ? standardShippingFee : 30000};
+    const PRIORITY_SHIPPING_FEE = ${priorityShippingFee != null ? priorityShippingFee : 50000};
+    
+    // Function to get current shipping fee
+    function getCurrentShippingFee() {
+        const selectedShipping = document.querySelector('input[name="shippingType"]:checked');
+        if (selectedShipping && selectedShipping.value === 'PRIORITY') {
+            return PRIORITY_SHIPPING_FEE;
+        }
+        return STANDARD_SHIPPING_FEE;
+    }
+    
+    // Function to update shipping fee and total
+    function updateShippingAndTotal() {
+        const shippingFee = getCurrentShippingFee();
+        const shippingFeeEl = document.getElementById('shipping-fee-display');
+        shippingFeeEl.textContent = new Intl.NumberFormat('vi-VN').format(shippingFee) + '₫';
+        
+        // Tính lại tổng tiền
+        const subtotalEl = document.getElementById('subtotal-display');
+        const discountEl = document.getElementById('discount-display');
+        const totalEl = document.getElementById('grand-total-display');
+        
+        const subtotal = parseFloat(subtotalEl.textContent.replace(/[^\d]/g, '')) || 0;
+        const discount = parseFloat(discountEl.textContent.replace(/[^\d]/g, '')) || 0;
+        const subtotalAfterDiscount = subtotal - discount;
+        const finalTotal = subtotalAfterDiscount + shippingFee;
+        
+        totalEl.textContent = new Intl.NumberFormat('vi-VN').format(finalTotal) + '₫';
+    }
+    
     // VOUCHER APPLICATION
     document.getElementById('apply-voucher-btn')?.addEventListener('click', function() {
         const code = document.getElementById('voucher-code-input').value.trim();
@@ -685,10 +766,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 discountEl.parentElement.classList.remove('text-success');
                 discountEl.parentElement.classList.add('text-danger');
                 
-                // Format new total
-                const newTotal = parseFloat(data.newTotal) || 0;
-                const newTotalFormatted = new Intl.NumberFormat('vi-VN').format(newTotal);
-                totalEl.textContent = newTotalFormatted + '₫';
+                // Tính tổng tiền sau voucher (chưa có shipping)
+                const newSubtotal = parseFloat(data.newTotal) || 0;
+                
+                // Lấy phí ship hiện tại
+                const shippingFee = getCurrentShippingFee();
+                
+                // Tổng tiền cuối cùng = tổng sau voucher + shipping fee
+                const finalTotal = newSubtotal + shippingFee;
+                const finalTotalFormatted = new Intl.NumberFormat('vi-VN').format(finalTotal);
+                totalEl.textContent = finalTotalFormatted + '₫';
                 
                 // Đánh dấu voucher đã chọn trong danh sách
                 document.querySelectorAll('.voucher-item').forEach(item => {
@@ -702,7 +789,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 discountEl.textContent = '0₫';
                 discountEl.parentElement.classList.remove('text-danger');
                 discountEl.parentElement.classList.add('text-success');
-                totalEl.textContent = subtotalEl.textContent;
+                
+                // Tính lại tổng tiền với subtotal ban đầu + shipping fee
+                const subtotal = parseFloat(subtotalEl.textContent.replace(/[^\d]/g, '')) || 0;
+                const shippingFee = getCurrentShippingFee();
+                const finalTotal = subtotal + shippingFee;
+                totalEl.textContent = new Intl.NumberFormat('vi-VN').format(finalTotal) + '₫';
                 
                 // Bỏ chọn voucher nếu có
                 document.querySelectorAll('.voucher-item').forEach(item => {

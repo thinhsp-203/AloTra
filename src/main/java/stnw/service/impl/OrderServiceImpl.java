@@ -12,6 +12,7 @@ import stnw.model.User;
 import stnw.model.Voucher;
 import stnw.service.NotificationService;
 import stnw.service.OrderService;
+import stnw.service.ShippingFeeService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -22,6 +23,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository = new OrderRepositoryImpl();
     private final VoucherRepository voucherRepository = new VoucherRepositoryImpl();
     private final NotificationService notificationService = new NotificationServiceImpl();
+    private final ShippingFeeService shippingFeeService = new ShippingFeeServiceImpl();
 
     @Override
     public VoucherResult applyVoucher(String code, List<CartItem> cartItems) {
@@ -60,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Orders placeOrder(User user, List<CartItem> items, String fullname, String phone, String address,
-                             String note, String voucherCode, String paymentMethod) {
+                             String note, String voucherCode, String paymentMethod, String shippingType) {
         EntityManager em = JpaUtil.em();
         try {
             em.getTransaction().begin();
@@ -88,6 +90,13 @@ public class OrderServiceImpl implements OrderService {
             }
             BigDecimal grandTotal = total.subtract(discountAmount);
             if (grandTotal.compareTo(BigDecimal.ZERO) < 0) grandTotal = BigDecimal.ZERO;
+            
+            // Tính phí giao hàng theo loại ship được chọn
+            if (shippingType == null || shippingType.isBlank()) {
+                shippingType = "STANDARD"; // Mặc định là ship tiêu chuẩn
+            }
+            BigDecimal shippingFee = shippingFeeService.calculateShippingFee(shippingType);
+            grandTotal = grandTotal.add(shippingFee);
 
             User managedUser = em.find(User.class, user.getId());
             // Tất c�?đơn hàng mới đều bắt đầu với "Chưa thanh toán"
