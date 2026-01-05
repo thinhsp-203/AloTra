@@ -171,19 +171,24 @@
                             </c:if>
                         </div>
                         
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold mb-2" style="font-size: 1.1rem;">
-                              <i class="fas fa-user-tag text-primary" style="margin-right: 10px;"></i>Vai trò <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select form-select-lg" 
-                                    name="roleid" 
-                                    required
-                                    style="font-size: 1.1rem; padding: 0.75rem 1rem; height: auto;">
-                                <option value="1" ${user.roleid == 1 ? 'selected' : ''} style="font-size: 1.1rem;">Quản trị viên</option>
-                                <option value="2" ${user.roleid == 2 ? 'selected' : ''} style="font-size: 1.1rem;">Nhân viên</option>
-                                <option value="3" ${user.roleid == 3 || empty user ? 'selected' : ''} style="font-size: 1.1rem;">Khách hàng</option>
-                            </select>
-                        </div>
+                        <%-- Role không thể chỉnh sửa, mặc định là User (roleId = 3) --%>
+                        <c:if test="${not empty user}">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2" style="font-size: 1.1rem;">
+                                    <i class="fas fa-user-tag text-primary" style="margin-right: 10px;"></i>Vai trò
+                                </label>
+                                <div class="form-control form-control-lg" style="font-size: 1.1rem; padding: 0.75rem 1rem; height: auto; background-color: #e9ecef; cursor: not-allowed;">
+                                    <c:choose>
+                                        <c:when test="${user.roleid == 1}">Quản trị viên</c:when>
+                                        <c:when test="${user.roleid == 2}">Nhân viên</c:when>
+                                        <c:otherwise>Khách hàng</c:otherwise>
+                                    </c:choose>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="fas fa-info-circle"></i> Vai trò không thể thay đổi
+                                    </small>
+                                </div>
+                            </div>
+                        </c:if>
                         
                   
       <div class="col-12">

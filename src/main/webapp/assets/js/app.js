@@ -93,8 +93,6 @@ function showLoginRequiredModal() {
 	                
                 modalData = data; 
                 
-                // Render tất cả sizes trong cùng một container để thẳng hàng đều
-                // Tìm size có price = 0 để check mặc định
                 const defaultSizeIndex = data.sizes.findIndex(s => s.priceAdjustment == 0);
                 const sizesHtml = data.sizes.map((s, index) => `
                     <div class="col-auto">
@@ -106,7 +104,6 @@ function showLoginRequiredModal() {
                     </div>
                 `).join('');
 
-	                // === START FIX: Conditionally render toppings ===
 	                let toppingsHtml = '';
 	                if (data.toppings && data.toppings.length > 0) {
 	                    const toppingItems = data.toppings.map(t => `
@@ -121,7 +118,6 @@ function showLoginRequiredModal() {
 	                    `).join('');
 	                    toppingsHtml = `<div class="option-group"><h6>Chọn Topping</h6><div id="modalToppingsList">${toppingItems}</div></div>`;
 	                }
-	                // === END FIX ===
 	                
 	                const createOptionGroup = (title, name, options) => `
 	                    <div class="mb-4 d-flex align-items-center gap-3">
@@ -137,7 +133,6 @@ function showLoginRequiredModal() {
 	                    </div>
 	                `;
 	                
-					// Chỉ hiển thị "Mức đá" và "Độ ngọt" cho đồ uống (isDrink === true)
 					const isDrink = data.product.isDrink === true;
 					
 					// Xử lý thumbnail URL
@@ -218,8 +213,7 @@ function showLoginRequiredModal() {
 					                        <div class="row g-2 align-items-center">${sizesHtml}</div>
 					                    </div>
 					                ` : ''}
-					                ${isDrink ? createOptionGroup('Trà', 'tea', ['Ít', 'Bình thường', 'Nhiều']) : ''}
-					                ${isDrink ? createOptionGroup('Ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều']) : ''}
+					                ${isDrink ? createOptionGroup('Độ ngọt', 'sweetness', ['Ít', 'Bình thường', 'Nhiều']) : ''}
 					                ${isDrink ? createOptionGroup('Mức đá', 'ice', ['Ít', 'Bình thường', 'Nhiều']) : ''}
 					                ${toppingsHtml ? `<div class="mb-0">${toppingsHtml}</div>` : ''}
 					            </div>
@@ -265,10 +259,6 @@ function showLoginRequiredModal() {
                     const params = new URLSearchParams({ productId: productId, quantity: quantity });
                     const sizeInput = modalContent.querySelector('input[name="size"]:checked');
                     if (sizeInput) params.append('size', sizeInput.value);
-                    
-                    // Lấy trà (tea) - nếu có
-                    const teaInput = modalContent.querySelector('input[name="tea"]:checked');
-                    if (teaInput && isDrink) params.append('tea', teaInput.value);
                     
                     // Lấy độ ngọt (sweetness)
                     const sweetnessInput = modalContent.querySelector('input[name="sweetness"]:checked');
@@ -381,7 +371,6 @@ function showLoginRequiredModal() {
                 </div>
             `;
             
-            // Chỉ hiển thị "Mức đá" và "Độ ngọt" cho đồ uống (isDrink === true)
             const isDrink = data.product.isDrink === true;
             
             optionsContainer.innerHTML = `
@@ -445,36 +434,7 @@ function showLoginRequiredModal() {
         document.getElementById('detailAddToCartBtn').textContent = `Thêm vào giỏ hàng : ${currencyFormatter.format(finalPrice)}`;
     }
 
-    // --- SUGGESTION SLIDER (SWIPER) ---
-    function initializeSwiperSlider() {
-        if (typeof Swiper === 'undefined') return; // Kiểm tra Swiper đã tải chưa
-        const swiperContainer = document.querySelector('.suggestion-swiper');
-        if (!swiperContainer) return;
-
-        new Swiper(swiperContainer, {
-            loop: true,
-            slidesPerView: 2,
-            spaceBetween: 10,
-            autoplay: {
-                delay: 4000,
-                disableOnInteraction: false,
-            },
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            breakpoints: {
-                768: {
-                    slidesPerView: 3,
-                    spaceBetween: 20,
-                },
-                992: {
-                    slidesPerView: 5,
-                    spaceBetween: 20,
-                },
-            },
-        });
-    }
+    // Swiper slider đã được loại bỏ vì không được sử dụng
 
     // --- OTHER LOGIC ---
     window.showMoreHomepage = function(type, button) {
@@ -514,40 +474,29 @@ function showLoginRequiredModal() {
         const notificationList = document.getElementById('notification-list');
         
         if (!notificationDropdown || !notificationIcon || !notificationList) {
-            console.log('Notification elements not found, skipping initialization');
             return;
         }
         
         // Function to load notifications
         function ensureNotificationsLoaded() {
-            console.log('ensureNotificationsLoaded called', {
-                loadingInProgress: notificationLoadingInProgress,
-                notificationList: !!notificationList,
-                contextPath: contextPath
-            });
             if (notificationLoadingInProgress) {
-                console.log('Already loading, skipping');
                 return;
             }
             if (!notificationList) {
-                console.error('Notification list element not found');
                 return;
             }
             
             notificationLoadingInProgress = true;
-            console.log('Starting to load notifications...');
             loadNotifications();
         }
         
         // Listen for click event on the icon
         notificationIcon.addEventListener('click', function(e) {
-            console.log('Notification icon clicked');
             ensureNotificationsLoaded();
         });
         
         // Also listen for Bootstrap dropdown shown event
         notificationDropdown.addEventListener('shown.bs.dropdown', function() {
-            console.log('Dropdown shown event triggered');
             ensureNotificationsLoaded();
         });
         
@@ -592,24 +541,20 @@ function showLoginRequiredModal() {
         notificationList.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
         
         const apiUrl = `${contextPath}/api/notifications/recent`;
-        console.log('Loading notifications from:', apiUrl);
         
         get(apiUrl, (err, data) => {
             notificationLoadingInProgress = false;
             
             if (err) {
-                console.error('Error loading notifications:', err);
                 notificationList.innerHTML = '<div class="text-center py-3 text-muted"><small>Không thể tải thông báo: ' + (err.message || 'Lỗi kết nối') + '</small></div>';
                 return;
             }
             
             if (!data) {
-                console.error('No data received from API');
                 notificationList.innerHTML = '<div class="text-center py-3 text-muted"><small>Không có dữ liệu</small></div>';
                 return;
             }
             
-            console.log('Notifications loaded:', data);
             
             const notifications = data.notifications || [];
             const unreadCount = data.unreadCount || 0;
@@ -721,7 +666,6 @@ function showLoginRequiredModal() {
 		        }
 		    }
 		    
-		    console.log("Loaded - Search:", searchKeyword, "Category:", selectedCate);
 		    
 		    window.loadMore = function() {
 		        if (isLoading || !hasMore) return;
@@ -744,19 +688,15 @@ function showLoginRequiredModal() {
 		            params.append('cate', selectedCate.trim());
 		        }
 		        
-		        console.log("Request URL:", contextPath + '/products/page?' + params.toString());
 		        
 		        get(contextPath + '/products/page?' + params.toString(), (err, data) => {
 		            isLoading = false;
 		            if(loadingEl) loadingEl.style.display = 'none';
 		            
 		            if (err || !data) {
-		                console.error("Load error:", err);
 		                showToast('Không thể tải sản phẩm', true);
 		                return;
 		            }
-		            
-		            console.log("Loaded data:", data);
 		            
 		            // Update search result count
 		            const resultCountEl = document.getElementById('search-result-count');
@@ -819,7 +759,6 @@ function showLoginRequiredModal() {
         // Chạy logic cho trang chi tiết sản phẩm
         if (document.getElementById('product-detail-container')) {
             initializeProductDetailPage();
-            initializeSwiperSlider();
         }
 
         // Chạy logic cho trang checkout (voucher)
@@ -962,65 +901,9 @@ function showLoginRequiredModal() {
 	        }
 	    });
 	    
-	    // Helper function
-	    function escapeHtml(text) {
-	        const map = {'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#039;'};
-	        return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
-	    }
 	})
 })();
-/*
- * ========================================
- * SB ADMIN 2 - JAVASCRIPT
- * ========================================
- */
-document.addEventListener("DOMContentLoaded", function() {
-    
-    // 1. Sidebar Toggle (Nút gạch ở Topbar)
-    const sidebarToggleTop = document.getElementById('sidebarToggleTop');
-    if (sidebarToggleTop) {
-        sidebarToggleTop.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.body.classList.toggle('sidebar-toggled');
-            document.getElementById('accordionSidebar').classList.toggle('toggled');
-        });
-    }
-
-    // 2. Sidebar Toggle (Nút mũi tên ở Sidebar)
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.body.classList.toggle('sidebar-toggled');
-            document.getElementById('accordionSidebar').classList.toggle('toggled');
-        });
-    }
-
-    // 3. Scroll to Top Button
-    const scrollTopButton = document.querySelector('.scroll-to-top');
-    const mainContent = document.querySelector('.main-content'); // Vùng cuộn chính
-    
-    if (scrollTopButton && mainContent) {
-        // Hiển thị nút khi cuộn
-        mainContent.addEventListener('scroll', function() {
-            if (mainContent.scrollTop > 100) {
-                scrollTopButton.style.display = 'block';
-            } else {
-                scrollTopButton.style.display = 'none';
-            }
-        });
-
-        // Click để cuộn lên
-        scrollTopButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            mainContent.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    }
-
-});
+// SB Admin 2 logic đã được xử lý bởi sb-admin-2.min.js trong admin layout
 /*
  * ========================================
  * LOGIC WISHLIST (MỚI)
@@ -1054,7 +937,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 });
             })
-            .catch(err => console.error("Lỗi khi lấy ID wishlist:", err));
+            .catch(() => {}); // Silently fail - wishlist is optional
     }
     
     // Export hàm ra global scope để có thể gọi từ jQuery
@@ -1074,7 +957,6 @@ document.addEventListener("DOMContentLoaded", function() {
             
             const productId = wishlistBtn.dataset.productId;
             if (!productId) {
-                console.error("Product ID không tồn tại");
                 return;
             }
             
@@ -1094,7 +976,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 
                 // Xử lý thành công
                 const data = result.data;
-                console.log(data.message);
                 
                 // Update tất cả các nút wishlist có cùng productId (trên card, modal, detail page)
                 const allWishlistBtns = document.querySelectorAll(`.btn-wishlist[data-product-id="${productId}"]`);
@@ -1125,8 +1006,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 }
             })
-            .catch(err => {
-                console.error("Lỗi toggle wishlist:", err);
+            .catch(() => {
+                // Silently fail - wishlist toggle is optional
             });
         }
     });

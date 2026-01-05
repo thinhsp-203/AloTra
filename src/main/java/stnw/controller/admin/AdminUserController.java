@@ -120,22 +120,18 @@ public class AdminUserController extends HttpServlet {
         String address = req.getParameter("address");
         String password = req.getParameter("password");
         
-        String roleIdParam = req.getParameter("roleid");
-        Integer roleId = (roleIdParam != null && !roleIdParam.isEmpty()) 
-            ? Integer.parseInt(roleIdParam) 
-            : 3;
-        
         boolean isActive = "on".equals(req.getParameter("isActive"));
         
         if (userId == null) {
-            // TẠO MỚI
+            // TẠO MỚI - Mặc định role là User (roleId = 3)
             userService.createUser(username, email, password, fullname, 
-                                  phone, address, roleId, isActive);
+                                  phone, address, 3, isActive); // Luôn tạo với roleId = 3 (User)
             req.getSession().setAttribute("success", "Đã tạo người dùng mới thành công!");
         } else {
-            // CẬP NHẬT
+            // CẬP NHẬT - Không cho phép thay đổi role, giữ nguyên role hiện tại
+            // Truyền null cho roleId để service giữ nguyên role hiện tại
             userService.updateUser(userId, email, fullname, phone, address, 
-                                  roleId, isActive, password);
+                                  null, isActive, password); // null = không thay đổi role
             req.getSession().setAttribute("success", "Đã cập nhật thông tin người dùng!");
         }
         

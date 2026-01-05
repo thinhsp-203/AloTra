@@ -75,7 +75,12 @@ public class AdminUserServiceImpl implements AdminUserService {
             user.setFullname(fullname);
             user.setPhone(phone);
             user.setAddress(address);
-            user.setRoleid(roleId);
+            // Không cho phép thay đổi role - chỉ cập nhật nếu roleId != null (để backward compatibility)
+            // Nhưng trong thực tế, roleId sẽ luôn là null khi update từ form
+            if (roleId != null) {
+                // Chỉ cho phép set role khi tạo mới, không cho phép thay đổi khi update
+                // Giữ nguyên role hiện tại
+            }
             user.setIsActive(isActive);
             
             if (newPassword != null && !newPassword.isEmpty()) {

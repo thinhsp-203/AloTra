@@ -398,6 +398,7 @@
                                         <c:set var="v" value="${vInfo.voucher()}"/>
                                         <div class="voucher-item ${vInfo.canUse() ? '' : 'disabled'}" 
                                              data-code="${v.code}"
+                                             data-min-order="${v.min_order_value != null ? v.min_order_value : 0}"
                                              <c:if test="${vInfo.canUse()}">onclick="selectVoucher(this, '${v.code}')"</c:if>>
                                             <div class="voucher-header">
                                                 <div class="voucher-code">${v.code}</div>
@@ -553,7 +554,7 @@
                                 </span>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary w-100 mt-3">
+                            <button type="submit" class="btn btn-primary w-100 mt-3" id="checkoutSubmitBtn">
                                 TIẾN HÀNH THANH TOÁN
                             </button>
                         </div>
@@ -612,6 +613,15 @@ document.addEventListener("DOMContentLoaded", function() {
     // Shipping method selection
     document.querySelectorAll('input[name="shippingType"]').forEach(radio => {
         radio.addEventListener('change', function() {
+            // Highlight shipping option được chọn
+            document.querySelectorAll('#shipping-standard, #shipping-priority').forEach(label => {
+                label.classList.remove('active');
+            });
+            const selectedLabel = this.closest('.payment-option');
+            if (selectedLabel) {
+                selectedLabel.classList.add('active');
+            }
+            
             updateShippingAndTotal();
         });
     });
@@ -654,7 +664,49 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(r => r.json())
             .then(data => {
-                if (data.ok) location.reload();
+                if (data.ok) {
+                    // Tính lại lineTotal của item này
+                    // Lấy lineTotal hiện tại và quantity cũ để tính unitPrice
+                    const currentPriceText = card.querySelector('.price-mini')?.textContent || '';
+                    const currentLineTotal = parseFloat(currentPriceText.replace(/[^\d]/g, '')) || 0;
+                    const oldQty = parseInt(qtyInput.value) || 1;
+                    const unitPrice = oldQty > 0 ? currentLineTotal / oldQty : 0;
+                    
+                    // Tính lineTotal mới
+                    const newLineTotal = unitPrice * newQty;
+                    
+                    // Cập nhật số lượng và giá hiển thị
+                    qtyInput.value = newQty;
+                    if (card.querySelector('.price-mini')) {
+                        card.querySelector('.price-mini').textContent = 
+                            new Intl.NumberFormat('vi-VN').format(newLineTotal) + '₫';
+                    }
+                    
+                    // Tính lại subtotal từ tất cả các items
+                    let newSubtotal = 0;
+                    document.querySelectorAll('.price-mini').forEach(priceEl => {
+                        const priceText = priceEl.textContent || '';
+                        const price = parseFloat(priceText.replace(/[^\d]/g, '')) || 0;
+                        newSubtotal += price;
+                    });
+                    
+                    // Cập nhật subtotal display
+                    const subtotalEl = document.getElementById('subtotal-display');
+                    if (subtotalEl) {
+                        subtotalEl.textContent = new Intl.NumberFormat('vi-VN').format(newSubtotal) + '₫';
+                    }
+                    
+                    // Cập nhật grand total (subtotal - discount + shipping)
+                    updateShippingAndTotal();
+                    
+                    // Cập nhật trạng thái voucher dựa trên subtotal mới
+                    updateVoucherAvailability(newSubtotal);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không cập nhật được'));
+                }
+            })
+            .catch(error => {
+                alert('Có lỗi xảy ra khi cập nhật số lượng');
             });
         };
         
@@ -681,8 +733,44 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
+    // Function để cập nhật trạng thái voucher dựa trên subtotal
+    function updateVoucherAvailability(subtotal) {
+        document.querySelectorAll('.voucher-item').forEach(item => {
+            const minOrderValue = parseFloat(item.dataset.minOrder || '0');
+            const isAvailable = minOrderValue === 0 || subtotal >= minOrderValue;
+            
+            if (isAvailable) {
+                // Enable voucher
+                item.classList.remove('disabled');
+                if (!item.hasAttribute('onclick')) {
+                    const code = item.dataset.code;
+                    item.setAttribute('onclick', `selectVoucher(this, '${code}')`);
+                }
+                // Ẩn warning message nếu có
+                const warning = item.querySelector('.voucher-warning');
+                if (warning) {
+                    warning.style.display = 'none';
+                }
+            } else {
+                // Disable voucher
+                item.classList.add('disabled');
+                item.removeAttribute('onclick');
+                // Hiển thị warning message nếu có
+                const warning = item.querySelector('.voucher-warning');
+                if (warning) {
+                    warning.style.display = 'block';
+                }
+            }
+        });
+    }
+    
     // Function để chọn voucher từ danh sách
     window.selectVoucher = function(element, code) {
+        // Kiểm tra xem voucher có available không
+        if (element.classList.contains('disabled')) {
+            return;
+        }
+        
         // Bỏ chọn các voucher khác
         document.querySelectorAll('.voucher-item').forEach(item => {
             item.classList.remove('selected');
@@ -699,8 +787,8 @@ document.addEventListener("DOMContentLoaded", function() {
     };
     
     // Shipping fee constants
-    const STANDARD_SHIPPING_FEE = ${standardShippingFee != null ? standardShippingFee : 30000};
-    const PRIORITY_SHIPPING_FEE = ${priorityShippingFee != null ? priorityShippingFee : 50000};
+    const STANDARD_SHIPPING_FEE = ${standardShippingFee != null ? standardShippingFee : 15000};
+    const PRIORITY_SHIPPING_FEE = ${priorityShippingFee != null ? priorityShippingFee : 30000};
     
     // Function to get current shipping fee
     function getCurrentShippingFee() {
@@ -715,20 +803,43 @@ document.addEventListener("DOMContentLoaded", function() {
     function updateShippingAndTotal() {
         const shippingFee = getCurrentShippingFee();
         const shippingFeeEl = document.getElementById('shipping-fee-display');
-        shippingFeeEl.textContent = new Intl.NumberFormat('vi-VN').format(shippingFee) + '₫';
+        if (shippingFeeEl) {
+            shippingFeeEl.textContent = new Intl.NumberFormat('vi-VN').format(shippingFee) + '₫';
+        }
         
         // Tính lại tổng tiền
         const subtotalEl = document.getElementById('subtotal-display');
         const discountEl = document.getElementById('discount-display');
         const totalEl = document.getElementById('grand-total-display');
         
+        if (!subtotalEl || !totalEl) return;
+        
+        // Parse subtotal (chỉ lấy số)
         const subtotal = parseFloat(subtotalEl.textContent.replace(/[^\d]/g, '')) || 0;
-        const discount = parseFloat(discountEl.textContent.replace(/[^\d]/g, '')) || 0;
+        
+        // Parse discount (có thể có dấu trừ, ví dụ: "-10000₫" hoặc "0 đ")
+        let discount = 0;
+        if (discountEl) {
+            const discountText = discountEl.textContent.trim();
+            // Nếu có dấu trừ, parse số (giá trị tuyệt đối)
+            if (discountText.includes('-')) {
+                discount = parseFloat(discountText.replace(/[^\d]/g, '')) || 0;
+            }
+            // Nếu không có dấu trừ (ví dụ: "0 đ"), discount = 0
+        }
+        
         const subtotalAfterDiscount = subtotal - discount;
         const finalTotal = subtotalAfterDiscount + shippingFee;
         
         totalEl.textContent = new Intl.NumberFormat('vi-VN').format(finalTotal) + '₫';
     }
+    
+    // Gọi ngay khi trang load để tính tổng tiền ban đầu (subtotal + shipping fee)
+    updateShippingAndTotal();
+    
+    // Cập nhật trạng thái voucher ban đầu dựa trên subtotal
+    const initialSubtotal = parseFloat(document.getElementById('subtotal-display')?.textContent.replace(/[^\d]/g, '') || '0');
+    updateVoucherAvailability(initialSubtotal);
     
     // VOUCHER APPLICATION
     document.getElementById('apply-voucher-btn')?.addEventListener('click', function() {
@@ -803,7 +914,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         })
         .catch(error => {
-            console.error('Error applying voucher:', error);
             msgEl.className = 'voucher-message text-danger';
             msgEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Không thể áp dụng mã giảm giá';
         })
@@ -841,7 +951,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 })
                 .catch(err => {
-                    console.error(err);
                     document.getElementById('editModalContent').innerHTML = 
                         '<div class="alert alert-danger">Không thể tải thông tin sản phẩm</div>';
                 });
@@ -1009,11 +1118,56 @@ document.addEventListener("DOMContentLoaded", function() {
             else alert('Lỗi: ' + (data.message || 'Không cập nhật được'));
         })
         .catch(err => {
-            console.error(err);
             alert('Có lỗi xảy ra');
         });
         
         editItemModal.hide();
     });
+    
+    // Confirmation dialog khi submit checkout form
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Lấy thông tin đơn hàng để hiển thị trong dialog
+            const fullname = document.querySelector('input[name="fullname"]').value || '';
+            const phone = document.querySelector('input[name="phone"]').value || '';
+            const address = document.querySelector('textarea[name="address"]').value || '';
+            const paymentMethod = document.querySelector('input[name="payment"]:checked')?.value || 'COD';
+            const shippingType = document.querySelector('input[name="shippingType"]:checked')?.value || 'STANDARD';
+            const grandTotal = document.getElementById('grand-total-display')?.textContent || '';
+            
+            // Tạo nội dung confirmation
+            let paymentText = '';
+            if (paymentMethod === 'COD') {
+                paymentText = 'Thanh toán khi nhận hàng (COD)';
+            } else if (paymentMethod === 'VNPAY') {
+                paymentText = 'Ví VNPAY';
+            } else if (paymentMethod === 'MOMO') {
+                paymentText = 'Ví MOMO';
+            } else if (paymentMethod === 'CARDVISA') {
+                paymentText = 'Thẻ ngân hàng/Thẻ tín dụng';
+            } else {
+                paymentText = paymentMethod;
+            }
+            
+            let shippingText = shippingType === 'PRIORITY' ? 'Ship ưu tiên' : 'Ship tiêu chuẩn';
+            
+            const confirmMessage = 
+                'Thông tin giao hàng:\n' +
+                '- Họ tên: ' + fullname + '\n' +
+                '- Số điện thoại: ' + phone + '\n' +
+                '- Địa chỉ: ' + address + '\n' +
+                'Tổng tiền: ' + grandTotal + '\n' +
+                'Bạn có chắc chắn muốn đặt đơn hàng này?';
+            
+            if (confirm(confirmMessage)) {
+                // Nếu user xác nhận, submit form
+                checkoutForm.submit();
+            }
+            // Nếu không, không làm gì (form không submit)
+        });
+    }
 });
 </script>

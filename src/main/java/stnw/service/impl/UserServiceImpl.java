@@ -113,8 +113,8 @@ public class UserServiceImpl implements UserService {
     public int countUsers(String keyword, Integer roleId) {
         EntityManager em = JpaUtil.em();
         try {
-            // Chỉ đếm user đang active (chưa bị xóa mềm)
-            String jpql = "SELECT COUNT(u) FROM User u WHERE (u.isActive = true OR u.isActive IS NULL)";
+            // Hiển thị tất cả user, kể cả user có isActive = false
+            String jpql = "SELECT COUNT(u) FROM User u WHERE 1=1";
             if (keyword != null && !keyword.isBlank()) {
                 jpql += " AND (u.fullname LIKE :kw OR u.email LIKE :kw OR u.phone LIKE :kw)";
             }
@@ -138,8 +138,8 @@ public class UserServiceImpl implements UserService {
     public List<User> searchUsers(String keyword, Integer roleId, int page, int pageSize) {
         EntityManager em = JpaUtil.em();
         try {
-            // Chỉ hiển thị user đang active (chưa bị xóa mềm)
-            String jpql = "SELECT u FROM User u WHERE (u.isActive = true OR u.isActive IS NULL)";
+            // Hiển thị tất cả user, kể cả user có isActive = false
+            String jpql = "SELECT u FROM User u WHERE 1=1";
             if (keyword != null && !keyword.isBlank()) {
                 jpql += " AND (u.fullname LIKE :kw OR u.email LIKE :kw OR u.phone LIKE :kw)";
             }
