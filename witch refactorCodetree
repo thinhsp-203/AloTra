@@ -1,0 +1,17 @@
+[33mcommit 006b864234881d32a7285d2a1c2322efd8d23d26[m
+Author: HoangAnh <hoang.anhe173@gmail.com>
+Date:   Mon Jan 5 20:23:44 2026 +0700
+
+    Done
+
+[1mdiff --git a/src/main/webapp/assets/js/app.js b/src/main/webapp/assets/js/app.js[m
+[1mindex 85f1224..850eb30 100644[m
+[1m--- a/src/main/webapp/assets/js/app.js[m
+[1m+++ b/src/main/webapp/assets/js/app.js[m
+[36m@@ -1021,4 +1021,4 @@[m [mdocument.addEventListener("DOMContentLoaded", function() {[m
+         });[m
+     }[m
+ [m
+[31m-});[m
+\ No newline at end of file[m
+[32m+[m[32m});[m
