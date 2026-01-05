@@ -189,6 +189,22 @@ public class UserProfileServiceImpl implements UserProfileService {
             
             order.setOrder_status(stnw.utils.OrderStatus.HUY_BOI_KHACH.getDisplayName());
             order.setUpdatedDate(java.time.LocalDateTime.now());
+            
+            // Xử lý payment status khi khách hủy đơn
+            // Nếu đơn hàng có payment_method là ATM, MOMO, VNPAY và đã thanh toán thì chuyển sang Hoàn tiền
+            String currentPaymentStatus = order.getPayment_status();
+            String paymentMethod = order.getPayment_method();
+            if ("Đã thanh toán".equals(currentPaymentStatus) && paymentMethod != null) {
+                String method = paymentMethod.trim().toUpperCase();
+                if ("ATM".equals(method) || "MOMO".equals(method) || "VNPAY".equals(method) || "ONLINE".equals(method)) {
+                    order.setPayment_status(stnw.utils.PaymentStatus.HOAN_TIEN.getDisplayName());
+                } else {
+                    order.setPayment_status(stnw.utils.PaymentStatus.CHUA_THANH_TOAN.getDisplayName());
+                }
+            } else {
+                order.setPayment_status(stnw.utils.PaymentStatus.CHUA_THANH_TOAN.getDisplayName());
+            }
+            
             em.merge(order);
             
             em.getTransaction().commit();

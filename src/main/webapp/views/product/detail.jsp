@@ -53,9 +53,28 @@
                     <span class="text-muted">Chưa có đánh giá</span>
                 </c:if>
             </div>
-            <p class="lead text-primary fw-bold fs-3">
-                <fmt:formatNumber value="${p.price}" pattern="#,##0₫"/>
-            </p>
+            <div>
+                <c:choose>
+                    <c:when test="${p.hasDiscount()}">
+                        <div class="mb-2">
+                            <span class="badge bg-danger text-white fs-6 px-3 py-2">
+                                <i class="bi bi-tag-fill"></i> Giảm <fmt:formatNumber value="${p.discount}" pattern="#,##0"/>%
+                            </span>
+                        </div>
+                        <p class="lead text-danger fw-bold fs-2 mb-1">
+                            <fmt:formatNumber value="${p.finalPrice}" pattern="#,##0₫"/>
+                        </p>
+                        <p class="text-muted mb-0" style="text-decoration: line-through; font-size: 1.1rem;">
+                            <fmt:formatNumber value="${p.price}" pattern="#,##0₫"/>
+                        </p>
+                    </c:when>
+                    <c:otherwise>
+                        <p class="lead text-primary fw-bold fs-3">
+                            <fmt:formatNumber value="${p.price}" pattern="#,##0₫"/>
+                        </p>
+                    </c:otherwise>
+                </c:choose>
+            </div>
             
             <p class="text-muted">
                 <span class="me-3">

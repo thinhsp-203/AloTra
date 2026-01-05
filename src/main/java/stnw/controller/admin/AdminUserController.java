@@ -17,6 +17,7 @@ import java.io.IOException;
     "/admin/users/edit", 
     "/admin/users/save", 
     "/admin/users/delete", 
+    "/admin/users/delete-permanent",
     "/admin/users/toggle-status"
 })
 public class AdminUserController extends HttpServlet {
@@ -79,6 +80,8 @@ public class AdminUserController extends HttpServlet {
                 handleSaveUser(req, resp);
             } else if (uri.endsWith("/delete")) {
                 handleDeleteUser(req, resp);
+            } else if (uri.endsWith("/delete-permanent")) {
+                handleHardDeleteUser(req, resp);
             } else if (uri.endsWith("/toggle-status")) {
                 handleToggleStatus(req, resp);
             }
@@ -151,11 +154,25 @@ public class AdminUserController extends HttpServlet {
         resp.sendRedirect(req.getContextPath() + "/admin/users");
     }
     
+    private void handleHardDeleteUser(HttpServletRequest req, HttpServletResponse resp) 
+            throws IOException {
+        int userId = Integer.parseInt(req.getParameter("id"));
+        User currentUser = (User) req.getSession().getAttribute("currentUser");
+        Integer currentUserId = (currentUser != null) ? currentUser.getId() : null;
+        
+        userService.hardDeleteUser(userId, currentUserId);
+        req.getSession().setAttribute("success", "Đã xóa vĩnh viễn người dùng thành công!");
+        
+        resp.sendRedirect(req.getContextPath() + "/admin/users");
+    }
+    
     private void handleToggleStatus(HttpServletRequest req, HttpServletResponse resp) 
             throws IOException {
         int userId = Integer.parseInt(req.getParameter("id"));
+        User currentUser = (User) req.getSession().getAttribute("currentUser");
+        Integer currentUserId = (currentUser != null) ? currentUser.getId() : null;
         
-        userService.toggleUserStatus(userId);
+        userService.toggleUserStatus(userId, currentUserId);
         req.getSession().setAttribute("success", "Đã cập nhật trạng thái hoạt động!");
         
         resp.sendRedirect(req.getContextPath() + "/admin/users");

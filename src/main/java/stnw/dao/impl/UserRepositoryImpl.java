@@ -48,10 +48,15 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public boolean existsByPhone(String phone) {
+        // Nếu phone null hoặc rỗng, không kiểm tra (cho phép nhiều user có phone null)
+        if (phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+        
         EntityManager manager = em();
         try {
             Long c = manager.createQuery("select count(u) from User u where u.phone = :p", Long.class)
-                    .setParameter("p", phone)
+                    .setParameter("p", phone.trim())
                     .getSingleResult();
             return c != null && c > 0;
         } finally {

@@ -39,9 +39,22 @@ public class ProductModalApiController extends HttpServlet {
             List<ProductSize> sizes = productQueryService.getSizes(productId);
             List<Topping> toppings = productQueryService.getAvailableToppingsForCategory(categoryName);
 
+            // Sử dụng giá sau giảm (finalPrice) thay vì giá gốc
+            java.math.BigDecimal displayPrice = product.getFinalPrice();
+            java.math.BigDecimal originalPrice = product.getPrice();
+            java.math.BigDecimal discount = product.getDiscount();
+            
             String productJson = String.format(
-                "{\"id\":%d, \"name\":\"%s\", \"basePrice\":%s, \"thumbnail\":\"%s\", \"categoryName\":\"%s\", \"isDrink\":%s}",
-                product.getProduct_id(), escapeJson(product.getProduct_name()), product.getPrice(), escapeJson(product.getThumbnail()), escapeJson(categoryName), isDrink
+                "{\"id\":%d, \"name\":\"%s\", \"basePrice\":%s, \"originalPrice\":%s, \"discount\":%s, \"hasDiscount\":%s, \"thumbnail\":\"%s\", \"categoryName\":\"%s\", \"isDrink\":%s}",
+                product.getProduct_id(), 
+                escapeJson(product.getProduct_name()), 
+                displayPrice, 
+                originalPrice != null ? originalPrice : displayPrice,
+                discount != null ? discount : "0",
+                product.hasDiscount(),
+                escapeJson(product.getThumbnail()), 
+                escapeJson(categoryName), 
+                isDrink
             );
 
             String sizesJson = sizes.stream()

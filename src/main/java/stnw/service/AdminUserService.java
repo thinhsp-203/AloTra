@@ -26,14 +26,23 @@ public interface AdminUserService {
     
     /**
      * Đổi trạng thái active/inactive
+     * @param userId ID của user cần đổi trạng thái
+     * @param currentUserId ID của user đang thực hiện thao tác
+     * @throws IllegalArgumentException nếu cố inactive chính mình
      */
-    void toggleUserStatus(int userId);
+    void toggleUserStatus(int userId, Integer currentUserId);
     
     /**
-     * Xóa một user (set isActive = false)
-     * @throws IllegalArgumentException nếu cố xóa chính mình
+     * Xóa mềm một user (set isActive = false)
+     * @throws IllegalArgumentException nếu cố xóa chính mình hoặc admin
      */
     void softDeleteUser(int userId, Integer currentUserId);
+    
+    /**
+     * Xóa vĩnh viễn một user khỏi database
+     * @throws IllegalArgumentException nếu cố xóa chính mình hoặc admin
+     */
+    void hardDeleteUser(int userId, Integer currentUserId);
     
     /**
      * Lấy thông tin user theo ID

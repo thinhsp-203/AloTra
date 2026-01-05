@@ -18,8 +18,12 @@ public class UserServiceImpl implements UserService {
         EntityManager em = JpaUtil.em();
         try {
             var repo = new UserRepositoryImpl(em);
-            if (repo.existsByEmail(email) || repo.existsByUsername(username)
-                || repo.existsByPhone(phone)) {
+            // Kiểm tra email và username (bắt buộc)
+            if (repo.existsByEmail(email) || repo.existsByUsername(username)) {
+                return false;
+            }
+            // Chỉ kiểm tra phone nếu phone không null và không rỗng
+            if (phone != null && !phone.trim().isEmpty() && repo.existsByPhone(phone)) {
                 return false;
             }
             String hash = PasswordUtil.hash(rawPassword);
@@ -109,7 +113,8 @@ public class UserServiceImpl implements UserService {
     public int countUsers(String keyword, Integer roleId) {
         EntityManager em = JpaUtil.em();
         try {
-            String jpql = "SELECT COUNT(u) FROM User u WHERE 1=1";
+            // Chỉ đếm user đang active (chưa bị xóa mềm)
+            String jpql = "SELECT COUNT(u) FROM User u WHERE (u.isActive = true OR u.isActive IS NULL)";
             if (keyword != null && !keyword.isBlank()) {
                 jpql += " AND (u.fullname LIKE :kw OR u.email LIKE :kw OR u.phone LIKE :kw)";
             }
@@ -133,7 +138,8 @@ public class UserServiceImpl implements UserService {
     public List<User> searchUsers(String keyword, Integer roleId, int page, int pageSize) {
         EntityManager em = JpaUtil.em();
         try {
-            String jpql = "SELECT u FROM User u WHERE 1=1";
+            // Chỉ hiển thị user đang active (chưa bị xóa mềm)
+            String jpql = "SELECT u FROM User u WHERE (u.isActive = true OR u.isActive IS NULL)";
             if (keyword != null && !keyword.isBlank()) {
                 jpql += " AND (u.fullname LIKE :kw OR u.email LIKE :kw OR u.phone LIKE :kw)";
             }

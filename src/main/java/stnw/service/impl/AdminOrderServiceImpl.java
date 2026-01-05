@@ -16,6 +16,21 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     private final LoyaltyService loyaltyService = new LoyaltyServiceImpl();
     private final NotificationService notificationService = new NotificationServiceImpl();
     
+    /**
+     * Kiểm tra xem payment_method có phải là phương thức thanh toán online không
+     * (ATM, MOMO, VNPAY, Online)
+     */
+    private boolean isOnlinePaymentMethod(String paymentMethod) {
+        if (paymentMethod == null) {
+            return false;
+        }
+        String method = paymentMethod.trim().toUpperCase();
+        return "ATM".equals(method) || 
+               "MOMO".equals(method) || 
+               "VNPAY".equals(method) || 
+               "ONLINE".equals(method);
+    }
+    
     @Override
     public List<Orders> searchOrders(String keyword, String status) {
         EntityManager em = JpaUtil.em();
@@ -277,8 +292,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             order.setUpdatedDate(LocalDateTime.now());
             
             // Xử lý payment status khi từ chối
+            // Nếu đơn hàng có payment_method là ATM, MOMO, VNPAY và đã thanh toán thì chuyển sang Hoàn tiền
             String currentPaymentStatus = order.getPayment_status();
-            if ("Đã thanh toán".equals(currentPaymentStatus) && "Online".equals(order.getPayment_method())) {
+            if ("Đã thanh toán".equals(currentPaymentStatus) && isOnlinePaymentMethod(order.getPayment_method())) {
                 order.setPayment_status(PaymentStatus.HOAN_TIEN.getDisplayName());
             } else {
                 order.setPayment_status(PaymentStatus.CHUA_THANH_TOAN.getDisplayName());
@@ -382,9 +398,10 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             }
             
             // Logic: Khi đơn hàng bị hủy bởi shop, xử lý payment status
+            // Nếu đơn hàng có payment_method là ATM, MOMO, VNPAY và đã thanh toán thì chuyển sang Hoàn tiền
             if (newStatusEnum == OrderStatus.HUY_BOI_SHOP) {
                 String currentPaymentStatus = order.getPayment_status();
-                if ("Đã thanh toán".equals(currentPaymentStatus) && "Online".equals(order.getPayment_method())) {
+                if ("Đã thanh toán".equals(currentPaymentStatus) && isOnlinePaymentMethod(order.getPayment_method())) {
                     order.setPayment_status(PaymentStatus.HOAN_TIEN.getDisplayName());
                 } else {
                     order.setPayment_status(PaymentStatus.CHUA_THANH_TOAN.getDisplayName());

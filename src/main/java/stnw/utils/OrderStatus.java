@@ -40,6 +40,10 @@ public enum OrderStatus {
                 return DANG_GIAO;
             case "Hoàn thành":
                 return HOAN_THANH;
+            case "Hủy bởi shop":
+                return HUY_BOI_SHOP;
+            case "Hủy bởi khách":
+                return HUY_BOI_KHACH;
             case "Hủy Đơn":
                 // Phân biệt dựa trên logic nghiệp vụ:
                 // Nếu đơn đã được xác nhận trước đó thì là HUY_BOI_SHOP

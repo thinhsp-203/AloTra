@@ -151,21 +151,25 @@
                                                style="margin: 0 7.5px;">
                                                 <i class="fas fa-pencil-alt"></i>
                                             </a>
-                                            <form action="${pageContext.request.contextPath}/admin/users/toggle-status" 
-                                                  method="post" 
-                                                  style="display: inline; margin: 0 7.5px;">
-                                                <input type="hidden" name="id" value="${user.id}">
-                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Đổi trạng thái">
-                                                    <i class="fas fa-toggle-on"></i>
-                                                </button>
-                                            </form>
-                                            <c:if test="${sessionScope.currentUser.id != user.id}">
-                                                <form action="${pageContext.request.contextPath}/admin/users/delete" 
+                                            <%-- Chỉ hiển thị nút inactive nếu không phải admin và không phải chính mình --%>
+                                            <c:if test="${user.roleid != 1 && sessionScope.currentUser.id != user.id}">
+                                                <form action="${pageContext.request.contextPath}/admin/users/toggle-status" 
+                                                      method="post" 
+                                                      style="display: inline; margin: 0 7.5px;">
+                                                    <input type="hidden" name="id" value="${user.id}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Đổi trạng thái">
+                                                        <i class="fas fa-toggle-on"></i>
+                                                    </button>
+                                                </form>
+                                            </c:if>
+                                            <%-- Chỉ hiển thị nút xóa vĩnh viễn nếu không phải admin và không phải chính mình --%>
+                                            <c:if test="${user.roleid != 1 && sessionScope.currentUser.id != user.id}">
+                                                <form action="${pageContext.request.contextPath}/admin/users/delete-permanent" 
                                                       method="post" 
                                                       style="display: inline; margin: 0 7.5px;" 
-                                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng \'${fn:escapeXml(user.username)}\' không?')">
+                                                      onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA VĨNH VIỄN người dùng \'${fn:escapeXml(user.username)}\' không?\n\nHành động này không thể hoàn tác!')">
                                                     <input type="hidden" name="id" value="${user.id}">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa vĩnh viễn">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>

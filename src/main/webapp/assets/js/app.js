@@ -181,9 +181,23 @@ function showLoginRequiredModal() {
 					            
 					            <!-- Price & Quantity Selector on same row -->
 					            <div class="d-flex justify-content-between align-items-center mb-4">
-					                <p class="h5 text-primary fw-bold mb-0" id="modalBasePrice" data-price="${data.product.basePrice}">
-					                    ${currencyFormatter.format(data.product.basePrice)}
-					                </p>
+					                <div>
+					                    ${data.product.hasDiscount ? `
+					                        <div class="mb-1">
+					                            <span class="badge bg-danger text-white">-${data.product.discount}%</span>
+					                        </div>
+					                        <p class="h5 text-danger fw-bold mb-0" id="modalBasePrice" data-price="${data.product.basePrice}">
+					                            ${currencyFormatter.format(data.product.basePrice)}
+					                        </p>
+					                        <p class="text-muted mb-0 small" style="text-decoration: line-through;">
+					                            ${currencyFormatter.format(data.product.originalPrice)}
+					                        </p>
+					                    ` : `
+					                        <p class="h5 text-primary fw-bold mb-0" id="modalBasePrice" data-price="${data.product.basePrice}">
+					                            ${currencyFormatter.format(data.product.basePrice)}
+					                        </p>
+					                    `}
+					                </div>
 					                <div class="d-flex align-items-center">
 					                    <button class="btn btn-outline-secondary" type="button" id="modalQtyDecrease" style="width: 36px; height: 36px; padding: 0;">
 					                        <i class="bi bi-dash-lg"></i>

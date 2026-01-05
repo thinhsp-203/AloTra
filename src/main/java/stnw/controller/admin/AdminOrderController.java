@@ -87,7 +87,7 @@ public class AdminOrderController extends HttpServlet {
                 // POST /admin/orders/reject
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 orderService.rejectOrder(orderId, currentUser);
-                req.getSession().setAttribute("success", "Đã t�?chối đơn hàng!");
+                req.getSession().setAttribute("success", "Đã từ chối đơn hàng!");
                 resp.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + orderId);
                 
             } else if ("/status/update".equals(path)) {

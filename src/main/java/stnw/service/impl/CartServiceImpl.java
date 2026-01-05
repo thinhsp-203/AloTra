@@ -80,7 +80,7 @@ public class CartServiceImpl implements CartService {
             newItem.setProductName(p.getProduct_name());
             newItem.setThumbnail(p.getThumbnail());
             newItem.setQuantity(quantity);
-            newItem.setUnitPrice(p.getPrice());
+            newItem.setUnitPrice(p.getFinalPrice()); // Sử dụng giá sau giảm
             newItem.setSizeName(finalSizeName);
             newItem.setSizeAdj(sizeAdjustment);
             newItem.setSugarLevel(finalSugarLevel);
@@ -216,7 +216,7 @@ public class CartServiceImpl implements CartService {
             newItem.setProductName(p.getProduct_name());
             newItem.setThumbnail(p.getThumbnail());
             newItem.setQuantity(quantity);
-            newItem.setUnitPrice(p.getPrice());
+            newItem.setUnitPrice(p.getFinalPrice()); // Sử dụng giá sau giảm
             newItem.setSizeName(finalNewSize);
             newItem.setSizeAdj(sizeAdjustment);
             newItem.setSugarLevel(finalNewSugar);

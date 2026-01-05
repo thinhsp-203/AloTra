@@ -48,4 +48,32 @@ public class Product {
 
   private LocalDateTime createdDate;
   private LocalDateTime updatedDate;
+  
+  /**
+   * Tính giá sau khi giảm giá (nếu có)
+   * @return Giá sau giảm, hoặc giá gốc nếu không có giảm giá
+   */
+  @Transient
+  public BigDecimal getFinalPrice() {
+    if (price == null) {
+      return BigDecimal.ZERO;
+    }
+    if (discount == null || discount.compareTo(BigDecimal.ZERO) <= 0) {
+      return price;
+    }
+    // Giá sau giảm = giá gốc * (1 - discount/100)
+    BigDecimal discountMultiplier = BigDecimal.ONE.subtract(
+      discount.divide(BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP)
+    );
+    return price.multiply(discountMultiplier).setScale(0, java.math.RoundingMode.HALF_UP);
+  }
+  
+  /**
+   * Kiểm tra xem sản phẩm có đang giảm giá không
+   * @return true nếu có discount > 0
+   */
+  @Transient
+  public boolean hasDiscount() {
+    return discount != null && discount.compareTo(BigDecimal.ZERO) > 0;
+  }
 }
