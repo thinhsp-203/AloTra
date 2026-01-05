@@ -16,7 +16,7 @@ import stnw.service.impl.UserServiceImpl;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/user/loyalty", "/user/rewards", "/user/point-history"})
+@WebServlet(urlPatterns = {"/user/loyalty", "/user/rewards", "/user/point-history", "/user/reward-detail"})
 public class LoyaltyController extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
@@ -63,6 +63,47 @@ public class LoyaltyController extends HttpServlet {
                 req.setAttribute("transactions", transactions);
                 req.setAttribute("points", points);
                 req.getRequestDispatcher("/views/user/point-history.jsp").forward(req, resp);
+            } else if (uri.endsWith("/reward-detail")) {
+                // Trang chi tiết quà đã đổi
+                String transactionIdParam = req.getParameter("transactionId");
+                if (transactionIdParam == null || transactionIdParam.isEmpty()) {
+                    req.getSession().setAttribute("error", "Không tìm thấy thông tin giao dịch!");
+                    resp.sendRedirect(req.getContextPath() + "/user/point-history");
+                    return;
+                }
+                
+                try {
+                    Integer transactionId = Integer.parseInt(transactionIdParam);
+                    PointTransaction transaction = loyaltyService.getTransactionById(transactionId);
+                    
+                    if (transaction == null) {
+                        req.getSession().setAttribute("error", "Giao dịch không tồn tại!");
+                        resp.sendRedirect(req.getContextPath() + "/user/point-history");
+                        return;
+                    }
+                    
+                    // Kiểm tra transaction thuộc về user hiện tại
+                    if (!transaction.getUser().getId().equals(currentUser.getId())) {
+                        req.getSession().setAttribute("error", "Bạn không có quyền xem giao dịch này!");
+                        resp.sendRedirect(req.getContextPath() + "/user/point-history");
+                        return;
+                    }
+                    
+                    // Kiểm tra transaction là loại REDEEM
+                    if (!"REDEEM".equals(transaction.getType()) || transaction.getReward() == null) {
+                        req.getSession().setAttribute("error", "Giao dịch không phải là đổi quà!");
+                        resp.sendRedirect(req.getContextPath() + "/user/point-history");
+                        return;
+                    }
+                    
+                    req.setAttribute("transaction", transaction);
+                    req.setAttribute("reward", transaction.getReward());
+                    req.setAttribute("points", loyaltyService.getUserPoints(currentUser.getId()));
+                    req.getRequestDispatcher("/views/user/reward-detail.jsp").forward(req, resp);
+                } catch (NumberFormatException e) {
+                    req.getSession().setAttribute("error", "ID giao dịch không hợp lệ!");
+                    resp.sendRedirect(req.getContextPath() + "/user/point-history");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -85,7 +126,7 @@ public class LoyaltyController extends HttpServlet {
         try {
             if ("redeem".equals(action)) {
                 Integer rewardId = Integer.parseInt(req.getParameter("rewardId"));
-                loyaltyService.redeemReward(currentUser, rewardId);
+                PointTransaction transaction = loyaltyService.redeemReward(currentUser, rewardId);
                 
                 // Refresh user từ DB để cập nhật điểm trong session
                 User refreshedUser = userService.getUserById(currentUser.getId());
@@ -93,8 +134,8 @@ public class LoyaltyController extends HttpServlet {
                     req.getSession().setAttribute("currentUser", refreshedUser);
                 }
                 
-                req.getSession().setAttribute("success", "Đổi quà thành công!");
-                resp.sendRedirect(req.getContextPath() + "/user/rewards");
+                // Redirect đến trang chi tiết quà đã đổi
+                resp.sendRedirect(req.getContextPath() + "/user/reward-detail?transactionId=" + transaction.getTransaction_id());
             }
         } catch (IllegalArgumentException e) {
             req.getSession().setAttribute("error", e.getMessage());

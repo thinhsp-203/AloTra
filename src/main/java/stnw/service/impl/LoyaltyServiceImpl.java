@@ -69,6 +69,7 @@ public class LoyaltyServiceImpl implements LoyaltyService {
                 transaction.setOrder(order);
             }
             
+            transaction.setCreatedDate(java.time.LocalDateTime.now());
             em.persist(transaction);
             
             trans.commit();
@@ -84,7 +85,7 @@ public class LoyaltyServiceImpl implements LoyaltyService {
     }
     
     @Override
-    public boolean redeemReward(User user, Integer rewardId) throws IllegalArgumentException {
+    public PointTransaction redeemReward(User user, Integer rewardId) throws IllegalArgumentException {
         if (user == null || rewardId == null) {
             throw new IllegalArgumentException("Thông tin không hợp lệ");
         }
@@ -137,11 +138,13 @@ public class LoyaltyServiceImpl implements LoyaltyService {
             transaction.setDescription("Đổi quà: " + reward.getName());
             transaction.setBalance_after(currentUser.getLoyalty_points());
             transaction.setReward(reward);
+            transaction.setCreatedDate(java.time.LocalDateTime.now());
             
             em.persist(transaction);
+            em.flush(); // Đảm bảo transaction được persist và có ID
             
             trans.commit();
-            return true;
+            return transaction;
         } catch (IllegalArgumentException e) {
             if (trans.isActive()) {
                 trans.rollback();
@@ -178,6 +181,21 @@ public class LoyaltyServiceImpl implements LoyaltyService {
         try {
             User user = em.find(User.class, userId);
             return user != null && user.getLoyalty_points() != null ? user.getLoyalty_points() : 0;
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public PointTransaction getTransactionById(Integer transactionId) {
+        EntityManager em = JpaUtil.em();
+        try {
+            PointTransaction transaction = em.find(PointTransaction.class, transactionId);
+            if (transaction != null && transaction.getReward() != null) {
+                // Eager load reward để hiển thị thông tin
+                transaction.getReward().getName();
+            }
+            return transaction;
         } finally {
             em.close();
         }

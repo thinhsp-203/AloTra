@@ -19,10 +19,10 @@ public interface LoyaltyService {
      * Đổi quà bằng điểm
      * @param user User đổi quà
      * @param rewardId ID quà tặng
-     * @return true nếu thành công
+     * @return PointTransaction đã tạo nếu thành công
      * @throws IllegalArgumentException nếu không đủ điểm hoặc hết hàng
      */
-    boolean redeemReward(User user, Integer rewardId) throws IllegalArgumentException;
+    PointTransaction redeemReward(User user, Integer rewardId) throws IllegalArgumentException;
     
     /**
      * Lấy danh sách quà tặng đang hoạt động
@@ -43,4 +43,9 @@ public interface LoyaltyService {
      * Lấy số điểm hiện tại của user
      */
     Integer getUserPoints(Integer userId);
+    
+    /**
+     * Lấy thông tin transaction theo ID
+     */
+    PointTransaction getTransactionById(Integer transactionId);
 }

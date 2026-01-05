@@ -35,6 +35,7 @@
                                 <th>Mô tả</th>
                                 <th class="text-end">Điểm</th>
                                 <th class="text-end">Số dư sau</th>
+                                <th class="text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -69,6 +70,14 @@
                                     </td>
                                     <td class="text-end">
                                         <strong><fmt:formatNumber value="${txn.balance_after}" pattern="#,##0"/></strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <c:if test="${txn.type == 'REDEEM' && txn.reward != null}">
+                                            <a href="${pageContext.request.contextPath}/user/reward-detail?transactionId=${txn.transaction_id}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i> Chi tiết
+                                            </a>
+                                        </c:if>
                                     </td>
                                 </tr>
                             </c:forEach>
