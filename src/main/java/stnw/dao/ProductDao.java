@@ -14,4 +14,8 @@ public interface ProductDao {
 	void save(Product product);
     List<Product> findFeatured(int limit);
     List<Product> findNewest(int limit);
+    List<Product> findRelatedProducts(int categoryId, int excludeProductId, int limit);
+    List<Product> findProductsByIds(List<Integer> ids);
+    void deleteProduct(int productId);
+    long getTotalProducts(boolean isActive);
 }

@@ -1,6 +1,6 @@
 package stnw.dao.impl;
 
-import stnw.config.JpaUtil;
+import stnw.utils.JpaUtils;
 import stnw.dao.RewardDao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -13,7 +13,7 @@ public class RewardDaoImpl implements RewardDao {
 
     @Override
     public List<Reward> findAll() {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             TypedQuery<Reward> query = em.createQuery(
                 "SELECT r FROM Reward r ORDER BY r.points_required ASC", 
@@ -27,7 +27,7 @@ public class RewardDaoImpl implements RewardDao {
 
     @Override
     public List<Reward> findAllActive() {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             TypedQuery<Reward> query = em.createQuery(
                 "SELECT r FROM Reward r WHERE r.isActive = true ORDER BY r.points_required ASC", 
@@ -41,7 +41,7 @@ public class RewardDaoImpl implements RewardDao {
 
     @Override
     public Reward findById(Integer id) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             return em.find(Reward.class, id);
         } finally {
@@ -51,7 +51,7 @@ public class RewardDaoImpl implements RewardDao {
 
     @Override
     public void save(Reward reward) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         EntityTransaction trans = em.getTransaction();
         try {
             trans.begin();
@@ -76,7 +76,7 @@ public class RewardDaoImpl implements RewardDao {
 
     @Override
     public void update(Reward reward) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         EntityTransaction trans = em.getTransaction();
         try {
             trans.begin();
@@ -95,7 +95,7 @@ public class RewardDaoImpl implements RewardDao {
 
     @Override
     public void delete(Integer id) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         EntityTransaction trans = em.getTransaction();
         try {
             trans.begin();
@@ -116,7 +116,7 @@ public class RewardDaoImpl implements RewardDao {
 
     @Override
     public long count() {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             return em.createQuery("SELECT COUNT(r) FROM Reward r", Long.class).getSingleResult();
         } finally {

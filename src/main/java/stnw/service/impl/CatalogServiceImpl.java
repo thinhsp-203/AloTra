@@ -1,15 +1,15 @@
 package stnw.service.impl;
 
-import stnw.config.JpaUtil;
-import stnw.dao.BannerRepository;
+import stnw.dao.BannerDao;
+import stnw.dao.CategoryDao;
 import stnw.dao.ProductDao;
+import stnw.dao.PromotionDao;
 import stnw.dao.StoreDao;
-import stnw.dao.impl.BannerRepositoryImpl;
-import stnw.dao.impl.CategoryRepositoryImpl;
+import stnw.dao.impl.BannerDaoImpl;
+import stnw.dao.impl.CategoryDaoImpl;
 import stnw.dao.impl.ProductDaoImpl;
+import stnw.dao.impl.PromotionDaoImpl;
 import stnw.dao.impl.StoreDaoImpl;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import stnw.model.Banner;
 import stnw.model.Category;
 import stnw.model.Product;
@@ -22,7 +22,9 @@ import java.util.List;
 public class CatalogServiceImpl implements CatalogService {
 
     private final ProductDao productDao = new ProductDaoImpl();
-    private final BannerRepository bannerRepository = new BannerRepositoryImpl();
+    private final CategoryDao categoryDao = new CategoryDaoImpl();
+    private final PromotionDao promotionDao = new PromotionDaoImpl();
+    private final BannerDao bannerDao = new BannerDaoImpl();
     private final StoreDao storeDao = new StoreDaoImpl();
 
     @Override
@@ -37,39 +39,21 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     public List<Category> getAllCategories() {
-        EntityManager em = JpaUtil.em();
-        try {
-            return new CategoryRepositoryImpl(em).findAll();
-        } finally {
-            em.close();
-        }
+        return categoryDao.findAll();
     }
 
     @Override
     public List<Banner> getActiveBanners() {
-        EntityManager em = JpaUtil.em();
-        try {
-            return bannerRepository.findAllActive(em);
-        } finally {
-            em.close();
-        }
+        return bannerDao.findAllActive();
     }
 
     @Override
     public List<Promotion> getActivePromotions(int limit) {
-        EntityManager em = JpaUtil.em();
-        try {
-            TypedQuery<Promotion> query = em.createQuery(
-                "SELECT p FROM Promotion p WHERE p.isActive = true ORDER BY p.createdDate DESC", 
-                Promotion.class
-            );
-            if (limit > 0) {
-                query.setMaxResults(limit);
-            }
-            return query.getResultList();
-        } finally {
-            em.close();
+        List<Promotion> allPromotions = promotionDao.findAllActive();
+        if (limit > 0 && allPromotions.size() > limit) {
+            return allPromotions.subList(0, limit);
         }
+        return allPromotions;
     }
 
     @Override

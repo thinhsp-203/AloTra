@@ -1,14 +1,31 @@
 package stnw.service.impl;
 
-import stnw.config.JpaUtil;
-import jakarta.persistence.EntityManager;
+import stnw.dao.NotificationDao;
+import stnw.dao.OrderDao;
+import stnw.dao.PointTransactionDao;
+import stnw.dao.ReviewDao;
+import stnw.dao.UserDao;
+import stnw.dao.WishlistDao;
+import stnw.dao.impl.NotificationDaoImpl;
+import stnw.dao.impl.OrderDaoImpl;
+import stnw.dao.impl.PointTransactionDaoImpl;
+import stnw.dao.impl.ReviewDaoImpl;
+import stnw.dao.impl.UserDaoImpl;
+import stnw.dao.impl.WishlistDaoImpl;
 import stnw.model.User;
 import stnw.service.AdminUserService;
-import stnw.utils.PasswordUtil;
+import stnw.utils.PasswordUtils;
 
 import java.time.LocalDateTime;
 
 public class AdminUserServiceImpl implements AdminUserService {
+    
+    private final UserDao userDao = new UserDaoImpl();
+    private final PointTransactionDao pointTransactionDao = new PointTransactionDaoImpl();
+    private final NotificationDao notificationDao = new NotificationDaoImpl();
+    private final WishlistDao wishlistDao = new WishlistDaoImpl();
+    private final ReviewDao reviewDao = new ReviewDaoImpl();
+    private final OrderDao orderDao = new OrderDaoImpl();
     
     @Override
     public void createUser(String username, String email, String password, 
@@ -17,36 +34,22 @@ public class AdminUserServiceImpl implements AdminUserService {
         // 1. VALIDATION
         validateUserData(null, username, email, phone, password, true);
         
-        EntityManager em = JpaUtil.em();
-        try {
-            em.getTransaction().begin();
-            
-            // 2. KIỂM TRA TRÙNG LẶP
-            checkDuplicates(em, null, username, email, phone);
-            
-            // 3. TẠO USER MỚI
-            User user = new User();
-            user.setUsername(username);
-            user.setEmail(email);
-            user.setPassword(PasswordUtil.hash(password));
-            user.setFullname(fullname);
-            user.setPhone(phone);
-            user.setAddress(address);
-            user.setRoleid(roleId != null ? roleId : 3); // Default: Customer
-            user.setIsActive(isActive);
-            user.setCreatedDate(LocalDateTime.now());
-            
-            em.persist(user);
-            em.getTransaction().commit();
-            
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Lỗi khi tạo user: " + e.getMessage(), e);
-        } finally {
-            em.close();
-        }
+        // 2. KIỂM TRA TRÙNG LẶP
+        checkDuplicates(null, username, email, phone);
+        
+        // 3. TẠO USER MỚI
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(PasswordUtils.hashPassword(password));
+        user.setFullname(fullname);
+        user.setPhone(phone);
+        user.setAddress(address);
+        user.setRoleid(roleId != null ? roleId : 3); // Default: Customer
+        user.setIsActive(isActive);
+        user.setCreatedDate(LocalDateTime.now());
+        
+        userDao.save(user);
     }
     
     @Override
@@ -56,99 +59,55 @@ public class AdminUserServiceImpl implements AdminUserService {
         // 1. VALIDATION
         validateUserData(userId, null, email, phone, newPassword, false);
         
-        EntityManager em = JpaUtil.em();
-        try {
-            em.getTransaction().begin();
-            
-            User user = em.find(User.class, userId);
-            if (user == null) {
-                throw new IllegalArgumentException("User không tồn tại!");
-            }
-            
-            // Kiểm tra không cho phép chỉnh sửa admin
-            if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
-                throw new IllegalArgumentException("Không thể chỉnh sửa thông tin quản trị viên!");
-            }
-            
-            // 2. KIỂM TRA TRÙNG (chỉ nếu thay đổi)
-            if (!user.getEmail().equals(email) || !user.getPhone().equals(phone)) {
-                checkDuplicates(em, userId, null, email, phone);
-            }
-            
-            // 3. CẬP NHẬT
-            user.setEmail(email);
-            user.setFullname(fullname);
-            user.setPhone(phone);
-            user.setAddress(address);
-            // Không cho phép thay đổi role - chỉ cập nhật nếu roleId != null (để backward compatibility)
-            // Nhưng trong thực tế, roleId sẽ luôn là null khi update từ form
-            if (roleId != null) {
-                // Chỉ cho phép set role khi tạo mới, không cho phép thay đổi khi update
-                // Giữ nguyên role hiện tại
-            }
-            user.setIsActive(isActive);
-            
-            if (newPassword != null && !newPassword.isEmpty()) {
-                user.setPassword(PasswordUtil.hash(newPassword));
-            }
-            
-            em.merge(user);
-            em.getTransaction().commit();
-            
-        } catch (IllegalArgumentException e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Lỗi khi cập nhật user: " + e.getMessage(), e);
-        } finally {
-            em.close();
+        User user = userDao.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User không tồn tại!");
         }
+        
+        // Kiểm tra không cho phép chỉnh sửa admin
+        if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+            throw new IllegalArgumentException("Không thể chỉnh sửa thông tin quản trị viên!");
+        }
+        
+        // 2. KIỂM TRA TRÙNG (chỉ nếu thay đổi)
+        if (!user.getEmail().equals(email) || !user.getPhone().equals(phone)) {
+            checkDuplicates(userId, null, email, phone);
+        }
+        
+        // 3. CẬP NHẬT
+        user.setEmail(email);
+        user.setFullname(fullname);
+        user.setPhone(phone);
+        user.setAddress(address);
+        user.setIsActive(isActive);
+        
+        if (newPassword != null && !newPassword.isEmpty()) {
+            user.setPassword(PasswordUtils.hashPassword(newPassword));
+        }
+        
+        userDao.update(user);
     }
     
     @Override
     public void toggleUserStatus(int userId, Integer currentUserId) {
-        EntityManager em = JpaUtil.em();
-        try {
-            em.getTransaction().begin();
-            
-            User user = em.find(User.class, userId);
-            if (user == null) {
-                throw new IllegalArgumentException("User không tồn tại!");
-            }
-            
-            // Kiểm tra không cho inactive chính mình
-            if (currentUserId != null && currentUserId.equals(userId)) {
-                throw new IllegalArgumentException("Không thể thay đổi trạng thái của chính mình!");
-            }
-            
-            // Kiểm tra không cho inactive admin khác (roleid = 1)
-            if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
-                throw new IllegalArgumentException("Không thể thay đổi trạng thái của quản trị viên!");
-            }
-            
-            boolean currentStatus = user.getIsActive() != null ? user.getIsActive() : false;
-            user.setIsActive(!currentStatus);
-            em.merge(user);
-            
-            em.getTransaction().commit();
-        } catch (IllegalArgumentException e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Lỗi khi đổi trạng thái: " + e.getMessage(), e);
-        } finally {
-            em.close();
+        User user = userDao.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User không tồn tại!");
         }
+        
+        // Kiểm tra không cho inactive chính mình
+        if (currentUserId != null && currentUserId.equals(userId)) {
+            throw new IllegalArgumentException("Không thể thay đổi trạng thái của chính mình!");
+        }
+        
+        // Kiểm tra không cho inactive admin khác (roleid = 1)
+        if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+            throw new IllegalArgumentException("Không thể thay đổi trạng thái của quản trị viên!");
+        }
+        
+        boolean currentStatus = user.getIsActive() != null ? user.getIsActive() : false;
+        user.setIsActive(!currentStatus);
+        userDao.update(user);
     }
     
     @Override
@@ -157,37 +116,18 @@ public class AdminUserServiceImpl implements AdminUserService {
             throw new IllegalArgumentException("Không thể xóa tài khoản đang đăng nhập!");
         }
         
-        EntityManager em = JpaUtil.em();
-        try {
-            em.getTransaction().begin();
-            
-            User user = em.find(User.class, userId);
-            if (user == null) {
-                throw new IllegalArgumentException("User không tồn tại!");
-            }
-            
-            // Kiểm tra không cho xóa admin (roleid = 1)
-            if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
-                throw new IllegalArgumentException("Không thể xóa quản trị viên!");
-            }
-            
-            user.setIsActive(false);
-            em.merge(user);
-            
-            em.getTransaction().commit();
-        } catch (IllegalArgumentException e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Lỗi khi xóa user: " + e.getMessage(), e);
-        } finally {
-            em.close();
+        User user = userDao.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User không tồn tại!");
         }
+        
+        // Kiểm tra không cho xóa admin (roleid = 1)
+        if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+            throw new IllegalArgumentException("Không thể xóa quản trị viên!");
+        }
+        
+        user.setIsActive(false);
+        userDao.update(user);
     }
     
     @Override
@@ -196,78 +136,39 @@ public class AdminUserServiceImpl implements AdminUserService {
             throw new IllegalArgumentException("Không thể xóa tài khoản đang đăng nhập!");
         }
         
-        EntityManager em = JpaUtil.em();
-        try {
-            em.getTransaction().begin();
-            
-            User user = em.find(User.class, userId);
-            if (user == null) {
-                throw new IllegalArgumentException("User không tồn tại!");
-            }
-            
-            // Kiểm tra không cho xóa admin (roleid = 1)
-            if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
-                throw new IllegalArgumentException("Không thể xóa vĩnh viễn quản trị viên!");
-            }
-            
-            // Xóa các bản ghi liên quan trước khi xóa user
-            // 1. Xóa PointTransaction
-            em.createQuery("DELETE FROM PointTransaction pt WHERE pt.user.id = :userId")
-              .setParameter("userId", userId)
-              .executeUpdate();
-            
-            // 2. Xóa Notification
-            em.createQuery("DELETE FROM Notification n WHERE n.user.id = :userId")
-              .setParameter("userId", userId)
-              .executeUpdate();
-            
-            // 3. Xóa WishlistItem
-            em.createQuery("DELETE FROM WishlistItem w WHERE w.user.id = :userId")
-              .setParameter("userId", userId)
-              .executeUpdate();
-            
-            // 4. Xóa Review
-            em.createQuery("DELETE FROM Review r WHERE r.user.id = :userId")
-              .setParameter("userId", userId)
-              .executeUpdate();
-            
-            // 5. Xóa OrderDetail trước (vì có foreign key với Orders)
-            em.createQuery("DELETE FROM OrderDetail od WHERE od.order.user.id = :userId")
-              .setParameter("userId", userId)
-              .executeUpdate();
-            
-            // 6. Xóa Orders
-            em.createQuery("DELETE FROM Orders o WHERE o.user.id = :userId")
-              .setParameter("userId", userId)
-              .executeUpdate();
-            
-            // 7. Cuối cùng xóa User
-            em.remove(user);
-            
-            em.getTransaction().commit();
-        } catch (IllegalArgumentException e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Lỗi khi xóa vĩnh viễn user: " + e.getMessage(), e);
-        } finally {
-            em.close();
+        User user = userDao.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User không tồn tại!");
         }
+        
+        // Kiểm tra không cho xóa admin (roleid = 1)
+        if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+            throw new IllegalArgumentException("Không thể xóa vĩnh viễn quản trị viên!");
+        }
+        
+        // Xóa các bản ghi liên quan trước khi xóa user
+        // 1. Xóa PointTransaction
+        pointTransactionDao.deleteByUserId(userId);
+        
+        // 2. Xóa Notification
+        notificationDao.deleteByUserId(userId);
+        
+        // 3. Xóa WishlistItem
+        wishlistDao.deleteByUserId(userId);
+        
+        // 4. Xóa Review
+        reviewDao.deleteByUserId(userId);
+        
+        // 5. Xóa Orders và OrderDetail (OrderDao tự xử lý thứ tự)
+        orderDao.deleteByUserId(userId);
+        
+        // 6. Cuối cùng xóa User
+        userDao.delete(userId);
     }
     
     @Override
     public User getUserById(int userId) {
-        EntityManager em = JpaUtil.em();
-        try {
-            return em.find(User.class, userId);
-        } finally {
-            em.close();
-        }
+        return userDao.findById(userId);
     }
     
     // ==================== PRIVATE HELPER METHODS ====================
@@ -310,52 +211,33 @@ public class AdminUserServiceImpl implements AdminUserService {
     /**
      * Kiểm tra trùng lặp username/email/phone
      */
-    private void checkDuplicates(EntityManager em, Integer userId, 
+    private void checkDuplicates(Integer userId, 
                                  String username, String email, String phone) {
         // Kiểm tra username (chỉ khi tạo mới)
-        if (username != null) {
-            Long countUsername = em.createQuery(
-                "SELECT COUNT(u) FROM User u WHERE u.username = :username", Long.class)
-                .setParameter("username", username)
-                .getSingleResult();
-            
-            if (countUsername > 0) {
-                throw new IllegalArgumentException("Username đã tồn tại!");
-            }
+        if (username != null && userDao.existsByUsername(username)) {
+            throw new IllegalArgumentException("Username đã tồn tại!");
         }
         
         // Kiểm tra email
-        String emailQuery = "SELECT COUNT(u) FROM User u WHERE u.email = :email";
         if (userId != null) {
-            emailQuery += " AND u.id <> :userId";
-        }
-        
-        var emailQueryObj = em.createQuery(emailQuery, Long.class)
-            .setParameter("email", email);
-        
-        if (userId != null) {
-            emailQueryObj.setParameter("userId", userId);
-        }
-        
-        if (emailQueryObj.getSingleResult() > 0) {
-            throw new IllegalArgumentException("Email đã tồn tại!");
+            if (userDao.existsByEmailExcludingUser(email, userId)) {
+                throw new IllegalArgumentException("Email đã tồn tại!");
+            }
+        } else {
+            if (userDao.existsByEmail(email)) {
+                throw new IllegalArgumentException("Email đã tồn tại!");
+            }
         }
         
         // Kiểm tra phone
-        String phoneQuery = "SELECT COUNT(u) FROM User u WHERE u.phone = :phone";
         if (userId != null) {
-            phoneQuery += " AND u.id <> :userId";
-        }
-        
-        var phoneQueryObj = em.createQuery(phoneQuery, Long.class)
-            .setParameter("phone", phone);
-        
-        if (userId != null) {
-            phoneQueryObj.setParameter("userId", userId);
-        }
-        
-        if (phoneQueryObj.getSingleResult() > 0) {
-            throw new IllegalArgumentException("Số điện thoại đã tồn tại!");
+            if (userDao.existsByPhoneExcludingUser(phone, userId)) {
+                throw new IllegalArgumentException("Số điện thoại đã tồn tại!");
+            }
+        } else {
+            if (userDao.existsByPhone(phone)) {
+                throw new IllegalArgumentException("Số điện thoại đã tồn tại!");
+            }
         }
     }
 }

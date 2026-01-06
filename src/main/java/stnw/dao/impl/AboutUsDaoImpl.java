@@ -1,6 +1,6 @@
 package stnw.dao.impl;
 
-import stnw.config.JpaUtil;
+import stnw.utils.JpaUtils;
 import stnw.dao.AboutUsDao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -12,7 +12,7 @@ public class AboutUsDaoImpl implements AboutUsDao {
     
     @Override
     public List<AboutUs> findAll() {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             TypedQuery<AboutUs> query = em.createQuery("SELECT a FROM AboutUs a ORDER BY a.sortOrder ASC, a.id DESC", AboutUs.class);
             return query.getResultList();
@@ -23,7 +23,7 @@ public class AboutUsDaoImpl implements AboutUsDao {
     
     @Override
     public AboutUs findById(Integer id) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             return em.find(AboutUs.class, id);
         } finally {
@@ -33,7 +33,7 @@ public class AboutUsDaoImpl implements AboutUsDao {
     
     @Override
     public void save(AboutUs aboutUs) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             em.getTransaction().begin();
             em.persist(aboutUs);
@@ -50,7 +50,7 @@ public class AboutUsDaoImpl implements AboutUsDao {
     
     @Override
     public void update(AboutUs aboutUs) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             em.getTransaction().begin();
             em.merge(aboutUs);
@@ -67,7 +67,7 @@ public class AboutUsDaoImpl implements AboutUsDao {
     
     @Override
     public void delete(Integer id) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             em.getTransaction().begin();
             AboutUs aboutUs = em.find(AboutUs.class, id);
@@ -87,7 +87,7 @@ public class AboutUsDaoImpl implements AboutUsDao {
     
     @Override
     public List<AboutUs> findAllActiveOrderBySortOrder() {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             TypedQuery<AboutUs> query = em.createQuery(
                 "SELECT a FROM AboutUs a WHERE a.isActive = true ORDER BY a.sortOrder ASC, a.createdDate DESC", 

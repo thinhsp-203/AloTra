@@ -1,83 +1,60 @@
 package stnw.service.impl;
 
-import stnw.config.JpaUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
+import stnw.dao.ProductDao;
+import stnw.dao.UserDao;
+import stnw.dao.WishlistDao;
+import stnw.dao.impl.ProductDaoImpl;
+import stnw.dao.impl.UserDaoImpl;
+import stnw.dao.impl.WishlistDaoImpl;
 import stnw.model.Product;
+import stnw.model.User;
 import stnw.model.WishlistItem;
 import stnw.service.WishlistService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class WishlistServiceImpl implements WishlistService {
 
+    private final WishlistDao wishlistDao = new WishlistDaoImpl();
+    private final ProductDao productDao = new ProductDaoImpl();
+    private final UserDao userDao = new UserDaoImpl();
+
     @Override
     public List<WishlistItem> listItems(int userId) {
-        EntityManager em = JpaUtil.em();
-        try {
-            TypedQuery<WishlistItem> query = em.createQuery(
-                    "SELECT w FROM WishlistItem w JOIN FETCH w.product WHERE w.user.id = :userId ORDER BY w.addedDate DESC",
-                    WishlistItem.class);
-            query.setParameter("userId", userId);
-            return query.getResultList();
-        } finally {
-            em.close();
-        }
+        return wishlistDao.findByUserId(userId);
     }
 
     @Override
     public ToggleResult toggleItem(int userId, int productId) {
-        EntityManager em = JpaUtil.em();
-        try {
-            Product product = em.find(Product.class, productId);
-            if (product == null) {
-                return new ToggleResult(false, "error", "Sản phẩm không tồn tại.");
+        Product product = productDao.findById(productId);
+        if (product == null) {
+            return new ToggleResult(false, "error", "Sản phẩm không tồn tại.");
+        }
+
+        WishlistItem existing = wishlistDao.findByUserIdAndProductId(userId, productId);
+
+        if (existing != null) {
+            wishlistDao.delete(existing);
+            return new ToggleResult(true, "removed", "Đã xóa khỏi danh sách yêu thích.");
+        } else {
+            User user = userDao.findById(userId);
+            if (user == null) {
+                return new ToggleResult(false, "error", "Người dùng không tồn tại.");
             }
-
-            TypedQuery<WishlistItem> query = em.createQuery(
-                    "SELECT w FROM WishlistItem w WHERE w.user.id = :userId AND w.product.id = :productId",
-                    WishlistItem.class);
-            query.setParameter("userId", userId);
-            query.setParameter("productId", productId);
-
-            WishlistItem existing = query.getResultStream().findFirst().orElse(null);
-
-            em.getTransaction().begin();
-            if (existing != null) {
-                em.remove(existing);
-                em.getTransaction().commit();
-                return new ToggleResult(true, "removed", "Đã xóa khỏi danh sách yêu thích.");
-            } else {
-                WishlistItem item = new WishlistItem();
-                item.setUser(em.getReference(stnw.model.User.class, userId));
-                item.setProduct(product);
-                item.setAddedDate(LocalDateTime.now());
-                em.persist(item);
-                em.getTransaction().commit();
-                return new ToggleResult(true, "added", "Đã thêm vào danh sách yêu thích.");
-            }
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) em.getTransaction().rollback();
-            return new ToggleResult(false, "error", "Lỗi máy ch�? " + e.getMessage());
-        } finally {
-            em.close();
+            
+            WishlistItem item = new WishlistItem();
+            item.setUser(user);
+            item.setProduct(product);
+            item.setAddedDate(LocalDateTime.now());
+            wishlistDao.save(item);
+            return new ToggleResult(true, "added", "Đã thêm vào danh sách yêu thích.");
         }
     }
 
     @Override
     public Set<Integer> getWishlistProductIds(int userId) {
-        EntityManager em = JpaUtil.em();
-        try {
-            TypedQuery<Integer> query = em.createQuery(
-                    "SELECT w.product.id FROM WishlistItem w WHERE w.user.id = :userId", Integer.class);
-            query.setParameter("userId", userId);
-            return query.getResultStream().collect(Collectors.toSet());
-        } finally {
-            em.close();
-        }
+        return wishlistDao.findProductIdsByUserId(userId);
     }
 }
-

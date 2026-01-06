@@ -1,6 +1,6 @@
 package stnw.dao.impl;
 
-import stnw.config.JpaUtil;
+import stnw.utils.JpaUtils;
 import stnw.dao.PointTransactionDao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -13,7 +13,7 @@ public class PointTransactionDaoImpl implements PointTransactionDao {
 
     @Override
     public void save(PointTransaction transaction) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         EntityTransaction trans = em.getTransaction();
         try {
             trans.begin();
@@ -32,7 +32,7 @@ public class PointTransactionDaoImpl implements PointTransactionDao {
 
     @Override
     public List<PointTransaction> findByUserId(Integer userId) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             TypedQuery<PointTransaction> query = em.createQuery(
                 "SELECT pt FROM PointTransaction pt WHERE pt.user.id = :userId ORDER BY pt.createdDate DESC",
@@ -48,6 +48,36 @@ public class PointTransactionDaoImpl implements PointTransactionDao {
     @Override
     public List<PointTransaction> findByUserIdOrderByDateDesc(Integer userId) {
         return findByUserId(userId); // Same implementation
+    }
+
+    @Override
+    public PointTransaction findById(Integer id) {
+        EntityManager em = JpaUtils.em();
+        try {
+            return em.find(PointTransaction.class, id);
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public void deleteByUserId(Integer userId) {
+        EntityManager em = JpaUtils.em();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+            em.createQuery("DELETE FROM PointTransaction pt WHERE pt.user.id = :userId")
+              .setParameter("userId", userId)
+              .executeUpdate();
+            trans.commit();
+        } catch (Exception e) {
+            if (trans.isActive()) {
+                trans.rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
     }
 }
 

@@ -1,15 +1,16 @@
 package stnw.dao;
 
-import jakarta.persistence.EntityManager;
 import stnw.model.Promotion;
 import java.util.List;
-import java.util.Optional;
 
 public interface PromotionDao {
-    List<Promotion> findAllActive(EntityManager em);
-    List<Promotion> findAll(EntityManager em);
-    Optional<Promotion> findById(int id, EntityManager em);
-    void save(Promotion promotion, EntityManager em);
-    void delete(Promotion promotion, EntityManager em);
+    List<Promotion> findAllActive();
+    List<Promotion> findAll();
+    Promotion findById(int id);
+    void save(Promotion promotion);
+    void update(Promotion promotion);
+    void delete(int id);
+    void delete(Promotion promotion);
+    List<Promotion> findRelatedPromotions(int excludeId, int limit);
 }
 

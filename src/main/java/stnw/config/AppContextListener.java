@@ -2,6 +2,7 @@ package stnw.config;
 
 import stnw.dao.CategoryRepository;
 import stnw.dao.impl.CategoryRepositoryImpl;
+import stnw.utils.JpaUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
@@ -37,7 +38,7 @@ public class AppContextListener implements ServletContextListener {
 
         try {
             // Đóng EntityManagerFactory / Hibernate đúng cách
-            JpaUtil.shutdown();
+            JpaUtils.shutdown();
         } catch (Exception e) {
             logger.log(Level.WARNING, "Error while shutting down JPA", e);
         } finally {
@@ -52,7 +53,7 @@ public class AppContextListener implements ServletContextListener {
     private void loadCategories(ServletContext context) {
         EntityManager em = null;
         try {
-            em = JpaUtil.em();
+            em = JpaUtils.em();
             CategoryRepository repo = new CategoryRepositoryImpl(em);
             context.setAttribute("categories", repo.findAll());
             logger.info("Categories loaded into application scope.");
@@ -69,7 +70,7 @@ public class AppContextListener implements ServletContextListener {
     public static void loadSiteSettings(ServletContext context) {
         EntityManager em = null;
         try {
-            em = JpaUtil.em();
+            em = JpaUtils.em();
             List<Settings> settingsList =
                     em.createQuery("SELECT s FROM Settings s", Settings.class)
                       .getResultList();

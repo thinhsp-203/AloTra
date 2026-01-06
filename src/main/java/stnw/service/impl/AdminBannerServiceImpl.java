@@ -1,77 +1,53 @@
 package stnw.service.impl;
 
-import java.util.List;
-
-import stnw.config.JpaUtil;
-import jakarta.persistence.EntityManager;
+import stnw.dao.BannerDao;
+import stnw.dao.impl.BannerDaoImpl;
 import stnw.model.Banner;
 import stnw.service.AdminBannerService;
 import stnw.utils.UploadType;
-import stnw.utils.UploadUtil;
+import stnw.utils.UploadUtils;
+
+import java.util.List;
 
 public class AdminBannerServiceImpl implements AdminBannerService {
     
+    private final BannerDao bannerDao = new BannerDaoImpl();
+    
     @Override
     public List<Banner> getAllBanners() {
-        EntityManager em = JpaUtil.em();
-        try {
-            return em.createQuery("SELECT b FROM Banner b", Banner.class).getResultList();
-        } finally {
-            em.close();
-        }
+        return bannerDao.findAll();
     }
     
     @Override
     public Banner getBannerById(int id) {
-        EntityManager em = JpaUtil.em();
-        try {
-            return em.find(Banner.class, id);
-        } finally {
-            em.close();
-        }
+        return bannerDao.findById(id);
     }
     
     @Override
     public int getMaxSortOrder() {
-        EntityManager em = JpaUtil.em();
-        try {
-            Object result = em.createQuery("SELECT MAX(b.sortOrder) FROM Banner b").getSingleResult();
-            return result != null ? ((Integer) result) : -1;
-        } finally {
-            em.close();
-        }
+        return bannerDao.getMaxSortOrder();
     }
     
     @Override
     public void saveBanner(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl, jakarta.servlet.ServletContext servletContext) {
         try {
-            EntityManager em = JpaUtil.em();
-            try {
-                // Tự động set thứ tự khi tạo mới
-                if (banner.getId() == null) {
-                    Object maxResult = em.createQuery("SELECT MAX(b.sortOrder) FROM Banner b").getSingleResult();
-                    int maxSortOrder = (maxResult != null) ? ((Integer) maxResult) : -1;
-                    banner.setSortOrder(maxSortOrder + 1);
-                }
-                
-                String finalImageUrl = handleImageUpload(banner, imageFile, imageUrl, servletContext);
-                if (finalImageUrl != null) {
-                    banner.setImageUrl(finalImageUrl);
-                } else if (banner.getId() == null) {
-                    throw new IllegalArgumentException("Bạn phải cung cấp ảnh!");
-                }
-                
-                em.getTransaction().begin();
-                
-                if (banner.getId() == null) {
-                    em.persist(banner);
-                } else {
-                    em.merge(banner);
-                }
-                
-                em.getTransaction().commit();
-            } finally {
-                em.close();
+            // Tự động set thứ tự khi tạo mới
+            if (banner.getId() == null) {
+                int maxSortOrder = bannerDao.getMaxSortOrder();
+                banner.setSortOrder(maxSortOrder + 1);
+            }
+            
+            String finalImageUrl = handleImageUpload(banner, imageFile, imageUrl, servletContext);
+            if (finalImageUrl != null) {
+                banner.setImageUrl(finalImageUrl);
+            } else if (banner.getId() == null) {
+                throw new IllegalArgumentException("Bạn phải cung cấp ảnh!");
+            }
+            
+            if (banner.getId() == null) {
+                bannerDao.save(banner);
+            } else {
+                bannerDao.update(banner);
             }
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi lưu banner: " + e.getMessage(), e);
@@ -80,38 +56,24 @@ public class AdminBannerServiceImpl implements AdminBannerService {
     
     @Override
     public void deleteBanner(int id, jakarta.servlet.ServletContext servletContext) {
-        EntityManager em = JpaUtil.em();
-        try {
-            em.getTransaction().begin();
-            
-            Banner banner = em.find(Banner.class, id);
-            if (banner != null) {
-                // Xóa file ảnh
-                if (banner.getImageUrl() != null) {
-                    UploadUtil.deleteOldImage(banner.getImageUrl(), servletContext);
-                }
-                em.remove(banner);
+        Banner banner = bannerDao.findById(id);
+        if (banner != null) {
+            // Xóa file ảnh
+            if (banner.getImageUrl() != null) {
+                UploadUtils.deleteOldImage(banner.getImageUrl(), servletContext);
             }
-            
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Lỗi khi xóa banner: " + e.getMessage(), e);
-        } finally {
-            em.close();
+            bannerDao.delete(id);
         }
     }
     
     private String handleImageUpload(Banner banner, jakarta.servlet.http.Part imageFile, String imageUrl, jakarta.servlet.ServletContext servletContext) {
         try {
             // TRƯỜNG HỢP 1: Upload file (ưu tiên)
-            String uploadedPath = UploadUtil.save(imageFile, UploadType.BANNERS, servletContext);
+            String uploadedPath = UploadUtils.save(imageFile, UploadType.BANNERS, servletContext);
             if (uploadedPath != null) {
                 // Xóa ảnh cũ nếu đang edit
                 if (banner.getId() != null && banner.getImageUrl() != null) {
-                    UploadUtil.deleteOldImage(banner.getImageUrl(), servletContext);
+                    UploadUtils.deleteOldImage(banner.getImageUrl(), servletContext);
                 }
                 return uploadedPath;
             }

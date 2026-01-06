@@ -28,6 +28,10 @@ public interface ProductSizeDao {
      * Kiểm tra size đã tồn tại chưa (theo product_id và size_name)
      */
     boolean exists(int productId, String sizeName);
+    /**
+     * Tìm ProductSize theo productId và sizeName
+     */
+    ProductSize findByProductIdAndSizeName(int productId, String sizeName);
 }
 
 

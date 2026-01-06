@@ -1,40 +1,33 @@
 package stnw.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import stnw.config.JpaUtil;
-import jakarta.persistence.EntityManager;
+import stnw.dao.PromotionDao;
+import stnw.dao.UserDao;
+import stnw.dao.impl.PromotionDaoImpl;
+import stnw.dao.impl.UserDaoImpl;
 import jakarta.servlet.ServletContext;
 import stnw.model.Promotion;
 import stnw.model.User;
 import stnw.service.AdminPromotionService;
 import stnw.service.NotificationService;
-import stnw.service.impl.NotificationServiceImpl;
 import stnw.utils.UploadType;
-import stnw.utils.UploadUtil;
+import stnw.utils.UploadUtils;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class AdminPromotionServiceImpl implements AdminPromotionService {
     private final NotificationService notificationService = new NotificationServiceImpl();
+    private final PromotionDao promotionDao = new PromotionDaoImpl();
+    private final UserDao userDao = new UserDaoImpl();
     
     @Override
     public List<Promotion> getAllPromotions() {
-        EntityManager em = JpaUtil.em();
-        try {
-            return em.createQuery("SELECT p FROM Promotion p ORDER BY p.createdDate DESC", Promotion.class).getResultList();
-        } finally {
-            em.close();
-        }
+        return promotionDao.findAll();
     }
     
     @Override
     public Promotion getPromotionById(int id) {
-        EntityManager em = JpaUtil.em();
-        try {
-            return em.find(Promotion.class, id);
-        } finally {
-            em.close();
-        }
+        return promotionDao.findById(id);
     }
     
     @Override
@@ -52,41 +45,27 @@ public class AdminPromotionServiceImpl implements AdminPromotionService {
                 promotion.setCreatedDate(LocalDateTime.now());
             }
             
-            EntityManager em = JpaUtil.em();
             boolean isNew = promotion.getId() == null;
-            try {
-                em.getTransaction().begin();
-                
-                if (isNew) {
-                    em.persist(promotion);
-                } else {
-                    em.merge(promotion);
-                }
-                
-                em.getTransaction().commit();
-                
-                // Tạo notification cho tất cả users khi có promotion mới và active
-                if (isNew && promotion.isActive()) {
-                    try {
-                        em = JpaUtil.em();
-                        List<User> users = em.createQuery("SELECT u FROM User u WHERE u.isActive = true", User.class).getResultList();
-                        String message = "Khuyến mãi mới: " + promotion.getTitle() + "! Xem ngay!";
-                        String link = "/promotions/detail?id=" + promotion.getId();
-                        for (User user : users) {
-                            notificationService.createNotification(user.getId(), message, link);
-                        }
-                    } catch (Exception e) {
-                        // Log lỗi nhưng không ảnh hưởng đến việc lưu promotion
-                        System.err.println("Lỗi khi tạo notification cho promotion: " + e.getMessage());
-                    } finally {
-                        if (em != null && em.isOpen()) {
-                            em.close();
-                        }
+            if (isNew) {
+                promotionDao.save(promotion);
+            } else {
+                promotionDao.update(promotion);
+            }
+            
+            // Tạo notification cho tất cả users khi có promotion mới và active
+            if (isNew && promotion.isActive()) {
+                try {
+                    // Lấy tất cả users active - cần thêm method vào UserDao
+                    // Tạm thời dùng cách cũ
+                    List<User> users = userDao.findAllActive();
+                    String message = "Khuyến mãi mới: " + promotion.getTitle() + "! Xem ngay!";
+                    String link = "/promotions/detail?id=" + promotion.getId();
+                    for (User user : users) {
+                        notificationService.createNotification(user.getId(), message, link);
                     }
-                }
-            } finally {
-                if (em != null && em.isOpen()) {
-                    em.close();
+                } catch (Exception e) {
+                    // Log lỗi nhưng không ảnh hưởng đến việc lưu promotion
+                    System.err.println("Lỗi khi tạo notification cho promotion: " + e.getMessage());
                 }
             }
         } catch (Exception e) {
@@ -96,38 +75,24 @@ public class AdminPromotionServiceImpl implements AdminPromotionService {
     
     @Override
     public void deletePromotion(int id, ServletContext context) {
-        EntityManager em = JpaUtil.em();
-        try {
-            em.getTransaction().begin();
-            
-            Promotion promotion = em.find(Promotion.class, id);
-            if (promotion != null) {
-                // Xóa file ảnh
-                if (promotion.getImageUrl() != null) {
-                    UploadUtil.deleteOldImage(promotion.getImageUrl(), context);
-                }
-                em.remove(promotion);
+        Promotion promotion = promotionDao.findById(id);
+        if (promotion != null) {
+            // Xóa file ảnh
+            if (promotion.getImageUrl() != null) {
+                UploadUtils.deleteOldImage(promotion.getImageUrl(), context);
             }
-            
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Lỗi khi xóa khuyến mãi: " + e.getMessage(), e);
-        } finally {
-            em.close();
+            promotionDao.delete(promotion);
         }
     }
     
     private String handleImageUpload(Promotion promotion, jakarta.servlet.http.Part imageFile, String imageUrl, ServletContext context) {
         try {
             // TRƯỜNG HỢP 1: Upload file (ưu tiên)
-            String uploadedPath = UploadUtil.save(imageFile, UploadType.PROMOTIONS, context);
+            String uploadedPath = UploadUtils.save(imageFile, UploadType.PROMOTIONS, context);
             if (uploadedPath != null) {
                 // Xóa ảnh cũ nếu đang edit
                 if (promotion.getId() != null && promotion.getImageUrl() != null) {
-                    UploadUtil.deleteOldImage(promotion.getImageUrl(), context);
+                    UploadUtils.deleteOldImage(promotion.getImageUrl(), context);
                 }
                 return uploadedPath;
             }

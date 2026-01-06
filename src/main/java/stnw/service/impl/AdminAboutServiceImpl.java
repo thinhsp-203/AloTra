@@ -5,7 +5,7 @@ import stnw.dao.impl.AboutUsDaoImpl;
 import jakarta.servlet.http.Part;
 import stnw.model.AboutUs;
 import stnw.service.AdminAboutService;
-import stnw.utils.Constant;
+import stnw.utils.Constants;
 
 import java.io.File;
 import java.io.InputStream;
@@ -80,7 +80,7 @@ public class AdminAboutServiceImpl implements AdminAboutService {
                 String finalFileName = "about-" + UUID.randomUUID().toString() + extension;
                 
                 // Lưu file vào thư mục uploads/about
-                String uploadPath = Constant.getUploadPath(servletContext);
+                String uploadPath = Constants.getUploadPath(servletContext);
                 File aboutDir = new File(uploadPath, ABOUT_SUBDIR);
                 if (!aboutDir.exists()) aboutDir.mkdirs();
                 
@@ -120,7 +120,7 @@ public class AdminAboutServiceImpl implements AdminAboutService {
         
         try {
             String fileName = Paths.get(imagePath).getFileName().toString();
-            String uploadPath = Constant.getUploadPath(servletContext);
+            String uploadPath = Constants.getUploadPath(servletContext);
             File aboutDir = new File(uploadPath, ABOUT_SUBDIR);
             File oldFile = new File(aboutDir, fileName);
             if (oldFile.exists()) {

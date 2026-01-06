@@ -2,7 +2,7 @@ package stnw.controller.auth;
 
 import stnw.service.UserService;
 import stnw.service.impl.UserServiceImpl;
-import stnw.utils.EmailUtil;
+import stnw.utils.EmailUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -63,7 +63,7 @@ public class RegisterController extends HttpServlet {
                     try {
                         String subject = "Xác thực tài khoản AloTra";
                         String body = "Mã OTP của bạn là: " + code;
-                        EmailUtil.sendEmail(email, subject, body);
+                        EmailUtils.sendEmail(email, subject, body);
                     } catch (Exception e) {
                         e.printStackTrace(); 
                     }

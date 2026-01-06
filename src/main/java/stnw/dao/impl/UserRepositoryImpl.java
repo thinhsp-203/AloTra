@@ -1,6 +1,6 @@
 package stnw.dao.impl;
 
-import stnw.config.JpaUtil;
+import stnw.utils.JpaUtils;
 import stnw.dao.UserRepository;
 import jakarta.persistence.EntityManager;
 import stnw.model.User;
@@ -17,7 +17,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     private EntityManager em() {
-        return em != null ? em : JpaUtil.em();
+        return em != null ? em : JpaUtils.em();
     }
 
     @Override

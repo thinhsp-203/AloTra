@@ -1,18 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
-<%@ page import="stnw.config.JpaUtil, stnw.model.Category, java.util.List" %>
-
-<%
-
-    List<Category> categories = null;
-try (var em = JpaUtil.em()) {
-        categories = em.createQuery("SELECT c FROM Category c ORDER BY c.name", Category.class).getResultList();
-} catch (Exception e) {
-        e.printStackTrace();
-    }
-    request.setAttribute("navbarCategories", categories);
-%>
 
 <style>
 /* (Giữ nguyên toàn bộ CSS của bạn từ dòng 5 đến 20) */

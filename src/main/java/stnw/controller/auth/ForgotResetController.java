@@ -3,7 +3,7 @@ package stnw.controller.auth;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import stnw.utils.EmailUtil;
+import stnw.utils.EmailUtils;
 import stnw.service.AuthRecoveryService;
 import stnw.service.impl.AuthRecoveryServiceImpl;
 
@@ -112,7 +112,7 @@ public class ForgotResetController extends HttpServlet {
 
             	// Gửi email trong luồng riêng (cho nhanh web)
             	new Thread(() -> {
-            	    EmailUtil.sendEmail(email, subject, body);
+            	    EmailUtils.sendEmail(email, subject, body);
             	}).start();
             }
         } catch (Exception e) {

@@ -1,6 +1,6 @@
 package stnw.dao.impl;
 
-import stnw.config.JpaUtil;
+import stnw.utils.JpaUtils;
 import stnw.dao.CategoryRepository;
 import jakarta.persistence.EntityManager;
 import stnw.model.Category;
@@ -15,7 +15,7 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     }
 
     private EntityManager em() {
-        return em != null ? em : JpaUtil.em();
+        return em != null ? em : JpaUtils.em();
     }
 
     @Override

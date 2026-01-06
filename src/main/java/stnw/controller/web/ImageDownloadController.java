@@ -1,6 +1,6 @@
 package stnw.controller.web;
 
-import stnw.utils.Constant;
+import stnw.utils.Constants;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -36,7 +36,7 @@ public class ImageDownloadController extends HttpServlet {
         File file;
         try {
             // Lấy đường dẫn thực của thư mục uploads từ webapp
-            String uploadBasePath = getServletContext().getRealPath("/" + Constant.UPLOAD_DIRECTORY);
+            String uploadBasePath = getServletContext().getRealPath("/" + Constants.UPLOAD_DIRECTORY);
             if (uploadBasePath == null) {
                 resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Upload directory not found");
                 return;

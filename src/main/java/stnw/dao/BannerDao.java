@@ -1,15 +1,14 @@
 package stnw.dao;
 
-import jakarta.persistence.EntityManager;
 import stnw.model.Banner;
 import java.util.List;
-import java.util.Optional;
 
 public interface BannerDao {
-    List<Banner> findAllActive(EntityManager em);
-    List<Banner> findAll(EntityManager em);
-    Optional<Banner> findById(int id, EntityManager em);
-    void save(Banner banner, EntityManager em);
-    void delete(Banner banner, EntityManager em);
+    List<Banner> findAllActive();
+    List<Banner> findAll();
+    Banner findById(int id);
+    void save(Banner banner);
+    void update(Banner banner);
+    void delete(int id);
+    int getMaxSortOrder();
 }
-

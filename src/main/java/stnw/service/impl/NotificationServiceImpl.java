@@ -1,9 +1,9 @@
 package stnw.service.impl;
 
-import stnw.config.JpaUtil;
 import stnw.dao.NotificationDao;
+import stnw.dao.UserDao;
 import stnw.dao.impl.NotificationDaoImpl;
-import jakarta.persistence.EntityManager;
+import stnw.dao.impl.UserDaoImpl;
 import stnw.model.Notification;
 import stnw.model.User;
 import stnw.service.NotificationService;
@@ -13,6 +13,7 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
     
     private final NotificationDao notificationDao = new NotificationDaoImpl();
+    private final UserDao userDao = new UserDaoImpl();
     
     @Override
     public List<Notification> getUserNotifications(Integer userId) {
@@ -41,21 +42,16 @@ public class NotificationServiceImpl implements NotificationService {
     
     @Override
     public void createNotification(Integer userId, String message, String link) {
-        EntityManager em = JpaUtil.em();
-        try {
-            User user = em.find(User.class, userId);
-            if (user != null) {
-                Notification notification = new Notification();
-                notification.setUser(user);
-                notification.setMessage(message);
-                notification.setLink(link);
-                notification.setIsRead(false);
-                notification.setIsDeleted(false);
-                notification.setCreatedDate(java.time.LocalDateTime.now());
-                notificationDao.save(notification);
-            }
-        } finally {
-            em.close();
+        User user = userDao.findById(userId);
+        if (user != null) {
+            Notification notification = new Notification();
+            notification.setUser(user);
+            notification.setMessage(message);
+            notification.setLink(link);
+            notification.setIsRead(false);
+            notification.setIsDeleted(false);
+            notification.setCreatedDate(java.time.LocalDateTime.now());
+            notificationDao.save(notification);
         }
     }
     

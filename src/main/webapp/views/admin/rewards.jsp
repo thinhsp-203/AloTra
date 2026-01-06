@@ -41,13 +41,9 @@
         </h6>
     </div>
     <div class="card-body p-4">
-        <form action="${pageContext.request.contextPath}/admin/rewards" method="POST" enctype="multipart/form-data">
+        <form action="${pageContext.request.contextPath}/admin/rewards/${not empty reward ? 'edit' : 'add'}" method="POST" enctype="multipart/form-data">
             <c:if test="${not empty reward}">
-                <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="id" value="${reward.reward_id}">
-            </c:if>
-            <c:if test="${empty reward}">
-                <input type="hidden" name="action" value="add">
             </c:if>
             
             <div class="row g-3">
@@ -223,10 +219,9 @@
                                                style="margin: 0 7.5px;">
                                                 <i class="fas fa-pencil-alt"></i>
                                             </a>
-                                            <form action="${pageContext.request.contextPath}/admin/rewards" method="POST" 
+                                            <form action="${pageContext.request.contextPath}/admin/rewards/delete" method="POST" 
                                                   style="display: inline; margin: 0 7.5px;" 
                                                   onsubmit="return confirm('Xác nhận xóa quà tặng \'${r.name}\'?')">
-                                                <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="id" value="${r.reward_id}">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
                                                     <i class="fas fa-trash"></i>

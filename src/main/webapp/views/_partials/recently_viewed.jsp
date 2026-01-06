@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
-<%@ page import="stnw.config.JpaUtil" %>
+<%@ page import="stnw.config.JpaConfig" %>
 <%@ page import="jakarta.persistence.EntityManager" %>
 <%@ page import="stnw.model.Product" %>
 <%@ page import="java.util.*" %>
@@ -22,7 +22,7 @@
   List<Product> viewedProducts = new ArrayList<>();
   if (!viewedIds.isEmpty()) {
     String[] ids = viewedIds.split("-");
-    EntityManager em = JpaUtil.em();
+    EntityManager em = JpaConfig.em();
     try {
       // Lấy tối đa 4 sản phẩm gần nhất
       int count = 0;

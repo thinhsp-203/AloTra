@@ -14,5 +14,6 @@ public interface NotificationDao {
     void markAllAsRead(Integer userId);
     void markAsDeleted(Integer id, Integer userId);
     void markAllAsDeleted(Integer userId);
+    void deleteByUserId(Integer userId);
 }
 

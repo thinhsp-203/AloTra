@@ -41,13 +41,9 @@
         </h6>
     </div>
     <div class="card-body p-4">
-        <form action="${pageContext.request.contextPath}/admin/stores" method="POST">
+        <form action="${pageContext.request.contextPath}/admin/stores/${not empty store ? 'edit' : 'add'}" method="POST">
             <c:if test="${not empty store}">
-                <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="id" value="${store.store_id}">
-            </c:if>
-            <c:if test="${empty store}">
-                <input type="hidden" name="action" value="add">
             </c:if>
             
             <div class="row g-3">
@@ -185,10 +181,9 @@
                                                style="margin: 0 7.5px;">
                                                 <i class="fas fa-pencil-alt"></i>
                                             </a>
-                                            <form action="${pageContext.request.contextPath}/admin/stores" method="POST" 
+                                            <form action="${pageContext.request.contextPath}/admin/stores/delete" method="POST" 
                                                   style="display: inline; margin: 0 7.5px;" 
                                                   onsubmit="return confirm('Xác nhận xóa cửa hàng \'${s.store_name}\'?')">
-                                                <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="id" value="${s.store_id}">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
                                                     <i class="fas fa-trash"></i>

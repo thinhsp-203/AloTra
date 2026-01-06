@@ -9,5 +9,8 @@ public interface StoreDao {
     Store findById(Integer id);
     List<Store> findByCity(String city);
     List<Store> findByDistrict(String district);
+    void save(Store store);
+    void update(Store store);
+    void delete(Integer id);
 }
 

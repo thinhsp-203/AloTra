@@ -1,8 +1,9 @@
 package stnw.dao.impl;
 
-import stnw.config.JpaUtil;
+import stnw.utils.JpaUtils;
 import stnw.dao.NotificationDao;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 import stnw.model.Notification;
 
@@ -12,7 +13,7 @@ public class NotificationDaoImpl implements NotificationDao {
     
     @Override
     public List<Notification> findByUserId(Integer userId) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             TypedQuery<Notification> query = em.createQuery(
                 "SELECT n FROM Notification n WHERE n.user.id = :userId AND (n.isDeleted = false OR n.isDeleted IS NULL) ORDER BY n.createdDate DESC", 
@@ -27,7 +28,7 @@ public class NotificationDaoImpl implements NotificationDao {
     
     @Override
     public List<Notification> findRecentByUserId(Integer userId, int limit) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             TypedQuery<Notification> query = em.createQuery(
                 "SELECT n FROM Notification n WHERE n.user.id = :userId AND (n.isDeleted = false OR n.isDeleted IS NULL) ORDER BY n.createdDate DESC", 
@@ -43,7 +44,7 @@ public class NotificationDaoImpl implements NotificationDao {
     
     @Override
     public long countUnreadByUserId(Integer userId) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             TypedQuery<Long> query = em.createQuery(
                 "SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId AND n.isRead = false AND (n.isDeleted = false OR n.isDeleted IS NULL)", 
@@ -58,7 +59,7 @@ public class NotificationDaoImpl implements NotificationDao {
     
     @Override
     public Notification findById(Integer id) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             return em.find(Notification.class, id);
         } finally {
@@ -68,7 +69,7 @@ public class NotificationDaoImpl implements NotificationDao {
     
     @Override
     public void save(Notification notification) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             em.getTransaction().begin();
             em.persist(notification);
@@ -85,7 +86,7 @@ public class NotificationDaoImpl implements NotificationDao {
     
     @Override
     public void update(Notification notification) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             em.getTransaction().begin();
             em.merge(notification);
@@ -102,7 +103,7 @@ public class NotificationDaoImpl implements NotificationDao {
     
     @Override
     public void markAsRead(Integer id) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             em.getTransaction().begin();
             Notification notification = em.find(Notification.class, id);
@@ -123,7 +124,7 @@ public class NotificationDaoImpl implements NotificationDao {
     
     @Override
     public void markAllAsRead(Integer userId) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             em.getTransaction().begin();
             TypedQuery<Notification> query = em.createQuery(
@@ -149,7 +150,7 @@ public class NotificationDaoImpl implements NotificationDao {
     
     @Override
     public void markAsDeleted(Integer id, Integer userId) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             em.getTransaction().begin();
             Notification notification = em.find(Notification.class, id);
@@ -170,7 +171,7 @@ public class NotificationDaoImpl implements NotificationDao {
     
     @Override
     public void markAllAsDeleted(Integer userId) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             em.getTransaction().begin();
             TypedQuery<Notification> query = em.createQuery(
@@ -187,6 +188,26 @@ public class NotificationDaoImpl implements NotificationDao {
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public void deleteByUserId(Integer userId) {
+        EntityManager em = JpaUtils.em();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+            em.createQuery("DELETE FROM Notification n WHERE n.user.id = :userId")
+              .setParameter("userId", userId)
+              .executeUpdate();
+            trans.commit();
+        } catch (Exception e) {
+            if (trans.isActive()) {
+                trans.rollback();
             }
             throw e;
         } finally {

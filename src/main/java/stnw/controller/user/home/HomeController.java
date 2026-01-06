@@ -1,0 +1,34 @@
+package stnw.controller.user.home;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import stnw.service.CatalogService;
+import stnw.service.impl.CatalogServiceImpl;
+
+@WebServlet(name = "HomeController", urlPatterns = {"/home", "/trang-chu", ""}, asyncSupported = false)
+public class HomeController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    private CatalogService catalogService;
+
+    @Override
+    public void init() throws ServletException {
+        catalogService = new CatalogServiceImpl();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        
+        req.setAttribute("featured", catalogService.getFeaturedProducts(8));
+        req.setAttribute("newest",   catalogService.getNewestProducts(8));
+        req.setAttribute("categories", catalogService.getAllCategories());
+        req.setAttribute("banners", catalogService.getActiveBanners());
+        req.setAttribute("promotions", catalogService.getActivePromotions(8));
+        req.setAttribute("stores", catalogService.getActiveStores(8));
+        req.getRequestDispatcher("/views/home/home.jsp").forward(req, resp);
+    }
+}
+

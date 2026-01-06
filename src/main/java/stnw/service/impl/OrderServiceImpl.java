@@ -1,11 +1,11 @@
 package stnw.service.impl;
 
-import stnw.config.JpaUtil;
-import stnw.dao.OrderRepository;
-import stnw.dao.VoucherRepository;
-import stnw.dao.impl.OrderRepositoryImpl;
-import stnw.dao.impl.VoucherRepositoryImpl;
-import jakarta.persistence.EntityManager;
+import stnw.dao.OrderDao;
+import stnw.dao.UserDao;
+import stnw.dao.VoucherDao;
+import stnw.dao.impl.OrderDaoImpl;
+import stnw.dao.impl.UserDaoImpl;
+import stnw.dao.impl.VoucherDaoImpl;
 import stnw.model.CartItem;
 import stnw.model.Orders;
 import stnw.model.User;
@@ -20,8 +20,9 @@ import java.util.Optional;
 
 public class OrderServiceImpl implements OrderService {
 
-    private final OrderRepository orderRepository = new OrderRepositoryImpl();
-    private final VoucherRepository voucherRepository = new VoucherRepositoryImpl();
+    private final OrderDao orderDao = new OrderDaoImpl();
+    private final VoucherDao voucherDao = new VoucherDaoImpl();
+    private final UserDao userDao = new UserDaoImpl();
     private final NotificationService notificationService = new NotificationServiceImpl();
     private final ShippingFeeService shippingFeeService = new ShippingFeeServiceImpl();
 
@@ -32,9 +33,7 @@ public class OrderServiceImpl implements OrderService {
         }
         BigDecimal total = total(cartItems);
 
-        EntityManager em = JpaUtil.em();
-        try {
-            Optional<Voucher> vopt = voucherRepository.findActiveByCode(code.trim(), em);
+        Optional<Voucher> vopt = voucherDao.findActiveByCode(code.trim());
             if (vopt.isEmpty()) {
                 return new VoucherResult(false, "Mã giảm giá không hợp l�?hoặc đã hết hạn.", BigDecimal.ZERO, total);
             }
@@ -55,22 +54,16 @@ public class OrderServiceImpl implements OrderService {
             BigDecimal newTotal = total.subtract(discountAmount);
             newTotal = newTotal.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : newTotal;
             return new VoucherResult(true, "Áp dụng mã thành công", discountAmount, newTotal);
-        } finally {
-            em.close();
-        }
     }
 
     @Override
     public Orders placeOrder(User user, List<CartItem> items, String fullname, String phone, String address,
                              String note, String voucherCode, String paymentMethod, String shippingType) {
-        EntityManager em = JpaUtil.em();
-        try {
-            em.getTransaction().begin();
-
-            BigDecimal total = total(items);
+        // Xử lý voucher (VoucherDao tự quản lý transaction)
+        BigDecimal total = total(items);
             BigDecimal discountAmount = BigDecimal.ZERO;
             if (voucherCode != null && !voucherCode.isBlank()) {
-                Optional<Voucher> vopt = voucherRepository.findActiveByCode(voucherCode.trim(), em);
+                Optional<Voucher> vopt = voucherDao.findActiveByCode(voucherCode.trim());
                 if (vopt.isEmpty()) {
                     throw new IllegalArgumentException("Mã giảm giá không hợp l�?hoặc đã hết hạn!");
                 }
@@ -85,7 +78,7 @@ public class OrderServiceImpl implements OrderService {
                         discountAmount = v.getMax_discount();
                     }
                     v.setUsed_count((v.getUsed_count() == null ? 0 : v.getUsed_count()) + 1);
-                    em.merge(v);
+                    voucherDao.update(v);
                 }
             }
             BigDecimal grandTotal = total.subtract(discountAmount);
@@ -98,7 +91,11 @@ public class OrderServiceImpl implements OrderService {
             BigDecimal shippingFee = shippingFeeService.calculateShippingFee(shippingType);
             grandTotal = grandTotal.add(shippingFee);
 
-            User managedUser = em.find(User.class, user.getId());
+            // Lấy user từ DB - OrderDao.createOrder sẽ tự merge nếu cần
+            User managedUser = userDao.findById(user.getId());
+            if (managedUser == null) {
+                throw new IllegalArgumentException("User không tồn tại!");
+            }
             // Tất c�?đơn hàng mới đều bắt đầu với "Chưa thanh toán"
             // (COD: chưa thanh toán, Online: s�?cập nhật sau khi thanh toán thành công)
             // Nếu phương thức thanh toán không phải COD thì mặc định là "Đã thanh toán"
@@ -110,11 +107,10 @@ public class OrderServiceImpl implements OrderService {
                 paymentStatus = stnw.utils.PaymentStatus.DA_THANH_TOAN.getDisplayName();
             }
             String orderStatus = stnw.utils.OrderStatus.CHO_XAC_NHAN.getDisplayName();
-
-            Orders order = orderRepository.createOrder(managedUser, fullname, phone, address, note,
-                    grandTotal, paymentMethod, paymentStatus, orderStatus, items, em);
-
-            em.getTransaction().commit();
+        
+        // OrderDao.createOrder tự quản lý transaction
+            Orders order = orderDao.createOrder(managedUser, fullname, phone, address, note,
+                    grandTotal, paymentMethod, paymentStatus, orderStatus, items);
             
             // Tạo notification cho user v�?đơn hàng mới
             try {
@@ -126,25 +122,13 @@ public class OrderServiceImpl implements OrderService {
                 System.err.println("Lỗi khi tạo notification cho đơn hàng #" + order.getOrder_id() + ": " + e.getMessage());
             }
             
-            return order;
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
+        return order;
     }
 
     @Override
     public Optional<Orders> findById(int orderId) {
-        EntityManager em = JpaUtil.em();
-        try {
-            return Optional.ofNullable(em.find(Orders.class, orderId));
-        } finally {
-            em.close();
-        }
+        Orders order = orderDao.findById(orderId);
+        return Optional.ofNullable(order);
     }
 
     private BigDecimal total(List<CartItem> cartItems) {

@@ -1,6 +1,6 @@
 package stnw.dao.impl;
 
-import stnw.config.JpaUtil;
+import stnw.utils.JpaUtils;
 import stnw.dao.ProductQueryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -20,7 +20,7 @@ public class ProductQueryRepositoryImpl implements ProductQueryRepository {
 
     @Override
     public List<Product> findProducts(Integer cateId, String keyword, String sortBy, String priceRange, int offset, int limit) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             Map<String, Object> params = new HashMap<>();
             StringBuilder qlString = new StringBuilder("SELECT p FROM Product p WHERE p.isActive = true");
@@ -79,7 +79,7 @@ public class ProductQueryRepositoryImpl implements ProductQueryRepository {
 
     @Override
     public Map<String, Object> search(Integer cateId, Integer suppId, BigDecimal minPrice, BigDecimal maxPrice, String keyword, int page, int size) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             StringBuilder ql = new StringBuilder("SELECT p FROM Product p WHERE 1=1");
             Map<String, Object> params = new HashMap<>();
@@ -120,7 +120,7 @@ public class ProductQueryRepositoryImpl implements ProductQueryRepository {
 
     @Override
     public long count(Integer cateId, Integer suppId, BigDecimal minPrice, BigDecimal maxPrice, String keyword) {
-        EntityManager em = JpaUtil.em();
+        EntityManager em = JpaUtils.em();
         try {
             StringBuilder ql = new StringBuilder("SELECT COUNT(p) FROM Product p WHERE 1=1");
             Map<String, Object> params = new HashMap<>();
