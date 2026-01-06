@@ -25,16 +25,20 @@ public class User {
   @Column(nullable=false, length=100, name="password")
   private String password;
 
+  @Column(columnDefinition="NVARCHAR(100)")
   private String fullname;
+  
+  @Column(columnDefinition="NVARCHAR(500)")
   private String avatar;
+  
   private Integer roleid;
 
-  @Column(length=20, unique=true)
+  @Column(length=20, unique=true, columnDefinition="NVARCHAR(20)")
   private String phone;
 
   private LocalDateTime createdDate;
 
-  @Column(name="address", length=500)
+  @Column(name="address", length=500, columnDefinition="NVARCHAR(500)")
   private String address;
 
   private String resetToken;

@@ -23,22 +23,28 @@ public class Orders {
   @JoinColumn(name="user_id", nullable=false)
   private User user;
 
-  @Column(nullable=false, length=100)
+  @Column(nullable=false, length=100, columnDefinition="NVARCHAR(100)")
   private String fullname;
 
-  @Column(nullable=false, length=20)
+  @Column(nullable=false, length=20, columnDefinition="NVARCHAR(20)")
   private String phone;
 
-  @Column(name="address", nullable=false, length=500)
+  @Column(name="address", nullable=false, length=500, columnDefinition="NVARCHAR(500)")
   private String address;
 
+  @Column(columnDefinition="NVARCHAR(1000)")
   private String note;
 
   @Column(nullable=false, precision=18, scale=2)
   private BigDecimal total_amount;
 
+  @Column(columnDefinition="NVARCHAR(50)")
   private String payment_method;
+  
+  @Column(columnDefinition="NVARCHAR(50)")
   private String payment_status;
+  
+  @Column(columnDefinition="NVARCHAR(50)")
   private String order_status;
 
   private LocalDateTime createdDate;

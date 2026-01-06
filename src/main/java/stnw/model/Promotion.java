@@ -22,7 +22,7 @@ public class Promotion {
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String content; // Nội dung chi tiết
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition="NVARCHAR(500)")
     private String imageUrl; // Đường dẫn tới ảnh khuyến mãi
 
     private boolean isActive = true;
