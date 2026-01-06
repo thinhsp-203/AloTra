@@ -4,7 +4,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
 import stnw.model.User;
-import stnw.utils.Roles; 
+import stnw.enums.Roles; 
 
 import java.io.IOException;
 

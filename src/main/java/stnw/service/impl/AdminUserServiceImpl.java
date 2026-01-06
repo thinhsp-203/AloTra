@@ -12,6 +12,7 @@ import stnw.dao.impl.PointTransactionDaoImpl;
 import stnw.dao.impl.ReviewDaoImpl;
 import stnw.dao.impl.UserDaoImpl;
 import stnw.dao.impl.WishlistDaoImpl;
+import stnw.enums.Roles;
 import stnw.model.User;
 import stnw.service.AdminUserService;
 import stnw.utils.PasswordUtils;
@@ -65,7 +66,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
         
         // Kiểm tra không cho phép chỉnh sửa admin
-        if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+        if (user.getRoleid() != null && user.getRoleid() == Roles.ADMIN) {
             throw new IllegalArgumentException("Không thể chỉnh sửa thông tin quản trị viên!");
         }
         
@@ -84,15 +85,15 @@ public class AdminUserServiceImpl implements AdminUserService {
         // Cập nhật role nếu được cung cấp
         if (roleId != null && user.getRoleid() != null) {
             // Không cho phép ADMIN đổi role (giữ nguyên ADMIN)
-            if (user.getRoleid() == stnw.utils.Roles.ADMIN) {
+            if (user.getRoleid() == Roles.ADMIN) {
                 // Không làm gì, giữ nguyên ADMIN
             } else {
                 // CUSTOMER và STAFF có thể đổi role
                 // CUSTOMER có thể đổi sang STAFF hoặc ADMIN
                 // STAFF có thể đổi sang ADMIN
-                if (roleId == stnw.utils.Roles.CUSTOMER || 
-                    roleId == stnw.utils.Roles.STAFF || 
-                    roleId == stnw.utils.Roles.ADMIN) {
+                if (roleId == Roles.CUSTOMER || 
+                    roleId == Roles.STAFF || 
+                    roleId == Roles.ADMIN) {
                     user.setRoleid(roleId);
                 }
             }
@@ -118,7 +119,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
         
         // Kiểm tra không cho inactive admin khác (roleid = 1)
-        if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+        if (user.getRoleid() != null && user.getRoleid() == Roles.ADMIN) {
             throw new IllegalArgumentException("Không thể thay đổi trạng thái của quản trị viên!");
         }
         
@@ -139,7 +140,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
         
         // Kiểm tra không cho xóa admin (roleid = 1)
-        if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+        if (user.getRoleid() != null && user.getRoleid() == Roles.ADMIN) {
             throw new IllegalArgumentException("Không thể xóa quản trị viên!");
         }
         
@@ -159,7 +160,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
         
         // Kiểm tra không cho xóa admin (roleid = 1)
-        if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+        if (user.getRoleid() != null && user.getRoleid() == Roles.ADMIN) {
             throw new IllegalArgumentException("Không thể xóa vĩnh viễn quản trị viên!");
         }
         

@@ -15,7 +15,7 @@ import stnw.dao.impl.OrderDaoImpl;
 import stnw.dao.impl.ProductDaoImpl;
 import stnw.dao.impl.UserDaoImpl;
 import stnw.service.AdminDashboardService;
-import stnw.utils.OrderStatus;
+import stnw.enums.OrderStatus;
 
 public class AdminDashboardServiceImpl implements AdminDashboardService {
     

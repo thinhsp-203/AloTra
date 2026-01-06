@@ -1,4 +1,4 @@
-package stnw.utils;
+package stnw.enums;
 
 /**
  * Enum định nghĩa các loại upload ảnh trong hệ thống

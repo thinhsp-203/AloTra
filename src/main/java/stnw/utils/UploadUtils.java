@@ -2,6 +2,7 @@ package stnw.utils;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.Part;
+import stnw.enums.UploadType;
 
 import java.io.File;
 import java.io.IOException;

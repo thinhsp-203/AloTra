@@ -6,7 +6,7 @@ import java.util.List;
 import stnw.dao.OrderDao;
 import stnw.dao.impl.OrderDaoImpl;
 import stnw.service.AdminReportService;
-import stnw.utils.OrderStatus;
+import stnw.enums.OrderStatus;
 
 public class AdminReportServiceImpl implements AdminReportService {
     

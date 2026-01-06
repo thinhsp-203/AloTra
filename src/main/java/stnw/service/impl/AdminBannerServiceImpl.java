@@ -4,7 +4,7 @@ import stnw.dao.BannerDao;
 import stnw.dao.impl.BannerDaoImpl;
 import stnw.model.Banner;
 import stnw.service.AdminBannerService;
-import stnw.utils.UploadType;
+import stnw.enums.UploadType;
 import stnw.utils.UploadUtils;
 
 import java.util.List;

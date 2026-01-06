@@ -17,7 +17,7 @@ import stnw.model.Category;
 import stnw.model.Product;
 import stnw.model.ProductSize;
 import stnw.service.AdminProductService;
-import stnw.utils.UploadType;
+import stnw.enums.UploadType;
 import stnw.utils.UploadUtils;
 
 import java.math.BigDecimal;

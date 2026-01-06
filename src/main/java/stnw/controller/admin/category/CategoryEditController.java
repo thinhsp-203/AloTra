@@ -8,7 +8,7 @@ import java.io.IOException;
 import stnw.model.Category;
 import stnw.service.CategoryService;
 import stnw.service.impl.CategoryServiceImpl;
-import stnw.utils.UploadType;
+import stnw.enums.UploadType;
 import stnw.utils.UploadUtils;
 
 @WebServlet(urlPatterns = {"/admin/category/edit"})

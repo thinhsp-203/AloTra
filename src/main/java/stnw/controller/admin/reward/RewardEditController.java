@@ -11,7 +11,7 @@ import stnw.model.Reward;
 import stnw.service.AdminRewardService;
 import stnw.service.impl.AdminRewardServiceImpl;
 import stnw.utils.UploadUtils;
-import stnw.utils.UploadType;
+import stnw.enums.UploadType;
 
 import java.io.IOException;
 

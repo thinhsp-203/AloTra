@@ -1,4 +1,4 @@
-package stnw.utils;
+package stnw.enums;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -31,3 +31,4 @@ public final class Roles {
         return ROLE_NAMES.getOrDefault(roleId, "Không xác định");
     }
 }
+

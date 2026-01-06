@@ -9,7 +9,7 @@ import stnw.model.Promotion;
 import stnw.model.User;
 import stnw.service.AdminPromotionService;
 import stnw.service.NotificationService;
-import stnw.utils.UploadType;
+import stnw.enums.UploadType;
 import stnw.utils.UploadUtils;
 
 import java.time.LocalDateTime;

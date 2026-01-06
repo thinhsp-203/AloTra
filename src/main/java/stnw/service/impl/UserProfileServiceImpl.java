@@ -9,7 +9,9 @@ import stnw.model.Orders;
 import stnw.model.User;
 import stnw.service.UserProfileService;
 import stnw.utils.PasswordUtils;
-import stnw.utils.UploadType;
+import stnw.enums.OrderStatus;
+import stnw.enums.PaymentStatus;
+import stnw.enums.UploadType;
 import stnw.utils.UploadUtils;
 
 import java.util.List;
@@ -115,12 +117,12 @@ public class UserProfileServiceImpl implements UserProfileService {
         }
         
         // Kiểm tra quyền hủy: chỉ được hủy khi status = CHO_XAC_NHAN
-        stnw.utils.OrderStatus currentStatus = stnw.utils.OrderStatus.fromOldString(order.getOrder_status());
-        if (currentStatus != stnw.utils.OrderStatus.CHO_XAC_NHAN) {
+        OrderStatus currentStatus = OrderStatus.fromOldString(order.getOrder_status());
+        if (currentStatus != OrderStatus.CHO_XAC_NHAN) {
             throw new IllegalArgumentException("Bạn chỉ có thể hủy đơn hàng khi đơn đang ở trạng thái 'Chờ xác nhận'!");
         }
         
-        order.setOrder_status(stnw.utils.OrderStatus.HUY_BOI_KHACH.getDisplayName());
+        order.setOrder_status(OrderStatus.HUY_BOI_KHACH.getDisplayName());
         order.setUpdatedDate(java.time.LocalDateTime.now());
         
         // Xử lý payment status khi khách hủy đơn
@@ -129,12 +131,12 @@ public class UserProfileServiceImpl implements UserProfileService {
         if ("Đã thanh toán".equals(currentPaymentStatus) && paymentMethod != null) {
             String method = paymentMethod.trim().toUpperCase();
             if ("ATM".equals(method) || "MOMO".equals(method) || "VNPAY".equals(method) || "ONLINE".equals(method)) {
-                order.setPayment_status(stnw.utils.PaymentStatus.HOAN_TIEN.getDisplayName());
+                order.setPayment_status(PaymentStatus.HOAN_TIEN.getDisplayName());
             } else {
-                order.setPayment_status(stnw.utils.PaymentStatus.CHUA_THANH_TOAN.getDisplayName());
+                order.setPayment_status(PaymentStatus.CHUA_THANH_TOAN.getDisplayName());
             }
         } else {
-            order.setPayment_status(stnw.utils.PaymentStatus.CHUA_THANH_TOAN.getDisplayName());
+            order.setPayment_status(PaymentStatus.CHUA_THANH_TOAN.getDisplayName());
         }
         
         orderDao.update(order);

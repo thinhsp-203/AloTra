@@ -12,7 +12,7 @@ import java.util.List;
 import stnw.model.User;
 import stnw.service.UserService;
 import stnw.service.impl.UserServiceImpl;
-import stnw.utils.Roles;
+import stnw.enums.Roles;
 
 @WebServlet(urlPatterns = "/admin/users")
 public class AdminUserListController extends HttpServlet {

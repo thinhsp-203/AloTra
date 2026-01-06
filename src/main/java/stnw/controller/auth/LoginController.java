@@ -72,7 +72,7 @@ public class LoginController extends HttpServlet {
             
             HttpSession session = req.getSession(true);
             session.setAttribute("currentUser", user);
-            session.setMaxInactiveInterval(30 * 60); // 30 minutes
+            session.setMaxInactiveInterval(5 * 60); // 5 minutes
 
             // Remember me functionality
             if ("on".equals(rememberMe)) {

@@ -1,4 +1,4 @@
-package stnw.utils;
+package stnw.enums;
 
 /**
  * Enum định nghĩa các trạng thái thanh toán

@@ -10,6 +10,8 @@ import stnw.model.CartItem;
 import stnw.model.Orders;
 import stnw.model.User;
 import stnw.model.Voucher;
+import stnw.enums.OrderStatus;
+import stnw.enums.PaymentStatus;
 import stnw.service.NotificationService;
 import stnw.service.OrderService;
 import stnw.service.ShippingFeeService;
@@ -102,11 +104,11 @@ public class OrderServiceImpl implements OrderService {
             // (COD: chưa thanh toán, VNPAY/ATM/MOMO: đã thanh toán)
             String paymentStatus;
             if ("COD".equalsIgnoreCase(paymentMethod)) {
-                paymentStatus = stnw.utils.PaymentStatus.CHUA_THANH_TOAN.getDisplayName();
+                paymentStatus = PaymentStatus.CHUA_THANH_TOAN.getDisplayName();
             } else {
-                paymentStatus = stnw.utils.PaymentStatus.DA_THANH_TOAN.getDisplayName();
+                paymentStatus = PaymentStatus.DA_THANH_TOAN.getDisplayName();
             }
-            String orderStatus = stnw.utils.OrderStatus.CHO_XAC_NHAN.getDisplayName();
+            String orderStatus = OrderStatus.CHO_XAC_NHAN.getDisplayName();
         
         // OrderDao.createOrder tự quản lý transaction
             Orders order = orderDao.createOrder(managedUser, fullname, phone, address, note,

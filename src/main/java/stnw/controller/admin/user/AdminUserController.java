@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import stnw.model.User;
+import stnw.enums.Roles;
 import stnw.service.AdminUserService;
 import stnw.service.impl.AdminUserServiceImpl;
 
@@ -54,7 +55,7 @@ public class AdminUserController extends HttpServlet {
                 }
                 
                 // Kiểm tra không cho phép chỉnh sửa admin
-                if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+                if (user.getRoleid() != null && user.getRoleid() == Roles.ADMIN) {
                     req.getSession().setAttribute("error", "Không thể chỉnh sửa thông tin quản trị viên!");
                     resp.sendRedirect(req.getContextPath() + "/admin/users");
                     return;
@@ -138,7 +139,7 @@ public class AdminUserController extends HttpServlet {
         } else {
             // Kiểm tra không cho phép chỉnh sửa admin
             User existingUser = userService.getUserById(userId);
-            if (existingUser != null && existingUser.getRoleid() != null && existingUser.getRoleid() == stnw.utils.Roles.ADMIN) {
+            if (existingUser != null && existingUser.getRoleid() != null && existingUser.getRoleid() == Roles.ADMIN) {
                 req.getSession().setAttribute("error", "Không thể chỉnh sửa thông tin quản trị viên!");
                 resp.sendRedirect(req.getContextPath() + "/admin/users");
                 return;
@@ -150,7 +151,7 @@ public class AdminUserController extends HttpServlet {
                 try {
                     roleId = Integer.parseInt(roleIdParam);
                     // Nếu user hiện tại là ADMIN, không cho phép đổi role
-                    if (existingUser != null && existingUser.getRoleid() != null && existingUser.getRoleid() == stnw.utils.Roles.ADMIN) {
+                    if (existingUser != null && existingUser.getRoleid() != null && existingUser.getRoleid() == Roles.ADMIN) {
                         roleId = null; // Giữ nguyên ADMIN
                     }
                     // Nếu không phải ADMIN, cho phép đổi role (CUSTOMER có thể lên STAFF hoặc ADMIN, STAFF có thể lên ADMIN)

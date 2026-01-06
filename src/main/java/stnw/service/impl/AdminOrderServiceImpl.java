@@ -4,9 +4,9 @@ import stnw.dao.OrderDao;
 import stnw.dao.impl.OrderDaoImpl;
 import stnw.model.*;
 import stnw.service.*;
-import stnw.utils.OrderStatus;
-import stnw.utils.PaymentStatus;
-import stnw.utils.Roles;
+import stnw.enums.OrderStatus;
+import stnw.enums.PaymentStatus;
+import stnw.enums.Roles;
 
 import java.time.LocalDateTime;
 import java.util.List;
