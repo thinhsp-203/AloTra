@@ -19,8 +19,8 @@ public class AdminDashboardController extends HttpServlet {
         HttpSession session = req.getSession(false);
         User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
         
-        // Allow both Admin (roleId=1) and Manager (roleId=2), consistent with AdminAuthorizationFilter
-        if (currentUser == null || (currentUser.getRoleid() != 1 && currentUser.getRoleid() != 2)) {
+        // Chỉ cho phép Admin (roleId=1) vào admin
+        if (currentUser == null || currentUser.getRoleid() == null || currentUser.getRoleid() != 1) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }

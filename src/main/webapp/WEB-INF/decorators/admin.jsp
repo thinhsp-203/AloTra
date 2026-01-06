@@ -182,7 +182,7 @@
 <li class="nav-item dropdown no-arrow">
     <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
         <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-            ${sessionScope.currentUser.username}
+            ${not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username}
         </span>
 
         <c:choose>

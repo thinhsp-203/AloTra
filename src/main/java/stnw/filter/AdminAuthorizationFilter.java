@@ -37,29 +37,13 @@ public class AdminAuthorizationFilter implements Filter {
             return;
         }
 
-        // CUSTOMER: cấm admin
-        if (user.getRoleid() == Roles.CUSTOMER) {
+        // CUSTOMER và STAFF: cấm admin (quyền ngang nhau)
+        if (user.getRoleid() == Roles.CUSTOMER || user.getRoleid() == Roles.STAFF) {
             resp.sendRedirect(req.getContextPath() + "/home?alert=access_denied");
             return;
         }
 
-        // STAFF: chặn chức năng nhạy cảm
-        if (user.getRoleid() == Roles.STAFF) {
-            String uri = req.getRequestURI();
-
-            if (uri.contains("/admin/users") ||
-                uri.contains("/admin/reports") ||
-                uri.contains("/admin/vouchers")) {
-
-                resp.sendError(HttpServletResponse.SC_FORBIDDEN,
-                        "Bạn không có quyền truy cập mục này!");
-                return;
-            }
-
-            chain.doFilter(request, response);
-            return;
-        }
-
-        resp.sendRedirect(req.getContextPath() + "/login");
+        // Role không xác định: chuyển về login
+        resp.sendRedirect(req.getContextPath() + "/login");;
     }
 }

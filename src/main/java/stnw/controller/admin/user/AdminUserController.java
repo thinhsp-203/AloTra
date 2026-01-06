@@ -144,21 +144,16 @@ public class AdminUserController extends HttpServlet {
                 return;
             }
             
-            // CẬP NHẬT - Cho phép thay đổi role nếu user có role là CUSTOMER (người dùng)
+            // CẬP NHẬT - Cho phép thay đổi role, nhưng ADMIN không thể đổi
             Integer roleId = null;
             if (roleIdParam != null && !roleIdParam.isEmpty()) {
                 try {
                     roleId = Integer.parseInt(roleIdParam);
-                    // Chỉ cho phép đổi role nếu user hiện tại là CUSTOMER
-                    if (existingUser != null && existingUser.getRoleid() != null && existingUser.getRoleid() == stnw.utils.Roles.CUSTOMER) {
-                        // Cho phép đổi sang STAFF hoặc giữ nguyên CUSTOMER
-                        if (roleId != stnw.utils.Roles.CUSTOMER && roleId != stnw.utils.Roles.STAFF) {
-                            roleId = null; // Không cho phép đổi sang role khác
-                        }
-                    } else {
-                        // Nếu không phải CUSTOMER, không cho phép đổi role
-                        roleId = null;
+                    // Nếu user hiện tại là ADMIN, không cho phép đổi role
+                    if (existingUser != null && existingUser.getRoleid() != null && existingUser.getRoleid() == stnw.utils.Roles.ADMIN) {
+                        roleId = null; // Giữ nguyên ADMIN
                     }
+                    // Nếu không phải ADMIN, cho phép đổi role (CUSTOMER có thể lên STAFF hoặc ADMIN, STAFF có thể lên ADMIN)
                 } catch (NumberFormatException e) {
                     roleId = null;
                 }

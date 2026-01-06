@@ -185,7 +185,7 @@
                        class="nav-link position-relative">
                         <i class="bi bi-cart fs-4"></i>
                         <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle" id="cart-item-count">
-                            ${not empty sessionScope.cart ? fn:length(sessionScope.cart.items) : 0}
+                            ${not empty sessionScope.CART ? fn:length(sessionScope.CART) : 0}
                         </span>
                     </a>
                     <c:if test="${not empty sessionScope.currentUser}">
@@ -232,39 +232,39 @@
                                                          alt="Avatar" 
                                                          class="rounded-circle" 
                                                          style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #dee2e6;"
-                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
                                                 </c:when>
                                                 <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'uploads/')}">
                                                     <img src="${pageContext.request.contextPath}/${sessionScope.currentUser.avatar}" 
                                                          alt="Avatar" 
                                                          class="rounded-circle" 
                                                          style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #dee2e6;"
-                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
                                                 </c:when>
                                                 <c:otherwise>
                                                     <img src="${pageContext.request.contextPath}/uploads/${sessionScope.currentUser.avatar}" 
                                                          alt="Avatar" 
                                                          class="rounded-circle" 
                                                          style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #dee2e6;"
-                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
                                                 </c:otherwise>
                                             </c:choose>
                                         </c:when>
                                         <c:otherwise>
                                             <div class="rounded-circle d-inline-flex align-items-center justify-content-center" 
                                                  style="width: 32px; height: 32px; background-color: #006633; color: white; font-size: 18px; font-weight: bold; border: 2px solid #dee2e6;">
-                                                ${fn:substring(sessionScope.currentUser.username, 0, 1)}
+                                                ${fn:substring(not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username, 0, 1)}
                                             </div>
                                         </c:otherwise>
                                     </c:choose>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><span class="dropdown-item-text">Chào, <strong>${sessionScope.currentUser.username}</strong></span></li>
+                                    <li><span class="dropdown-item-text">Chào, <strong>${not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username}</strong></span></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="${pageContext.request.contextPath}/user/profile"><i class="bi bi-person-fill me-2"></i> Hồ Sơ</a></li>
                                     <li><a class="dropdown-item" href="${pageContext.request.contextPath}/user/orders"><i class="bi bi-receipt me-2"></i> Đơn Mua</a></li>
                                     <li><a class="dropdown-item" href="${pageContext.request.contextPath}/user/wishlist"><i class="bi bi-heart me-2"></i> Yêu thích</a></li>
-                                    <c:if test="${sessionScope.currentUser.roleid == 1 || sessionScope.currentUser.roleid == 2}">
+                                    <c:if test="${sessionScope.currentUser.roleid == 1}">
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin/dashboard"><i class="bi bi-shield-lock me-2"></i> Quản Trị</a></li>
                                     </c:if>

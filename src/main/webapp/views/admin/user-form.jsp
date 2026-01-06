@@ -197,22 +197,25 @@
                                         </div>
                                     </c:when>
                                     <c:when test="${user.roleid == 2}">
-                                        <%-- Staff: Không thể sửa --%>
-                                        <div class="form-control form-control-lg" style="font-size: 1.1rem; padding: 0.75rem 1rem; height: auto; background-color: #e9ecef; cursor: not-allowed;">
-                                            Nhân viên
-                                            <small class="text-muted d-block mt-1">
-                                                <i class="fas fa-info-circle"></i> Vai trò không thể thay đổi
-                                            </small>
-                                        </div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <%-- Customer: Có thể sửa --%>
+                                        <%-- Staff: Có thể đổi lên Admin hoặc hạ xuống Khách hàng --%>
                                         <select class="form-select form-select-lg" name="roleId" style="font-size: 1.1rem;">
                                             <option value="3" ${user.roleid == 3 ? 'selected' : ''}>Khách hàng</option>
                                             <option value="2" ${user.roleid == 2 ? 'selected' : ''}>Nhân viên</option>
+                                            <option value="1" ${user.roleid == 1 ? 'selected' : ''}>Quản trị viên</option>
                                         </select>
                                         <small class="text-muted d-block mt-1">
-                                            <i class="fas fa-info-circle"></i> Có thể thay đổi vai trò cho người dùng
+                                            <i class="fas fa-info-circle"></i> Có thể nâng cấp lên Quản trị viên hoặc hạ xuống Khách hàng
+                                        </small>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <%-- Customer: Có thể đổi lên Staff hoặc Admin --%>
+                                        <select class="form-select form-select-lg" name="roleId" style="font-size: 1.1rem;">
+                                            <option value="3" ${user.roleid == 3 ? 'selected' : ''}>Khách hàng</option>
+                                            <option value="2" ${user.roleid == 2 ? 'selected' : ''}>Nhân viên</option>
+                                            <option value="1" ${user.roleid == 1 ? 'selected' : ''}>Quản trị viên</option>
+                                        </select>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-info-circle"></i> Có thể nâng cấp lên Nhân viên hoặc Quản trị viên
                                         </small>
                                     </c:otherwise>
                                 </c:choose>
