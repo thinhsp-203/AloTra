@@ -180,22 +180,42 @@
                             </c:if>
                         </div>
                         
-                        <%-- Role không thể chỉnh sửa, mặc định là User (roleId = 3) --%>
+                        <%-- Role: Chỉ cho phép sửa nếu user có role là người dùng (CUSTOMER = 3) --%>
                         <c:if test="${not empty user}">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold mb-2" style="font-size: 1.1rem;">
                                     <i class="fas fa-user-tag text-primary" style="margin-right: 10px;"></i>Vai trò
                                 </label>
-                                <div class="form-control form-control-lg" style="font-size: 1.1rem; padding: 0.75rem 1rem; height: auto; background-color: #e9ecef; cursor: not-allowed;">
-                                    <c:choose>
-                                        <c:when test="${user.roleid == 1}">Quản trị viên</c:when>
-                                        <c:when test="${user.roleid == 2}">Nhân viên</c:when>
-                                        <c:otherwise>Khách hàng</c:otherwise>
-                                    </c:choose>
-                                    <small class="text-muted d-block mt-1">
-                                        <i class="fas fa-info-circle"></i> Vai trò không thể thay đổi
-                                    </small>
-                                </div>
+                                <c:choose>
+                                    <c:when test="${user.roleid == 1}">
+                                        <%-- Admin: Không thể sửa --%>
+                                        <div class="form-control form-control-lg" style="font-size: 1.1rem; padding: 0.75rem 1rem; height: auto; background-color: #e9ecef; cursor: not-allowed;">
+                                            Quản trị viên
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="fas fa-info-circle"></i> Vai trò không thể thay đổi
+                                            </small>
+                                        </div>
+                                    </c:when>
+                                    <c:when test="${user.roleid == 2}">
+                                        <%-- Staff: Không thể sửa --%>
+                                        <div class="form-control form-control-lg" style="font-size: 1.1rem; padding: 0.75rem 1rem; height: auto; background-color: #e9ecef; cursor: not-allowed;">
+                                            Nhân viên
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="fas fa-info-circle"></i> Vai trò không thể thay đổi
+                                            </small>
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <%-- Customer: Có thể sửa --%>
+                                        <select class="form-select form-select-lg" name="roleId" style="font-size: 1.1rem;">
+                                            <option value="3" ${user.roleid == 3 ? 'selected' : ''}>Khách hàng</option>
+                                            <option value="2" ${user.roleid == 2 ? 'selected' : ''}>Nhân viên</option>
+                                        </select>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-info-circle"></i> Có thể thay đổi vai trò cho người dùng
+                                        </small>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </c:if>
                         

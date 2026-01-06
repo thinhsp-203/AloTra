@@ -121,7 +121,7 @@
                     <div class="form-text">Bỏ trống nếu không yêu cầu giá trị đơn hàng tối thiểu</div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-6" id="max_discount_container">
                     <label class="form-label fw-semibold">
                         <i class="fas fa-tag" style="margin-right: 10px;"></i>Giảm giá tối đa
                     </label>
@@ -228,12 +228,19 @@ function getSelectedDiscountType() {
 function updateDiscountValueValidation() {
     const discountType = getSelectedDiscountType();
     const discountValue = parseFloat(discountValueInput.value);
+    const maxDiscountContainer = document.getElementById('max_discount_container');
     
     // Reset validation
     discountValueInput.classList.remove('is-invalid');
     discountValueError.textContent = '';
     
+    // Ẩn/hiện field "Giảm giá tối đa" dựa trên loại giảm giá (giữ khoảng trống)
     if (discountType === 'PERCENT') {
+        // Hiển thị field "Giảm giá tối đa" khi là giảm theo %
+        if (maxDiscountContainer) {
+            maxDiscountContainer.style.visibility = 'visible';
+            maxDiscountContainer.style.opacity = '1';
+        }
         discountValueInput.setAttribute('max', '100');
         discountValueHelp.innerHTML = '<i class="fas fa-info-circle" style="margin-right: 10px;"></i>Nhập % (0-100, VD: 10 = 10%)';
         if (discountValueInput.value && (isNaN(discountValue) || discountValue < 0 || discountValue > 100)) {
@@ -241,6 +248,11 @@ function updateDiscountValueValidation() {
             discountValueError.textContent = 'Giá trị giảm giá theo % phải từ 0 đến 100';
         }
     } else if (discountType === 'AMOUNT') {
+        // Ẩn field "Giảm giá tối đa" khi là giảm số tiền nhưng giữ khoảng trống
+        if (maxDiscountContainer) {
+            maxDiscountContainer.style.visibility = 'hidden';
+            maxDiscountContainer.style.opacity = '0';
+        }
         discountValueInput.removeAttribute('max');
         discountValueHelp.innerHTML = '<i class="fas fa-info-circle" style="margin-right: 10px;"></i>Nhập số tiền (VD: 10000 = 10.000₫)';
         if (discountValueInput.value && (isNaN(discountValue) || discountValue < 0)) {
@@ -259,7 +271,7 @@ if (discountTypeRadios.length > 0 && discountValueInput) {
     discountValueInput.addEventListener('input', updateDiscountValueValidation);
     discountValueInput.addEventListener('blur', updateDiscountValueValidation);
     
-    // Initial validation
+    // Initial validation and visibility
     updateDiscountValueValidation();
     
     // Form submission validation

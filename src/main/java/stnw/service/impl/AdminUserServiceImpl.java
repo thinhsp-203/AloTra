@@ -81,6 +81,14 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setAddress(address);
         user.setIsActive(isActive);
         
+        // Cập nhật role nếu được cung cấp và user hiện tại là CUSTOMER
+        if (roleId != null && user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.CUSTOMER) {
+            // Chỉ cho phép đổi sang STAFF hoặc giữ nguyên CUSTOMER
+            if (roleId == stnw.utils.Roles.CUSTOMER || roleId == stnw.utils.Roles.STAFF) {
+                user.setRoleid(roleId);
+            }
+        }
+        
         if (newPassword != null && !newPassword.isEmpty()) {
             user.setPassword(PasswordUtils.hashPassword(newPassword));
         }

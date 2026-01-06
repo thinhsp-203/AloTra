@@ -370,8 +370,20 @@
                             <i class="bi bi-tag"></i> Mã giảm giá
                         </div>
                         
+                        <!-- Checkbox để sử dụng voucher -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       id="use-voucher-checkbox" 
+                                       style="width: 20px; height: 20px; margin-top: 0.3rem;">
+                                <label class="form-check-label fw-semibold" for="use-voucher-checkbox" style="margin-left: 10px; font-size: 1rem;">
+                                    Sử dụng mã giảm giá
+                                </label>
+                            </div>
+                        </div>
+                        
                         <!-- Input để nhập mã thủ công (nếu có) -->
-                        <div class="voucher-input-group mb-3">
+                        <div class="voucher-input-group mb-3" id="voucher-input-group" style="display: none;">
                             <input class="form-control form-control-sm" 
                                    name="voucher" 
                                    id="voucher-code-input" 
@@ -775,6 +787,11 @@ document.addEventListener("DOMContentLoaded", function() {
         if (element.classList.contains('selected')) {
             // Bỏ chọn voucher này
             element.classList.remove('selected');
+            // Bỏ tick checkbox
+            const checkbox = document.getElementById('use-voucher-checkbox');
+            if (checkbox) {
+                checkbox.checked = false;
+            }
             // Xóa mã voucher khỏi input
             document.getElementById('voucher-code-input').value = '';
             // Reset discount và total
@@ -784,19 +801,25 @@ document.addEventListener("DOMContentLoaded", function() {
             const msgEl = document.getElementById('voucher-message');
             
             // Reset discount
-            discountEl.textContent = '0₫';
-            discountEl.parentElement.classList.remove('text-danger');
-            discountEl.parentElement.classList.add('text-success');
+            if (discountEl) {
+                discountEl.textContent = '0₫';
+                discountEl.parentElement.classList.remove('text-danger');
+                discountEl.parentElement.classList.add('text-success');
+            }
             
             // Tính lại tổng tiền (subtotal + shipping)
-            const subtotal = parseFloat(subtotalEl.textContent.replace(/[^\d]/g, '')) || 0;
-            const shippingFee = getCurrentShippingFee();
-            const finalTotal = subtotal + shippingFee;
-            totalEl.textContent = new Intl.NumberFormat('vi-VN').format(finalTotal) + '₫';
+            if (subtotalEl && totalEl) {
+                const subtotal = parseFloat(subtotalEl.textContent.replace(/[^\d]/g, '')) || 0;
+                const shippingFee = getCurrentShippingFee();
+                const finalTotal = subtotal + shippingFee;
+                totalEl.textContent = new Intl.NumberFormat('vi-VN').format(finalTotal) + '₫';
+            }
             
             // Xóa message
-            msgEl.className = 'voucher-message';
-            msgEl.textContent = '';
+            if (msgEl) {
+                msgEl.className = 'voucher-message';
+                msgEl.textContent = '';
+            }
             return;
         }
         
@@ -807,6 +830,12 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Chọn voucher này
         element.classList.add('selected');
+        
+        // Tick checkbox
+        const checkbox = document.getElementById('use-voucher-checkbox');
+        if (checkbox) {
+            checkbox.checked = true;
+        }
         
         // Điền mã vào input
         document.getElementById('voucher-code-input').value = code;
@@ -924,6 +953,12 @@ document.addEventListener("DOMContentLoaded", function() {
                         item.classList.add('selected');
                     }
                 });
+                
+                // Đảm bảo checkbox được tick
+                const checkbox = document.getElementById('use-voucher-checkbox');
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
             } else {
                 msgEl.className = 'voucher-message text-danger';
                 msgEl.innerHTML = '<i class="bi bi-x-circle-fill"></i> ' + data.message;
@@ -941,6 +976,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 document.querySelectorAll('.voucher-item').forEach(item => {
                     item.classList.remove('selected');
                 });
+                
+                // Bỏ tick checkbox
+                const checkbox = document.getElementById('use-voucher-checkbox');
+                if (checkbox) {
+                    checkbox.checked = false;
+                }
             }
         })
         .catch(error => {

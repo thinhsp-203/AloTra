@@ -1,11 +1,16 @@
 package stnw.service.impl;
 
+import stnw.dao.CategoryDao;
 import stnw.dao.ProductDao;
 import stnw.dao.ProductQueryRepository;
 import stnw.dao.ProductSizeDao;
+import stnw.dao.ToppingDao;
+import stnw.dao.impl.CategoryDaoImpl;
 import stnw.dao.impl.ProductDaoImpl;
 import stnw.dao.impl.ProductQueryRepositoryImpl;
 import stnw.dao.impl.ProductSizeDaoImpl;
+import stnw.dao.impl.ToppingDaoImpl;
+import stnw.model.Category;
 import stnw.model.Product;
 import stnw.model.ProductSize;
 import stnw.model.Topping;
@@ -24,6 +29,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private static final BigDecimal SIZE_L_PRICE = BigDecimal.valueOf(10000); // +10,000 VND
 
     private final ProductDao productDao = new ProductDaoImpl();
+    private final ToppingDao toppingDao = new ToppingDaoImpl();
+    private final CategoryDao categoryDao = new CategoryDaoImpl();
 
     @Override
     public List<Product> findProducts(Integer cateId, String keyword, String sortBy, String priceRange, int offset, int limit) {
@@ -100,8 +107,27 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     @Override
     public List<Topping> getAvailableToppingsForCategory(String categoryName) {
-        // TODO: Implement logic to get toppings for a specific category
-        // For now, return all active toppings
-        return List.of();
+        // Chỉ trả về topping nếu category là thức uống (isDrink = true)
+        if (categoryName == null || categoryName.isEmpty()) {
+            return List.of();
+        }
+        
+        // Lấy category để kiểm tra isDrink
+        Category category = categoryDao.findByName(categoryName);
+        if (category == null) {
+            return List.of();
+        }
+        
+        // Chỉ trả về topping nếu category có isDrink = true
+        if (!Boolean.TRUE.equals(category.getIsDrink())) {
+            return List.of();
+        }
+        
+        // Lấy tất cả topping đang available (isAvailable = true)
+        List<Topping> allToppings = toppingDao.findAll();
+        // Filter chỉ lấy topping có isAvailable = true
+        return allToppings.stream()
+                .filter(t -> t.getIsAvailable() != null && t.getIsAvailable())
+                .toList();
     }
 }

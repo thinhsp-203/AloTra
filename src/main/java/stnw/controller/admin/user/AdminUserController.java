@@ -126,6 +126,7 @@ public class AdminUserController extends HttpServlet {
         String phone = req.getParameter("phone");
         String address = req.getParameter("address");
         String password = req.getParameter("password");
+        String roleIdParam = req.getParameter("roleId");
         
         boolean isActive = "on".equals(req.getParameter("isActive"));
         
@@ -143,10 +144,28 @@ public class AdminUserController extends HttpServlet {
                 return;
             }
             
-            // CẬP NHẬT - Không cho phép thay đổi role, giữ nguyên role hiện tại
-            // Truyền null cho roleId để service giữ nguyên role hiện tại
+            // CẬP NHẬT - Cho phép thay đổi role nếu user có role là CUSTOMER (người dùng)
+            Integer roleId = null;
+            if (roleIdParam != null && !roleIdParam.isEmpty()) {
+                try {
+                    roleId = Integer.parseInt(roleIdParam);
+                    // Chỉ cho phép đổi role nếu user hiện tại là CUSTOMER
+                    if (existingUser != null && existingUser.getRoleid() != null && existingUser.getRoleid() == stnw.utils.Roles.CUSTOMER) {
+                        // Cho phép đổi sang STAFF hoặc giữ nguyên CUSTOMER
+                        if (roleId != stnw.utils.Roles.CUSTOMER && roleId != stnw.utils.Roles.STAFF) {
+                            roleId = null; // Không cho phép đổi sang role khác
+                        }
+                    } else {
+                        // Nếu không phải CUSTOMER, không cho phép đổi role
+                        roleId = null;
+                    }
+                } catch (NumberFormatException e) {
+                    roleId = null;
+                }
+            }
+            
             userService.updateUser(userId, email, fullname, phone, address, 
-                                  null, isActive, password); // null = không thay đổi role
+                                  roleId, isActive, password);
             req.getSession().setAttribute("success", "Đã cập nhật thông tin người dùng!");
         }
         

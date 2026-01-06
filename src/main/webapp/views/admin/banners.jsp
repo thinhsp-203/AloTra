@@ -168,10 +168,9 @@ document.getElementById('logoUrl')?.addEventListener('input', function(e) {
                                                class="btn btn-sm btn-outline-primary" title="Sửa">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <form action="${pageContext.request.contextPath}/admin/banners" method="POST" 
+                                            <form action="${pageContext.request.contextPath}/admin/banners/delete" method="POST" 
                                                   style="display: inline;" 
                                                   onsubmit="return confirm('Xác nhận xóa banner này?')">
-                                                <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="id" value="${b.id}">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
                                                     <i class="fas fa-trash"></i>

@@ -429,16 +429,19 @@ function showLoginRequiredModal() {
                 </div>
             `).join('');
 
-            let toppingsHtml = data.toppings.map(t => `
-                 <div class="d-flex justify-content-between align-items-center mb-3 option-item">
-                    <div>${escapeHtml(t.name)} <br> <small class="text-primary fw-bold">+${currencyFormatter.format(t.price)}</small></div>
-                    <div class="input-group" style="width: 120px;">
-                       <button class="btn btn-outline-secondary" type="button" onclick="updateDetailToppingQty(${t.id}, -1)">-</button>
-                       <input type="text" class="form-control text-center" value="0" readonly id="detail-topping-qty-${t.id}" data-topping-id="${t.id}" data-price="${t.price}">
-                       <button class="btn btn-outline-secondary" type="button" onclick="updateDetailToppingQty(${t.id}, 1)">+</button>
+            let toppingsHtml = '';
+            if (data.toppings && Array.isArray(data.toppings) && data.toppings.length > 0) {
+                toppingsHtml = data.toppings.map(t => `
+                     <div class="d-flex justify-content-between align-items-center mb-3 option-item">
+                        <div>${escapeHtml(t.name)} <br> <small class="text-primary fw-bold">+${currencyFormatter.format(t.price)}</small></div>
+                        <div class="input-group" style="width: 120px;">
+                           <button class="btn btn-outline-secondary" type="button" onclick="updateDetailToppingQty(${t.id}, -1)">-</button>
+                           <input type="text" class="form-control text-center" value="0" readonly id="detail-topping-qty-${t.id}" data-topping-id="${t.id}" data-price="${t.price}">
+                           <button class="btn btn-outline-secondary" type="button" onclick="updateDetailToppingQty(${t.id}, 1)">+</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
             
             const createOptionGroup = (title, name, options) => `
                 <div class="mb-4 option-group">
