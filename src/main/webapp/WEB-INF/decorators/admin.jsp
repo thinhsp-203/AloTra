@@ -157,12 +157,6 @@
             </a>
         </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/payment-config">
-                <i class="fas fa-fw fa-credit-card"></i>
-                <span>Cấu hình TT</span>
-            </a>
-        </li>
     </c:if>
 
 </ul>

@@ -35,6 +35,15 @@ public class LoginController extends HttpServlet {
             req.setAttribute("alert", alertParam);
         }
         
+        // Lưu redirect URL vào session nếu có
+        String redirectUrl = req.getParameter("redirect");
+        if (redirectUrl != null && !redirectUrl.isEmpty()) {
+            if (session == null) {
+                session = req.getSession(true);
+            }
+            session.setAttribute("redirectAfterLogin", redirectUrl);
+        }
+        
         req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
     }
 

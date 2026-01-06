@@ -49,8 +49,7 @@ public class AdminAuthorizationFilter implements Filter {
 
             if (uri.contains("/admin/users") ||
                 uri.contains("/admin/reports") ||
-                uri.contains("/admin/vouchers") ||
-                uri.contains("/admin/payment-config")) {
+                uri.contains("/admin/vouchers")) {
 
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN,
                         "Bạn không có quyền truy cập mục này!");

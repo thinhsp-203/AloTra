@@ -82,14 +82,11 @@
             </div>
             
             <p class="text-muted">
-                <span class="me-3">
+                <span>
                     <i class="bi bi-tag"></i> Danh mục: 
                     <a href="${pageContext.request.contextPath}/products?cate=${p.category.id}">
                         ${p.category.name}
                     </a>
-                </span>
-                <span>
-                    <i class="bi bi-eye"></i> Lượt xem: ${p.views}
                 </span>
             </p>
             

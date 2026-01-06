@@ -21,8 +21,24 @@ function showLoginRequiredModal() {
         xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 300) {
                 try {
-                    callback(null, JSON.parse(xhr.responseText));
+                    const data = JSON.parse(xhr.responseText);
+                    callback(null, data);
                 } catch (e) {
+                    // Nếu parse lỗi, vẫn thử kiểm tra xem có phải là response redirect không
+                    const responseText = xhr.responseText;
+                    try {
+                        // Thử parse lại một lần nữa hoặc kiểm tra text
+                        if (responseText.includes('"redirect"')) {
+                            // Có thể là JSON không hợp lệ nhưng có chứa redirect
+                            const match = responseText.match(/"redirect"\s*:\s*"([^"]+)"/);
+                            if (match) {
+                                callback(null, { redirect: match[1] });
+                                return;
+                            }
+                        }
+                    } catch (e2) {
+                        // Bỏ qua
+                    }
                     callback(e);
                 }
             } else {
@@ -299,25 +315,92 @@ function showLoginRequiredModal() {
 
     // --- CART LOGIC ---
     function handleAddToCartRequest(params) {
-        post(contextPath + '/cart/add', params, (err, data) => {
-            if (err) { 
-                showToast('Đã có lỗi xảy ra.', true); 
+        fetch(contextPath + '/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            body: params
+        })
+        .then(resp => {
+            // Kiểm tra Content-Type trước
+            const contentType = resp.headers.get('content-type');
+            
+            // Nếu response là HTML (filter redirect), chuyển hướng ngay
+            if (contentType && contentType.includes('text/html')) {
+                // Filter đã redirect, chuyển hướng đến login
+                const currentUrl = window.location.href;
+                window.location.href = contextPath + '/login?redirect=' + encodeURIComponent(currentUrl);
+                return null; // Dừng xử lý
+            }
+            
+            // Nếu là JSON, parse bình thường
+            if (contentType && contentType.includes('application/json')) {
+                return resp.json().then(data => ({ status: resp.status, data: data }));
+            }
+            
+            // Nếu không rõ type, thử parse JSON nhưng catch lỗi
+            return resp.text().then(text => {
+                // Nếu bắt đầu bằng <, đó là HTML
+                if (text.trim().startsWith('<')) {
+                    const currentUrl = window.location.href;
+                    window.location.href = contextPath + '/login?redirect=' + encodeURIComponent(currentUrl);
+                    return null;
+                }
+                // Thử parse JSON
+                try {
+                    return { status: resp.status, data: JSON.parse(text) };
+                } catch (e) {
+                    // Không phải JSON, có thể là HTML redirect
+                    const currentUrl = window.location.href;
+                    window.location.href = contextPath + '/login?redirect=' + encodeURIComponent(currentUrl);
+                    return null;
+                }
+            });
+        })
+        .then(result => {
+            // Nếu đã redirect (result === null), không xử lý tiếp
+            if (result === null) {
+                return;
+            }
+            
+            const data = result.data;
+            
+            // QUAN TRỌNG: Kiểm tra redirect TRƯỚC TIÊN
+            if (data && typeof data === 'object' && data.redirect) { 
+                // Chuyển hướng đến trang đăng nhập với URL hiện tại để quay lại sau khi đăng nhập
+                const currentUrl = window.location.href;
+                window.location.href = contextPath + '/login?redirect=' + encodeURIComponent(currentUrl);
                 return; 
             }
-            if (data && data.redirect) { 
-                // Thay vì redirect ngay, hiển thị modal yêu cầu đăng nhập
-                showLoginRequiredModal();
-                return; 
+            
+            // Nếu không có data
+            if (!data || typeof data !== 'object') {
+                showToast('Không nhận được phản hồi từ server.', true);
+                return;
             }
-            if (data && data.ok) {
+            
+            // Xử lý response thành công
+            if (data.ok === true) {
                 showToast(`Đã thêm "${data.newItem.productName}" vào giỏ!`);
                 const cartCountEl = document.getElementById('cart-item-count');
                 if (cartCountEl) {
                     cartCountEl.textContent = data.cartSize;
                 }
             } else {
-                showToast((data && data.message) || 'Thêm giỏ hàng thất bại', true);
+                // Response có ok:false - có thể là lỗi từ server
+                showToast((data.message) || 'Thêm giỏ hàng thất bại', true);
             }
+        })
+        .catch(error => {
+            // Nếu lỗi parse JSON (thường là HTML response), redirect đến login
+            if (error.message && error.message.includes('JSON')) {
+                const currentUrl = window.location.href;
+                window.location.href = contextPath + '/login?redirect=' + encodeURIComponent(currentUrl);
+                return;
+            }
+            console.error('Cart add error:', error);
+            showToast('Đã có lỗi xảy ra.', true);
         });
     }
 
@@ -986,11 +1069,33 @@ document.addEventListener("DOMContentLoaded", function() {
                     'Accept': 'application/json'
                 }
             })
-            .then(resp => resp.json().then(data => ({ status: resp.status, data: data })))
+            .then(resp => {
+                // Kiểm tra status code 401 TRƯỚC khi parse JSON - đây là trường hợp quan trọng nhất
+                if (resp.status === 401) {
+                    const currentUrl = window.location.href;
+                    window.location.href = contextPath + '/login?redirect=' + encodeURIComponent(currentUrl);
+                    throw new Error('UNAUTHORIZED'); // Dừng promise chain
+                }
+                
+                // Nếu không phải 401, parse JSON
+                if (!resp.ok) {
+                    // Nếu status không OK (nhưng không phải 401), vẫn thử parse JSON
+                    return resp.json().then(data => ({ status: resp.status, data: data }))
+                        .catch(() => ({ status: resp.status, data: { status: 'error', message: 'Lỗi máy chủ' } }));
+                }
+                
+                return resp.json().then(data => ({ status: resp.status, data: data }));
+            })
             .then(result => {
-                // Kiểm tra status code 401 hoặc error về đăng nhập
-                if (result.status === 401 || (result.data.status === 'error' && result.data.message && result.data.message.includes('đăng nhập'))) {
-                    showLoginRequiredModal();
+                // Kiểm tra error về đăng nhập trong response (fallback nếu status code không phải 401)
+                if (result && result.data && result.data.status === 'error' && result.data.message && result.data.message.includes('đăng nhập')) {
+                    const currentUrl = window.location.href;
+                    window.location.href = contextPath + '/login?redirect=' + encodeURIComponent(currentUrl);
+                    return;
+                }
+                
+                // Nếu không có result (đã redirect ở trên), không xử lý tiếp
+                if (!result || !result.data) {
                     return;
                 }
                 
@@ -1026,8 +1131,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 }
             })
-            .catch(() => {
-                // Silently fail - wishlist toggle is optional
+            .catch((error) => {
+                // Nếu là UNAUTHORIZED, đã redirect rồi, không cần làm gì
+                if (error.message === 'UNAUTHORIZED') {
+                    return;
+                }
+                // Các lỗi khác (network, parse, etc.)
+                console.error('Wishlist error:', error);
             });
         }
     });
