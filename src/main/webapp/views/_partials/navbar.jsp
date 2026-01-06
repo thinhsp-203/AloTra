@@ -235,8 +235,40 @@ try (var em = JpaUtil.em()) {
                         </c:when>
                         <c:otherwise>
                             <div class="nav-item dropdown">
-                                <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-person-circle fs-4"></i>
+                                <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" style="padding: 0.25rem 0.5rem;">
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.currentUser.avatar}">
+                                            <c:choose>
+                                                <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'http')}">
+                                                    <img src="${sessionScope.currentUser.avatar}" 
+                                                         alt="Avatar" 
+                                                         class="rounded-circle" 
+                                                         style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #dee2e6;"
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
+                                                </c:when>
+                                                <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'uploads/')}">
+                                                    <img src="${pageContext.request.contextPath}/${sessionScope.currentUser.avatar}" 
+                                                         alt="Avatar" 
+                                                         class="rounded-circle" 
+                                                         style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #dee2e6;"
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <img src="${pageContext.request.contextPath}/uploads/${sessionScope.currentUser.avatar}" 
+                                                         alt="Avatar" 
+                                                         class="rounded-circle" 
+                                                         style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #dee2e6;"
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                                 style="width: 32px; height: 32px; background-color: #006633; color: white; font-size: 18px; font-weight: bold; border: 2px solid #dee2e6;">
+                                                ${fn:substring(sessionScope.currentUser.username, 0, 1)}
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><span class="dropdown-item-text">Chào, <strong>${sessionScope.currentUser.username}</strong></span></li>

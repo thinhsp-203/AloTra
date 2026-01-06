@@ -248,6 +248,31 @@
                                                 </c:forEach>
                                             </tbody>
                                             <tfoot class="table-light">
+                                                <%-- Sử dụng helper methods từ Orders model --%>
+                                                <c:set var="subtotal" value="${order.subtotal}"/>
+                                                <c:set var="estimatedShipping" value="${order.estimatedShippingFee}"/>
+                                                <c:set var="discountAmount" value="${order.estimatedDiscount}"/>
+                                                
+                                                <tr>
+                                                    <th colspan="5" class="text-end">Tổng sản phẩm:</th>
+                                                    <th class="text-end">
+                                                        <fmt:formatNumber value="${subtotal}" pattern="#,##0₫"/>
+                                                    </th>
+                                                </tr>
+                                                <c:if test="${discountAmount != null && discountAmount > 0}">
+                                                    <tr>
+                                                        <th colspan="5" class="text-end text-danger">Giảm giá:</th>
+                                                        <th class="text-end text-danger">
+                                                            -<fmt:formatNumber value="${discountAmount}" pattern="#,##0₫"/>
+                                                        </th>
+                                                    </tr>
+                                                </c:if>
+                                                <tr>
+                                                    <th colspan="5" class="text-end">Phí vận chuyển:</th>
+                                                    <th class="text-end">
+                                                        <fmt:formatNumber value="${estimatedShipping}" pattern="#,##0₫"/>
+                                                    </th>
+                                                </tr>
                                                 <tr>
                                                     <th colspan="5" class="text-end">Tổng cộng:</th>
                                                     <th class="text-end text-primary fs-5">

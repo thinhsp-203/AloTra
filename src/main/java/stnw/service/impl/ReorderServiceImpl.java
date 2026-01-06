@@ -20,10 +20,24 @@ public class ReorderServiceImpl implements ReorderService {
     public Map<String, Integer> reorder(int userId, int orderId, List<CartItem> currentCart) {
         EntityManager em = JpaUtil.em();
         try {
-            Orders order = em.find(Orders.class, orderId);
+            // Fetch order với orderDetails và products
+            Orders order;
+            try {
+                order = em.createQuery(
+                    "SELECT o FROM Orders o " +
+                    "LEFT JOIN FETCH o.orderDetails od " +
+                    "LEFT JOIN FETCH od.product p " +
+                    "WHERE o.order_id = :orderId",
+                    Orders.class)
+                    .setParameter("orderId", orderId)
+                    .getSingleResult();
+            } catch (jakarta.persistence.NoResultException e) {
+                throw new IllegalArgumentException("Đơn hàng không tồn tại!");
+            }
             
-            if (order == null || !order.getUser().getId().equals(userId)) {
-                throw new IllegalArgumentException("Đơn hàng không tồn tại hoặc không thuộc về bạn!");
+            // Kiểm tra quyền sở hữu
+            if (!order.getUser().getId().equals(userId)) {
+                throw new IllegalArgumentException("Đơn hàng không thuộc về bạn!");
             }
             
             int addedItems = 0;

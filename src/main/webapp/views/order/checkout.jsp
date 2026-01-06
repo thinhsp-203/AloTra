@@ -771,6 +771,35 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         
+        // Nếu click vào voucher đã chọn, bỏ chọn nó
+        if (element.classList.contains('selected')) {
+            // Bỏ chọn voucher này
+            element.classList.remove('selected');
+            // Xóa mã voucher khỏi input
+            document.getElementById('voucher-code-input').value = '';
+            // Reset discount và total
+            const discountEl = document.getElementById('discount-display');
+            const totalEl = document.getElementById('grand-total-display');
+            const subtotalEl = document.getElementById('subtotal-display');
+            const msgEl = document.getElementById('voucher-message');
+            
+            // Reset discount
+            discountEl.textContent = '0₫';
+            discountEl.parentElement.classList.remove('text-danger');
+            discountEl.parentElement.classList.add('text-success');
+            
+            // Tính lại tổng tiền (subtotal + shipping)
+            const subtotal = parseFloat(subtotalEl.textContent.replace(/[^\d]/g, '')) || 0;
+            const shippingFee = getCurrentShippingFee();
+            const finalTotal = subtotal + shippingFee;
+            totalEl.textContent = new Intl.NumberFormat('vi-VN').format(finalTotal) + '₫';
+            
+            // Xóa message
+            msgEl.className = 'voucher-message';
+            msgEl.textContent = '';
+            return;
+        }
+        
         // Bỏ chọn các voucher khác
         document.querySelectorAll('.voucher-item').forEach(item => {
             item.classList.remove('selected');
@@ -888,8 +917,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 const finalTotalFormatted = new Intl.NumberFormat('vi-VN').format(finalTotal);
                 totalEl.textContent = finalTotalFormatted + '₫';
                 
-                // Đánh dấu voucher đã chọn trong danh sách
+                // Đánh dấu voucher đã chọn trong danh sách (bỏ chọn các voucher khác trước)
                 document.querySelectorAll('.voucher-item').forEach(item => {
+                    item.classList.remove('selected');
                     if (item.dataset.code === code) {
                         item.classList.add('selected');
                     }

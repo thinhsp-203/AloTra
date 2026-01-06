@@ -65,6 +65,11 @@ public class AdminUserServiceImpl implements AdminUserService {
                 throw new IllegalArgumentException("User không tồn tại!");
             }
             
+            // Kiểm tra không cho phép chỉnh sửa admin
+            if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+                throw new IllegalArgumentException("Không thể chỉnh sửa thông tin quản trị viên!");
+            }
+            
             // 2. KIỂM TRA TRÙNG (chỉ nếu thay đổi)
             if (!user.getEmail().equals(email) || !user.getPhone().equals(phone)) {
                 checkDuplicates(em, userId, null, email, phone);

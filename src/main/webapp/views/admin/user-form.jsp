@@ -80,10 +80,19 @@
           </div>
             <div class="card-body">
   
-              <form method="post" action="${pageContext.request.contextPath}/admin/users/save">
+              <c:set var="isAdmin" value="${not empty user and user.roleid != null and user.roleid == 1}"/>
+              <c:if test="${isAdmin}">
+                  <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+                      <i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i>
+                      <strong>Cảnh báo!</strong> Không thể chỉnh sửa thông tin quản trị viên. 
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+              </c:if>
+              
+              <form method="post" action="${pageContext.request.contextPath}/admin/users/save" ${isAdmin ? 'onsubmit="return false;"' : ''}>
                     <input type="hidden" name="id" value="${user.id}">
                     
-                    <div class="row g-3">
+                    <div class="row g-3" ${isAdmin ? 'style="opacity: 0.6; pointer-events: none;"' : ''}>
                    
      <div class="col-md-6">
                             <label class="form-label fw-semibold mb-2">

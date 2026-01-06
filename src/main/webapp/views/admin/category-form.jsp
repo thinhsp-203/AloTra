@@ -1,13 +1,23 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <%-- Header --%>
 <div class="d-flex justify-content-between align-items-center mb-4" style="margin-right: 20px;">
     <div>
         <h1 class="h3 mb-1 text-gray-800">
-            <i class="fas fa-tags text-primary" style="margin-right: 10px;"></i>Thêm danh mục mới
+            <i class="fas fa-tags text-primary" style="margin-right: 10px;"></i>
+            <c:choose>
+                <c:when test="${not empty category}">Chỉnh sửa danh mục</c:when>
+                <c:otherwise>Thêm danh mục mới</c:otherwise>
+            </c:choose>
         </h1>
-        <p class="text-muted mb-0">Thêm danh mục sản phẩm mới vào hệ thống</p>
+        <p class="text-muted mb-0">
+            <c:choose>
+                <c:when test="${not empty category}">Cập nhật thông tin danh mục sản phẩm</c:when>
+                <c:otherwise>Thêm danh mục sản phẩm mới vào hệ thống</c:otherwise>
+            </c:choose>
+        </p>
     </div>
     <a href="${pageContext.request.contextPath}/admin/category/list" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left" style="margin-right: 10px;"></i>Quay lại
@@ -40,10 +50,13 @@
         </h6>
       </div>
       <div class="card-body">
-        <form action="${pageContext.request.contextPath}/admin/category/add"
+        <form action="${pageContext.request.contextPath}/admin/category/${not empty category ? 'edit' : 'add'}"
               method="post" 
               enctype="multipart/form-data"
             id="categoryForm">
+          <c:if test="${not empty category}">
+            <input type="hidden" name="id" value="${category.id}">
+          </c:if>
           
           <div class="mb-4">
             <label class="form-label fw-semibold mb-2">
@@ -52,6 +65,7 @@
             <input type="text" 
                    class="form-control" 
                    name="name" 
+                   value="${category.name}"
                    placeholder="Ví dụ: Trà sữa, Cà phê, Bánh ngọt..." 
                    required 
                    autofocus
@@ -71,7 +85,7 @@
                      name="isDrink" 
                      id="isDrink_true" 
                      value="true" 
-                     checked
+                     ${empty category ? 'checked' : (category.isDrink ? 'checked' : '')}
                      required>
               <label class="form-check-label" for="isDrink_true">
                 <i class="bi bi-cup-straw text-primary"></i> Thức uống
@@ -84,6 +98,7 @@
                      name="isDrink" 
                      id="isDrink_false" 
                      value="false"
+                     ${not empty category && !category.isDrink ? 'checked' : ''}
                      required>
               <label class="form-check-label" for="isDrink_false">
                 <i class="bi bi-cake2 text-warning"></i> Bánh & Đồ ăn vặt
@@ -100,8 +115,23 @@
               <div class="col-md-5 mb-3">
                 <label class="form-label">Xem trước</label>
                 <div class="border rounded p-3 bg-light text-center">
+                  <c:choose>
+                    <c:when test="${not empty category and not empty category.icon}">
+                      <c:choose>
+                        <c:when test="${fn:startsWith(category.icon, 'http')}">
+                          <c:set var="imageSrc" value="${category.icon}"/>
+                        </c:when>
+                        <c:otherwise>
+                          <c:set var="imageSrc" value="${pageContext.request.contextPath}/${category.icon}"/>
+                        </c:otherwise>
+                      </c:choose>
+                    </c:when>
+                    <c:otherwise>
+                      <c:set var="imageSrc" value="https://via.placeholder.com/200x200?text=Chưa+có+ảnh"/>
+                    </c:otherwise>
+                  </c:choose>
                   <img id="imagePreview" 
-                       src="https://via.placeholder.com/200x200?text=Chưa+có+ảnh"
+                       src="${imageSrc}"
                        class="img-fluid rounded border" 
                        style="max-width: 100%; max-height: 200px; object-fit: cover;"
                        alt="Preview"/>

@@ -438,13 +438,33 @@ function showLoginRequiredModal() {
 
     // --- OTHER LOGIC ---
     window.showMoreHomepage = function(type, button) {
-        const container = button.previousElementSibling;
-        const items = container.querySelectorAll(`.hidden-${type}-item`);
-        items.forEach(item => {
-            item.style.display = 'block';
-            item.classList.add('animate__animated', 'animate__fadeIn');
-        });
-        button.style.display = 'none';
+        // Tìm container chứa các items
+        // Button có thể nằm trong div.text-center, cần tìm row trước đó
+        const parentContainer = button.closest('.container');
+        let container = null;
+        
+        if (parentContainer) {
+            // Tìm row chứa các items
+            container = parentContainer.querySelector('.row');
+        }
+        
+        // Fallback: nếu không tìm thấy, thử previousElementSibling
+        if (!container) {
+            container = button.previousElementSibling;
+            // Nếu previousElementSibling là div.text-center, tìm tiếp
+            if (container && container.classList.contains('text-center')) {
+                container = container.previousElementSibling;
+            }
+        }
+        
+        if (container) {
+            const items = container.querySelectorAll(`.hidden-${type}-item`);
+            items.forEach(item => {
+                item.style.display = 'block';
+                item.classList.add('animate__animated', 'animate__fadeIn');
+            });
+            button.style.display = 'none';
+        }
     }
     
     // Function để show thêm sản phẩm ở trang product list (theo logic của trang home)

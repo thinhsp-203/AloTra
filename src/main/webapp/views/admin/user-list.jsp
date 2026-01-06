@@ -145,12 +145,15 @@
                                     </td>
                                     <td class="text-center pe-4">
                                         <div class="d-flex justify-content-center">
-                                            <a href="${pageContext.request.contextPath}/admin/users/edit?id=${user.id}" 
-                                               class="btn btn-sm btn-outline-primary" 
-                                               title="Chỉnh sửa"
-                                               style="margin: 0 7.5px;">
-                                                <i class="fas fa-pencil-alt"></i>
-                                            </a>
+                                            <%-- Chỉ hiển thị nút chỉnh sửa nếu không phải admin --%>
+                                            <c:if test="${user.roleid != 1}">
+                                                <a href="${pageContext.request.contextPath}/admin/users/edit?id=${user.id}" 
+                                                   class="btn btn-sm btn-outline-primary" 
+                                                   title="Chỉnh sửa"
+                                                   style="margin: 0 7.5px;">
+                                                    <i class="fas fa-pencil-alt"></i>
+                                                </a>
+                                            </c:if>
                                             <%-- Chỉ hiển thị nút inactive nếu không phải admin và không phải chính mình --%>
                                             <c:if test="${user.roleid != 1 && sessionScope.currentUser.id != user.id}">
                                                 <form action="${pageContext.request.contextPath}/admin/users/toggle-status" 

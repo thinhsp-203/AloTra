@@ -330,12 +330,14 @@ header .container.py-2 {
 
 .product-card .card-text {
     margin-bottom: 0;
+    line-height: 1.2;
 }
 
 .product-card .card-footer {
     padding: 0 1rem 1rem;
     background: transparent;
     border: none;
+    margin-top: auto;
 }
 
 /* Card link styling */

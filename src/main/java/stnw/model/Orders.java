@@ -64,4 +64,52 @@ public class Orders {
     if (this.updatedDate == null) return null;
     return Date.from(this.updatedDate.atZone(ZoneId.systemDefault()).toInstant());
   }
+  
+  /**
+   * Tính tổng tiền sản phẩm (subtotal) từ order details
+   */
+  @Transient
+  public BigDecimal getSubtotal() {
+    if (orderDetails == null || orderDetails.isEmpty()) {
+      return BigDecimal.ZERO;
+    }
+    return orderDetails.stream()
+        .map(OrderDetail::getLineTotal)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+  
+  /**
+   * Ước lượng phí vận chuyển (15,000 hoặc 30,000)
+   * Dựa trên diff = total_amount - subtotal
+   */
+  @Transient
+  public BigDecimal getEstimatedShippingFee() {
+    BigDecimal subtotal = getSubtotal();
+    BigDecimal diff = total_amount.subtract(subtotal);
+    
+    // Nếu diff >= 30000, có thể là shipping 30000
+    if (diff.compareTo(new BigDecimal("30000")) >= 0) {
+      return new BigDecimal("30000");
+    }
+    // Mặc định là shipping 15000
+    return new BigDecimal("15000");
+  }
+  
+  /**
+   * Tính số tiền giảm giá (nếu có)
+   * discount = subtotal + shipping - total_amount
+   */
+  @Transient
+  public BigDecimal getEstimatedDiscount() {
+    BigDecimal subtotal = getSubtotal();
+    BigDecimal shipping = getEstimatedShippingFee();
+    BigDecimal expectedTotal = subtotal.add(shipping);
+    BigDecimal discount = expectedTotal.subtract(total_amount);
+    
+    // Đảm bảo discount không âm
+    if (discount.compareTo(BigDecimal.ZERO) < 0) {
+      return BigDecimal.ZERO;
+    }
+    return discount;
+  }
 }

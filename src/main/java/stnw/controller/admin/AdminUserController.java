@@ -53,6 +53,13 @@ public class AdminUserController extends HttpServlet {
                     return;
                 }
                 
+                // Kiểm tra không cho phép chỉnh sửa admin
+                if (user.getRoleid() != null && user.getRoleid() == stnw.utils.Roles.ADMIN) {
+                    req.getSession().setAttribute("error", "Không thể chỉnh sửa thông tin quản trị viên!");
+                    resp.sendRedirect(req.getContextPath() + "/admin/users");
+                    return;
+                }
+                
                 req.setAttribute("user", user);
                 req.getRequestDispatcher("/views/admin/user-form.jsp").forward(req, resp);
                 
@@ -128,6 +135,14 @@ public class AdminUserController extends HttpServlet {
                                   phone, address, 3, isActive); // Luôn tạo với roleId = 3 (User)
             req.getSession().setAttribute("success", "Đã tạo người dùng mới thành công!");
         } else {
+            // Kiểm tra không cho phép chỉnh sửa admin
+            User existingUser = userService.getUserById(userId);
+            if (existingUser != null && existingUser.getRoleid() != null && existingUser.getRoleid() == stnw.utils.Roles.ADMIN) {
+                req.getSession().setAttribute("error", "Không thể chỉnh sửa thông tin quản trị viên!");
+                resp.sendRedirect(req.getContextPath() + "/admin/users");
+                return;
+            }
+            
             // CẬP NHẬT - Không cho phép thay đổi role, giữ nguyên role hiện tại
             // Truyền null cho roleId để service giữ nguyên role hiện tại
             userService.updateUser(userId, email, fullname, phone, address, 

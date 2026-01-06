@@ -32,14 +32,18 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             LocalDateTime startOfMonthDateTime = startOfMonth.atStartOfDay();
             
             // ============ DOANH THU ============
-            // Tổng doanh thu (tất cả thời gian)
+            // QUAN TRỌNG: Chỉ tính doanh thu từ đơn hàng có status = "Hoàn thành"
+            // Đơn hàng đã thanh toán nhưng chưa hoàn thành KHÔNG được tính
+            // Đơn hàng bị hủy (Hủy bởi khách, Hủy bởi shop, Từ chối) KHÔNG được tính
+            
+            // Tổng doanh thu (tất cả thời gian) - CHỈ đơn "Hoàn thành"
             Object totalRevenue = em.createQuery(
                 "SELECT COALESCE(SUM(o.total_amount), 0) FROM Orders o WHERE o.order_status = :status")
                 .setParameter("status", OrderStatus.HOAN_THANH.getDisplayName())
                 .getSingleResult();
             stats.put("totalRevenue", totalRevenue != null ? totalRevenue : BigDecimal.ZERO);
             
-            // Doanh thu hôm nay
+            // Doanh thu hôm nay - CHỈ đơn "Hoàn thành" hôm nay
             Object revenueToday = em.createQuery(
                 "SELECT COALESCE(SUM(o.total_amount), 0) FROM Orders o " +
                 "WHERE o.order_status = :status " +
@@ -50,7 +54,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .getSingleResult();
             stats.put("revenueToday", revenueToday != null ? revenueToday : BigDecimal.ZERO);
             
-            // Doanh thu tuần này
+            // Doanh thu tuần này - CHỈ đơn "Hoàn thành" tuần này
             Object revenueWeek = em.createQuery(
                 "SELECT COALESCE(SUM(o.total_amount), 0) FROM Orders o " +
                 "WHERE o.order_status = :status " +
@@ -60,7 +64,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .getSingleResult();
             stats.put("revenueWeek", revenueWeek != null ? revenueWeek : BigDecimal.ZERO);
             
-            // Doanh thu tháng này
+            // Doanh thu tháng này - CHỈ đơn "Hoàn thành" tháng này
             Object revenueMonth = em.createQuery(
                 "SELECT COALESCE(SUM(o.total_amount), 0) FROM Orders o " +
                 "WHERE o.order_status = :status " +
@@ -70,8 +74,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .getSingleResult();
             stats.put("revenueMonth", revenueMonth != null ? revenueMonth : BigDecimal.ZERO);
             
-            // Doanh thu theo giờ trong ngày (cho F&B)
-            // Query tất cả orders hôm nay và xử lý trong Java
+            // Doanh thu theo giờ trong ngày (cho F&B) - CHỈ đơn "Hoàn thành" hôm nay
             var todayOrders = em.createQuery(
                 "SELECT o.createdDate, o.total_amount FROM Orders o " +
                 "WHERE o.order_status = :status " +
@@ -98,13 +101,13 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             stats.put("hourlyRevenue", hourlyRevenue);
             
             // ============ ĐƠN HÀNG ============
-            // Tổng đơn hàng
+            // Tổng đơn hàng (tất cả thời gian)
             Long totalOrders = em.createQuery(
                 "SELECT COUNT(o) FROM Orders o", Long.class)
                 .getSingleResult();
             stats.put("totalOrders", totalOrders != null ? totalOrders : 0L);
             
-            // Đơn hàng hôm nay
+            // Đơn hàng hôm nay - Tổng đơn hàng trong ngày (tất cả trạng thái)
             Long ordersToday = em.createQuery(
                 "SELECT COUNT(o) FROM Orders o " +
                 "WHERE o.createdDate >= :start AND o.createdDate <= :end", Long.class)
@@ -179,7 +182,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .getSingleResult();
             stats.put("totalProducts", totalProducts != null ? totalProducts : 0L);
             
-            // Top 10 sản phẩm bán chạy (tháng này)
+            // Top 10 sản phẩm bán chạy (tháng này) - CHỈ từ đơn "Hoàn thành"
             var topProducts = em.createQuery(
                 "SELECT p.product_name, SUM(od.quantity) as total " +
                 "FROM OrderDetail od " +
@@ -195,7 +198,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .getResultList();
             stats.put("topProducts", topProducts);
             
-            // Top 5 sản phẩm bán chạy (tất cả thời gian)
+            // Top 5 sản phẩm bán chạy (tất cả thời gian) - CHỈ từ đơn "Hoàn thành"
             var topProductsAllTime = em.createQuery(
                 "SELECT p.product_name, SUM(od.quantity) as total " +
                 "FROM OrderDetail od " +
@@ -209,7 +212,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .getResultList();
             stats.put("topProductsAllTime", topProductsAllTime);
             
-            // Thống kê theo danh mục (tháng này)
+            // Thống kê theo danh mục (tháng này) - CHỈ từ đơn "Hoàn thành"
             var categoryStats = em.createQuery(
                 "SELECT c.name, SUM(od.quantity) as total, SUM(od.price * od.quantity) as revenue " +
                 "FROM OrderDetail od " +
@@ -226,7 +229,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             stats.put("categoryStats", categoryStats);
             
             // ============ BIỂU ĐỒ ============
-            // Doanh thu theo tháng (6 tháng gần nhất)
+            // Doanh thu theo tháng (6 tháng gần nhất) - CHỈ đơn "Hoàn thành"
             var monthlyRevenue = em.createQuery(
                 "SELECT YEAR(o.createdDate), MONTH(o.createdDate), COALESCE(SUM(o.total_amount), 0) " +
                 "FROM Orders o " +
@@ -238,8 +241,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .getResultList();
             stats.put("monthlyRevenue", monthlyRevenue);
             
-            // Doanh thu 7 ngày qua
-            // Query tất cả orders 7 ngày qua và xử lý trong Java
+            // Doanh thu 7 ngày qua - CHỈ đơn "Hoàn thành"
             LocalDateTime startDate7Days = today.minusDays(6).atStartOfDay();
             var last7DaysOrders = em.createQuery(
                 "SELECT o.createdDate, o.total_amount FROM Orders o " +

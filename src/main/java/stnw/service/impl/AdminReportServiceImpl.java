@@ -16,6 +16,10 @@ import stnw.utils.OrderStatus;
 
 public class AdminReportServiceImpl implements AdminReportService {
     
+    // QUAN TRỌNG: Tất cả các method tính doanh thu chỉ tính từ đơn hàng có status = "Hoàn thành"
+    // Đơn hàng đã thanh toán nhưng chưa hoàn thành KHÔNG được tính
+    // Đơn hàng bị hủy (Hủy bởi khách, Hủy bởi shop, Từ chối) KHÔNG được tính
+    
     @Override
     public List<Object[]> getMonthlyRevenue(LocalDateTime startDate, LocalDateTime endDate) {
         EntityManager em = JpaUtil.em();

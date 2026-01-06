@@ -7,9 +7,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import stnw.model.CartItem;
 import stnw.model.Orders;
 import stnw.model.User;
+import stnw.service.ReorderService;
 import stnw.service.UserProfileService;
+import stnw.service.impl.ReorderServiceImpl;
 import stnw.service.impl.UserProfileServiceImpl;
 
 import java.io.IOException;
@@ -21,7 +24,7 @@ import java.util.List;
     maxFileSize = 10*1024*1024, 
     maxRequestSize = 50*1024*1024
 )
-@WebServlet(urlPatterns = {"/user/profile", "/user/orders", "/user/change-password"}, asyncSupported = false)
+@WebServlet(urlPatterns = {"/user/profile", "/user/orders", "/user/change-password", "/user/reorder"}, asyncSupported = false)
 public class UserProfileController extends HttpServlet {
     
     /**
@@ -29,10 +32,12 @@ public class UserProfileController extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 1L;
 	private UserProfileService profileService;
+	private ReorderService reorderService;
     
     @Override
     public void init() throws ServletException {
         profileService = new UserProfileServiceImpl();
+        reorderService = new ReorderServiceImpl();
     }
     
     @Override
@@ -54,6 +59,8 @@ public class UserProfileController extends HttpServlet {
                 showOrders(req, resp, currentUser);
             } else if (uri.endsWith("/change-password")) {
                 req.getRequestDispatcher("/views/user/change-password.jsp").forward(req, resp);
+            } else if (uri.endsWith("/reorder")) {
+                handleReorder(req, resp, currentUser);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -186,6 +193,46 @@ public class UserProfileController extends HttpServlet {
         req.setAttribute("success", "Cập nhật ảnh đại diện thành công!");
         req.setAttribute("user", updatedUser);
         req.getRequestDispatcher("/views/user/profile.jsp").forward(req, resp);
+    }
+    
+    private void handleReorder(HttpServletRequest req, HttpServletResponse resp, User currentUser) 
+            throws IOException {
+        try {
+            int orderId = Integer.parseInt(req.getParameter("orderId"));
+            
+            @SuppressWarnings("unchecked")
+            List<CartItem> cart = (List<CartItem>) req.getSession().getAttribute("CART");
+            if (cart == null) {
+                cart = new java.util.ArrayList<>();
+                req.getSession().setAttribute("CART", cart);
+            }
+            
+            var result = reorderService.reorder(currentUser.getId(), orderId, cart);
+            
+            int added = result.get("addedItems");
+            int unavailable = result.get("unavailableItems");
+            
+            if (added > 0 && unavailable == 0) {
+                req.getSession().setAttribute("orderSuccess", 
+                    "Đã thêm " + added + " sản phẩm từ đơn hàng #" + orderId + " vào giỏ hàng!");
+            } else if (added > 0 && unavailable > 0) {
+                req.getSession().setAttribute("orderSuccess", 
+                    "Đã thêm " + added + " sản phẩm. " + unavailable + " sản phẩm không còn khả dụng.");
+            } else {
+                req.getSession().setAttribute("orderError", 
+                    "Không thể thêm sản phẩm. Tất cả sản phẩm trong đơn hàng đã hết hàng hoặc không còn bán.");
+            }
+            
+            resp.sendRedirect(req.getContextPath() + "/checkout");
+            
+        } catch (IllegalArgumentException e) {
+            req.getSession().setAttribute("orderError", e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/user/orders");
+        } catch (Exception e) {
+            e.printStackTrace();
+            req.getSession().setAttribute("orderError", "Không thể thêm lại sản phẩm. Vui lòng thử lại!");
+            resp.sendRedirect(req.getContextPath() + "/user/orders");
+        }
     }
     
     private String sanitize(String input) {

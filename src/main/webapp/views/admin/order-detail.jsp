@@ -150,6 +150,43 @@
                             </c:forEach>
                         </tbody>
                         <tfoot class="table-light">
+                            <%-- Sử dụng helper methods từ Orders model --%>
+                            <c:set var="subtotal" value="${order.subtotal}"/>
+                            <c:set var="estimatedShipping" value="${order.estimatedShippingFee}"/>
+                            <c:set var="discountAmount" value="${order.estimatedDiscount}"/>
+                            
+                            <tr>
+                                <td colspan="6" class="text-end fw-bold ps-4">
+                                    <span class="fs-5">Tổng sản phẩm:</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <span class="fs-5 fw-bold">
+                                        <fmt:formatNumber value="${subtotal}" pattern="#,##0₫"/>
+                                    </span>
+                                </td>
+                            </tr>
+                            <c:if test="${discountAmount != null && discountAmount > 0}">
+                                <tr>
+                                    <td colspan="6" class="text-end fw-bold text-danger ps-4">
+                                        <span class="fs-5">Giảm giá:</span>
+                                    </td>
+                                    <td class="text-end text-danger pe-4">
+                                        <span class="fs-5 fw-bold">
+                                            -<fmt:formatNumber value="${discountAmount}" pattern="#,##0₫"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </c:if>
+                            <tr>
+                                <td colspan="6" class="text-end fw-bold ps-4">
+                                    <span class="fs-5">Phí vận chuyển:</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <span class="fs-5 fw-bold">
+                                        <fmt:formatNumber value="${estimatedShipping}" pattern="#,##0₫"/>
+                                    </span>
+                                </td>
+                            </tr>
                             <tr>
                                 <td colspan="6" class="text-end fw-bold ps-4">
                                     <span class="fs-5">Tổng cộng:</span>
