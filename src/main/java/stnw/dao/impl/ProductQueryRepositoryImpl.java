@@ -34,15 +34,34 @@ public class ProductQueryRepositoryImpl implements ProductQueryRepository {
                 params.put("keyword", "%" + keyword + "%");
             }
             if (priceRange != null && !priceRange.isEmpty()) {
+                // Xử lý trường hợp dấu + bị mất hoặc bị decode
+                priceRange = priceRange.trim();
+                if ("100000".equals(priceRange)) {
+                    priceRange = "100000+";
+                }
+                if (priceRange.endsWith(" ")) {
+                    priceRange = priceRange.substring(0, priceRange.length() - 1) + "+";
+                }
+                
                 switch (priceRange) {
                     case "0-50000":
-                        qlString.append(" AND p.price < 50000");
+                        qlString.append(" AND p.price < :maxPrice1");
+                        params.put("maxPrice1", BigDecimal.valueOf(50000));
                         break;
                     case "50000-100000":
-                        qlString.append(" AND p.price >= 50000 AND p.price <= 100000");
+                        qlString.append(" AND p.price >= :minPrice1 AND p.price <= :maxPrice2");
+                        params.put("minPrice1", BigDecimal.valueOf(50000));
+                        params.put("maxPrice2", BigDecimal.valueOf(100000));
                         break;
                     case "100000+":
-                        qlString.append(" AND p.price > 100000");
+                        // So sánh >= 100001 để tránh vấn đề với giá trị chính xác 100000
+                        qlString.append(" AND p.price >= :minPrice2");
+                        BigDecimal minPrice = new BigDecimal("100001");
+                        params.put("minPrice2", minPrice);
+                        break;
+                    default:
+                        // Log nếu có giá trị không mong đợi
+                        System.out.println("[ProductQueryRepository] Unknown priceRange: " + priceRange);
                         break;
                 }
             }
@@ -67,7 +86,12 @@ public class ProductQueryRepositoryImpl implements ProductQueryRepository {
 
             TypedQuery<Product> query = em.createQuery(qlString.toString(), Product.class);
             for (Map.Entry<String, Object> entry : params.entrySet()) {
-                query.setParameter(entry.getKey(), entry.getValue());
+                Object value = entry.getValue();
+                if (value instanceof BigDecimal) {
+                    query.setParameter(entry.getKey(), (BigDecimal) value);
+                } else {
+                    query.setParameter(entry.getKey(), value);
+                }
             }
             if (offset >= 0) query.setFirstResult(offset);
             if (limit > 0) query.setMaxResults(limit);

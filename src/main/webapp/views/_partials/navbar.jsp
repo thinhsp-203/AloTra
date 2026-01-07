@@ -139,7 +139,24 @@
                 <a class="navbar-brand" href="${pageContext.request.contextPath}/home">
 				    <c:choose>
 				        <c:when test="${not empty siteSettings.LOGO_URL}">
-				            <img src="${siteSettings.LOGO_URL}" alt="AloTra">
+				            <c:choose>
+				                <%-- Nếu là URL external (bắt đầu bằng http/https) --%>
+				                <c:when test="${fn:startsWith(siteSettings.LOGO_URL, 'http')}">
+				                    <img src="${siteSettings.LOGO_URL}" alt="AloTra">
+				                </c:when>
+				                <%-- Nếu đã có prefix uploads/ (không có / ở đầu) --%>
+				                <c:when test="${fn:startsWith(siteSettings.LOGO_URL, 'uploads/')}">
+				                    <img src="${pageContext.request.contextPath}/${siteSettings.LOGO_URL}" alt="AloTra">
+				                </c:when>
+				                <%-- Nếu bắt đầu bằng /uploads/ (tương thích ngược) --%>
+				                <c:when test="${fn:startsWith(siteSettings.LOGO_URL, '/uploads/')}">
+				                    <img src="${pageContext.request.contextPath}${siteSettings.LOGO_URL}" alt="AloTra">
+				                </c:when>
+				                <%-- Trường hợp khác (tương thích ngược) --%>
+				                <c:otherwise>
+				                    <img src="${pageContext.request.contextPath}/uploads/${siteSettings.LOGO_URL}" alt="AloTra">
+				                </c:otherwise>
+				            </c:choose>
 				        </c:when>
 				    </c:choose>
 				</a>

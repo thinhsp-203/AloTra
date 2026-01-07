@@ -35,11 +35,60 @@ public class BannerSaveController extends HttpServlet {
         
         try {
             if ("updateLogo".equals(action)) {
-                var settings = new java.util.HashMap<String, String>();
-                settings.put("LOGO_URL", req.getParameter("LOGO_URL"));
-                settingsService.updateSettings(settings);
-                stnw.config.AppContextListener.loadSiteSettings(req.getServletContext());
-                req.getSession().setAttribute("success", "Đã cập nhật logo!");
+                String logoUrl = null;
+                
+                // Ưu tiên: Upload file
+                Part logoFile = req.getPart("logoFile");
+                if (logoFile != null && logoFile.getSize() > 0) {
+                    try {
+                        // Upload file sử dụng UploadUtils
+                        String uploadedPath = stnw.utils.UploadUtils.save(
+                            logoFile, 
+                            stnw.enums.UploadType.BANNERS, 
+                            req.getServletContext()
+                        );
+                        if (uploadedPath != null) {
+                            // UploadUtils trả về "uploads/banners/xxx.jpg" (không có / ở đầu)
+                            // Giữ nguyên format này để tương thích với cách JSP xử lý path
+                            logoUrl = uploadedPath;
+                            
+                            // Xóa logo cũ nếu có (nếu là file local, không phải URL external)
+                            var allSettings = settingsService.getAllSettings();
+                            String oldLogoUrl = allSettings.get("LOGO_URL");
+                            if (oldLogoUrl != null && !oldLogoUrl.startsWith("http") && !oldLogoUrl.startsWith("https")) {
+                                // Xử lý cả 2 trường hợp: "uploads/..." và "/uploads/..."
+                                String pathToDelete = oldLogoUrl.startsWith("/") 
+                                    ? oldLogoUrl.substring(1) 
+                                    : oldLogoUrl;
+                                stnw.utils.UploadUtils.deleteOldImage(pathToDelete, req.getServletContext());
+                            }
+                        }
+                    } catch (IllegalArgumentException e) {
+                        req.getSession().setAttribute("error", "Lỗi upload file: " + e.getMessage());
+                        resp.sendRedirect(req.getContextPath() + "/admin/banners");
+                        return;
+                    } catch (Exception e) {
+                        req.getSession().setAttribute("error", "Lỗi khi upload file: " + e.getMessage());
+                        resp.sendRedirect(req.getContextPath() + "/admin/banners");
+                        return;
+                    }
+                }
+                
+                // Nếu không có file upload, dùng URL từ input
+                if (logoUrl == null) {
+                    logoUrl = req.getParameter("LOGO_URL");
+                }
+                
+                // Lưu vào settings
+                if (logoUrl != null && !logoUrl.trim().isEmpty()) {
+                    var settings = new java.util.HashMap<String, String>();
+                    settings.put("LOGO_URL", logoUrl.trim());
+                    settingsService.updateSettings(settings);
+                    stnw.config.AppContextListener.loadSiteSettings(req.getServletContext());
+                    req.getSession().setAttribute("success", "Đã cập nhật logo!");
+                } else {
+                    req.getSession().setAttribute("error", "Vui lòng chọn file hoặc nhập URL logo!");
+                }
             } else {
                 String idParam = req.getParameter("id");
                 Integer id = (idParam != null && !idParam.isEmpty()) 

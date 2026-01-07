@@ -12,6 +12,35 @@
                 <input type="hidden" name="cate" value="${fn:escapeXml(selectedCateId)}">
                 
                 <div class="mb-3">
+                    <label class="form-label fw-semibold">Danh mục</label>
+                    <div class="list-group">
+                        <a href="${pageContext.request.contextPath}/products?q=${fn:escapeXml(keyword)}&sortBy=${fn:escapeXml(selectedSortBy)}${not empty selectedPrice ? '&price=' : ''}${fn:escapeXml(selectedPrice)}" 
+                           class="list-group-item list-group-item-action ${empty selectedCateId ? 'active' : ''}">
+                           <i class="bi bi-grid-3x3-gap me-2"></i>Tất cả danh mục
+                        </a>
+                        <c:forEach var="cat" items="${categories}">
+                            <a href="${pageContext.request.contextPath}/products?cate=${cat.id}&q=${fn:escapeXml(keyword)}&sortBy=${fn:escapeXml(selectedSortBy)}${not empty selectedPrice ? '&price=' : ''}${fn:escapeXml(selectedPrice)}" 
+                               class="list-group-item list-group-item-action ${selectedCateId eq cat.id ? 'active' : ''}">
+                                <c:if test="${not empty cat.icon}">
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(cat.icon, 'http')}">
+                                            <img src="${cat.icon}" alt="${cat.name}" style="width: 20px; height: 20px; object-fit: contain; margin-right: 8px;">
+                                        </c:when>
+                                        <c:when test="${fn:startsWith(cat.icon, 'uploads/')}">
+                                            <img src="${pageContext.request.contextPath}/${cat.icon}" alt="${cat.name}" style="width: 20px; height: 20px; object-fit: contain; margin-right: 8px;">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <img src="${pageContext.request.contextPath}/uploads/${cat.icon}" alt="${cat.name}" style="width: 20px; height: 20px; object-fit: contain; margin-right: 8px;">
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:if>
+                                ${cat.name}
+                            </a>
+                        </c:forEach>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
                     <label for="sortBy" class="form-label fw-semibold">Sắp xếp theo</label>
                     <select class="form-select" name="sortBy" id="sortBy" onchange="this.form.submit()">
                         <option value="default" ${empty selectedSortBy ? 'selected' : ''}>Mặc định</option>
@@ -36,7 +65,7 @@
                            class="list-group-item list-group-item-action ${selectedPrice eq '50000-100000' ? 'active' : ''}">
                            50.000₫ - 100.000₫
                         </a>
-                        <a href="${pageContext.request.contextPath}/products?cate=${fn:escapeXml(selectedCateId)}&q=${fn:escapeXml(keyword)}&sortBy=${fn:escapeXml(selectedSortBy)}&price=100000+" 
+                        <a href="${pageContext.request.contextPath}/products?cate=${fn:escapeXml(selectedCateId)}&q=${fn:escapeXml(keyword)}&sortBy=${fn:escapeXml(selectedSortBy)}&price=100000%2B" 
                            class="list-group-item list-group-item-action ${selectedPrice eq '100000+' ? 'active' : ''}">
                            Trên 100.000₫
                         </a>
