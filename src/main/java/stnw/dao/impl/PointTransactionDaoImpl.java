@@ -54,7 +54,21 @@ public class PointTransactionDaoImpl implements PointTransactionDao {
     public PointTransaction findById(Integer id) {
         EntityManager em = JpaUtils.em();
         try {
-            return em.find(PointTransaction.class, id);
+            TypedQuery<PointTransaction> query = em.createQuery(
+                "SELECT pt FROM PointTransaction pt LEFT JOIN FETCH pt.reward WHERE pt.id = :id",
+                PointTransaction.class
+            );
+            query.setParameter("id", id);
+            PointTransaction transaction = query.getSingleResult();
+            
+            // Initialize reward proxy if exists (to avoid LazyInitializationException)
+            if (transaction != null && transaction.getReward() != null) {
+                transaction.getReward().getName(); // Force initialization
+            }
+            
+            return transaction;
+        } catch (jakarta.persistence.NoResultException e) {
+            return null;
         } finally {
             em.close();
         }
