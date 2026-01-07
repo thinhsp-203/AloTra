@@ -6,7 +6,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import stnw.dto.NotificationDTO;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -25,7 +26,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @WebServlet(urlPatterns = "/api/notifications/recent", asyncSupported = false)
 public class NotificationAjaxController extends HttpServlet {
@@ -40,6 +40,18 @@ public class NotificationAjaxController extends HttpServlet {
         gson = new GsonBuilder()
             .setLenient()
             .disableHtmlEscaping() // Don't escape Unicode characters
+            .setExclusionStrategies(new ExclusionStrategy() {
+                @Override
+                public boolean shouldSkipField(FieldAttributes f) {
+                    // Skip field "user" in Notification class to avoid Hibernate proxy serialization
+                    return f.getDeclaringClass() == Notification.class && f.getName().equals("user");
+                }
+                
+                @Override
+                public boolean shouldSkipClass(Class<?> clazz) {
+                    return false;
+                }
+            })
             .registerTypeAdapter(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
                 @Override
                 public JsonElement serialize(LocalDateTime src, Type typeOfSrc, JsonSerializationContext context) {
@@ -71,19 +83,8 @@ public class NotificationAjaxController extends HttpServlet {
             List<Notification> notifications = notificationService.getRecentNotifications(currentUser.getId(), 5);
             long unreadCount = notificationService.getUnreadCount(currentUser.getId());
             
-            // Convert Notification entities to DTOs to avoid Hibernate proxy serialization issues
-            List<NotificationDTO> notificationDTOs = notifications.stream()
-                .map(n -> new NotificationDTO(
-                    n.getId(),
-                    n.getMessage(),
-                    n.getLink(),
-                    n.getIsRead(),
-                    n.getCreatedDate()
-                ))
-                .collect(Collectors.toList());
-            
             Map<String, Object> response = new HashMap<>();
-            response.put("notifications", notificationDTOs);
+            response.put("notifications", notifications);
             response.put("unreadCount", unreadCount);
             
             PrintWriter out = resp.getWriter();
