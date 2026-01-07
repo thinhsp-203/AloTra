@@ -1,15 +1,19 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
 <div class="row g-4">
-    <%-- Top Products Card --%>
+
+    <%-- Top Products --%>
     <div class="col-lg-6">
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white border-bottom py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-trophy" style="margin-right: 10px;"></i>Top sản phẩm bán chạy
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-trophy me-2"></i>
+                    Top sản phẩm bán chạy
                 </h6>
             </div>
+
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -33,11 +37,14 @@
                                         </td>
                                     </tr>
                                 </c:when>
+
                                 <c:otherwise>
                                     <c:forEach var="t" items="${topProducts}" varStatus="loop">
                                         <tr class="border-bottom">
                                             <td class="ps-4">
-                                                <span class="badge bg-primary text-white px-3 py-2">${loop.index + 1}</span>
+                                                <span class="badge bg-primary text-white px-3 py-2">
+                                                    ${loop.index + 1}
+                                                </span>
                                             </td>
                                             <td>
                                                 <span class="fw-semibold fs-5">${t[0]}</span>
@@ -57,15 +64,17 @@
             </div>
         </div>
     </div>
-    
-    <%-- Product Revenue Card --%>
+
+    <%-- Product Revenue --%>
     <div class="col-lg-6">
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white border-bottom py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-dollar-sign" style="margin-right: 10px;"></i>Doanh thu theo sản phẩm
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-dollar-sign me-2"></i>
+                    Doanh thu theo sản phẩm
                 </h6>
             </div>
+
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -89,6 +98,7 @@
                                         </td>
                                     </tr>
                                 </c:when>
+
                                 <c:otherwise>
                                     <c:forEach var="pr" items="${productRevenue}">
                                         <tr class="border-bottom">
@@ -102,7 +112,7 @@
                                             </td>
                                             <td class="text-end pe-4">
                                                 <span class="fw-bold text-success">
-                                                    <fmt:formatNumber value="${pr[2]}" pattern="#,##0" />₫
+                                                    <fmt:formatNumber value="${pr[2]}" pattern="#,##0"/> ₫
                                                 </span>
                                             </td>
                                         </tr>
@@ -115,5 +125,5 @@
             </div>
         </div>
     </div>
-</div>
 
+</div>

@@ -85,7 +85,7 @@
             </c:choose>
         </div>
         <h6 class="mb-1">${sessionScope.currentUser.fullname}</h6>
-        <small class="opacity-75">@${sessionScope.currentUser.username}</small>
+        <small class="opacity-75"><c:choose><c:when test="${not empty sessionScope.currentUser.fullname}">${sessionScope.currentUser.fullname}</c:when><c:otherwise>@${sessionScope.currentUser.username}</c:otherwise></c:choose></small>
     </div>
 
      <div class="list-group list-group-flush">

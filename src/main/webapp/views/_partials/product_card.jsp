@@ -29,19 +29,39 @@
         <div class="card-body d-flex flex-column text-center">
             <h6 class="card-title">${p.product_name}</h6>
             <div class="d-flex align-items-center justify-content-center gap-2 mt-auto">
-                <p class="card-text fw-bold text-primary mb-0">
-                    <fmt:formatNumber value="${p.price}" pattern="#,##0"/> đ
-                </p>
-                <button class="btn btn-outline-danger btn-sm btn-wishlist" 
+                <div class="text-center flex-grow-1">
+                    <c:choose>
+                        <c:when test="${p.hasDiscount()}">
+                            <p class="card-text fw-bold text-danger mb-1" style="font-size: 1.1rem;">
+                                <fmt:formatNumber value="${p.finalPrice}" pattern="#,##0"/>₫
+                            </p>
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <p class="card-text text-muted mb-0" style="text-decoration: line-through; font-size: 0.85rem;">
+                                    <fmt:formatNumber value="${p.price}" pattern="#,##0"/>₫
+                                </p>
+                                <span class="badge bg-danger text-white" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                    -<fmt:formatNumber value="${p.discount}" pattern="#,##0"/>%
+                                </span>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <p class="card-text fw-bold text-primary mb-0" style="font-size: 1.1rem;">
+                                <fmt:formatNumber value="${p.price}" pattern="#,##0"/>₫
+                            </p>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+                <button class="btn btn-outline-danger btn-sm btn-wishlist flex-shrink-0" 
                         data-product-id="${p.product_id}"
                         title="Thêm vào yêu thích"
-                        type="button">
+                        type="button"
+                        style="width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center;">
                     <i class="bi bi-heart"></i>
                 </button>
             </div>
         </div>
     </a>
-    <div class="card-footer bg-transparent border-0 pb-3">
+    <div class="card-footer bg-transparent border-0" style="padding: 0 1rem 1rem;">
         <button class="btn btn-primary w-100" 
                 data-bs-toggle="modal" 
                 data-bs-target="#productModal" 

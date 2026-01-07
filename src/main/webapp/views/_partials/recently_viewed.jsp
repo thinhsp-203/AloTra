@@ -2,9 +2,9 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
-<%@ page import="config.JpaUtil" %>
+<%@ page import="stnw.config.JpaConfig" %>
 <%@ page import="jakarta.persistence.EntityManager" %>
-<%@ page import="model.Product" %>
+<%@ page import="stnw.model.Product" %>
 <%@ page import="java.util.*" %>
 
 <%
@@ -22,7 +22,7 @@
   List<Product> viewedProducts = new ArrayList<>();
   if (!viewedIds.isEmpty()) {
     String[] ids = viewedIds.split("-");
-    EntityManager em = JpaUtil.em();
+    EntityManager em = JpaConfig.em();
     try {
       // Lấy tối đa 4 sản phẩm gần nhất
       int count = 0;
@@ -70,8 +70,23 @@
                  style="height:150px;object-fit:cover;">
             <div class="card-body">
               <h6 class="card-title small mb-1">${product.product_name}</h6>
+              <c:if test="${product.hasDiscount()}">
+                <span class="badge bg-danger text-white mb-1" style="font-size: 0.7rem;">-<fmt:formatNumber value="${product.discount}" pattern="#,##0"/>%</span>
+              </c:if>
               <div class="text-primary fw-bold small">
-                <fmt:formatNumber value="${product.price}" pattern="#,##0₫"/>
+                <c:choose>
+                  <c:when test="${product.hasDiscount()}">
+                    <div class="text-danger">
+                      <fmt:formatNumber value="${product.finalPrice}" pattern="#,##0₫"/>
+                    </div>
+                    <div class="text-muted" style="text-decoration: line-through; font-size: 0.8rem;">
+                      <fmt:formatNumber value="${product.price}" pattern="#,##0₫"/>
+                    </div>
+                  </c:when>
+                  <c:otherwise>
+                    <fmt:formatNumber value="${product.price}" pattern="#,##0₫"/>
+                  </c:otherwise>
+                </c:choose>
               </div>
             </div>
             <div class="card-footer bg-transparent border-0 pt-0">

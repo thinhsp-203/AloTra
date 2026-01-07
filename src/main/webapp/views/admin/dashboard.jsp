@@ -40,7 +40,7 @@
 		<div class="card border-left-primary shadow h-100 py-2">
 			<div class="card-body">
 				<div class="row no-gutters align-items-center">
-					<div class="col mr-2">
+					<div class="col me-2">
 						<div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
 							Doanh thu hôm nay
 						</div>
@@ -63,7 +63,7 @@
 		<div class="card border-left-success shadow h-100 py-2">
 			<div class="card-body">
 				<div class="row no-gutters align-items-center">
-					<div class="col mr-2">
+					<div class="col me-2">
 						<div class="text-xs font-weight-bold text-success text-uppercase mb-1">
 							Doanh thu tuần này
 						</div>
@@ -86,7 +86,7 @@
 		<div class="card border-left-info shadow h-100 py-2">
 			<div class="card-body">
 				<div class="row no-gutters align-items-center">
-					<div class="col mr-2">
+					<div class="col me-2">
 						<div class="text-xs font-weight-bold text-info text-uppercase mb-1">
 							Doanh thu tháng này
 						</div>
@@ -109,7 +109,7 @@
 		<div class="card border-left-warning shadow h-100 py-2">
 			<div class="card-body">
 				<div class="row no-gutters align-items-center">
-					<div class="col mr-2">
+					<div class="col me-2">
 						<div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
 							Tổng doanh thu
 						</div>
@@ -135,7 +135,7 @@
 		<div class="card border-left-danger shadow h-100 py-2">
 			<div class="card-body">
 				<div class="row no-gutters align-items-center">
-					<div class="col mr-2">
+					<div class="col me-2">
 						<div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
 							Đơn hàng hôm nay
 						</div>
@@ -156,7 +156,7 @@
 		<div class="card border-left-warning shadow h-100 py-2">
 			<div class="card-body">
 				<div class="row no-gutters align-items-center">
-					<div class="col mr-2">
+					<div class="col me-2">
 						<div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
 							Chờ xác nhận
 						</div>
@@ -177,7 +177,7 @@
 		<div class="card border-left-info shadow h-100 py-2">
 			<div class="card-body">
 				<div class="row no-gutters align-items-center">
-					<div class="col mr-2">
+					<div class="col me-2">
 						<div class="text-xs font-weight-bold text-info text-uppercase mb-1">
 							Đang xử lý
 						</div>
@@ -198,7 +198,7 @@
 		<div class="card border-left-success shadow h-100 py-2">
 			<div class="card-body">
 				<div class="row no-gutters align-items-center">
-					<div class="col mr-2">
+					<div class="col me-2">
 						<div class="text-xs font-weight-bold text-success text-uppercase mb-1">
 							Khách hàng
 						</div>

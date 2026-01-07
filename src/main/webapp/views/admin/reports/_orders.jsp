@@ -1,15 +1,19 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
 <div class="row g-4">
-    <%-- Orders by Status Card --%>
+
+    <%-- Orders by Status --%>
     <div class="col-lg-6">
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white border-bottom py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-list-alt" style="margin-right: 10px;"></i>Thống kê đơn hàng theo trạng thái
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-list-alt me-2"></i>
+                    Thống kê đơn hàng theo trạng thái
                 </h6>
             </div>
+
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -33,20 +37,23 @@
                                         </td>
                                     </tr>
                                 </c:when>
+
                                 <c:otherwise>
                                     <c:forEach var="os" items="${orderStatsByStatus}">
                                         <tr class="border-bottom">
                                             <td class="ps-4">
                                                 <span class="fw-semibold">${os[0]}</span>
                                             </td>
+
                                             <td class="text-end">
                                                 <span class="badge bg-info text-white px-3 py-2">
                                                     <fmt:formatNumber value="${os[1]}" groupingUsed="true"/>
                                                 </span>
                                             </td>
+
                                             <td class="text-end pe-4">
                                                 <span class="fw-bold text-success">
-                                                    <fmt:formatNumber value="${os[2]}" pattern="#,##0" />₫
+                                                    <fmt:formatNumber value="${os[2]}" pattern="#,##0"/> ₫
                                                 </span>
                                             </td>
                                         </tr>
@@ -59,15 +66,17 @@
             </div>
         </div>
     </div>
-    
-    <%-- Orders by Payment Method Card --%>
+
+    <%-- Orders by Payment Method --%>
     <div class="col-lg-6">
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white border-bottom py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-credit-card" style="margin-right: 10px;"></i>Thống kê theo phương thức thanh toán
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-credit-card me-2"></i>
+                    Thống kê theo phương thức thanh toán
                 </h6>
             </div>
+
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -86,25 +95,30 @@
                                             <div class="py-4">
                                                 <i class="fas fa-inbox fa-4x text-muted mb-3 d-block"></i>
                                                 <h5 class="text-muted mb-2">Không có dữ liệu</h5>
-                                                <p class="text-muted small mb-0">Chưa có đơn hàng đã hoàn thành</p>
+                                                <p class="text-muted small mb-0">
+                                                    Chưa có đơn hàng đã hoàn thành
+                                                </p>
                                             </div>
                                         </td>
                                     </tr>
                                 </c:when>
+
                                 <c:otherwise>
                                     <c:forEach var="op" items="${orderStatsByPayment}">
                                         <tr class="border-bottom">
                                             <td class="ps-4">
                                                 <span class="fw-semibold">${op[0]}</span>
                                             </td>
+
                                             <td class="text-end">
                                                 <span class="badge bg-primary text-white px-3 py-2">
                                                     <fmt:formatNumber value="${op[1]}" groupingUsed="true"/>
                                                 </span>
                                             </td>
+
                                             <td class="text-end pe-4">
                                                 <span class="fw-bold text-success">
-                                                    <fmt:formatNumber value="${op[2]}" pattern="#,##0" />₫
+                                                    <fmt:formatNumber value="${op[2]}" pattern="#,##0"/> ₫
                                                 </span>
                                             </td>
                                         </tr>
@@ -117,5 +131,5 @@
             </div>
         </div>
     </div>
-</div>
 
+</div>

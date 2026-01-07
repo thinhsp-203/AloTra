@@ -1,5 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
-<%@ page import="utils.Roles" %>
+<%@ page import="stnw.enums.Roles" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
@@ -157,12 +157,6 @@
             </a>
         </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/payment-config">
-                <i class="fas fa-fw fa-credit-card"></i>
-                <span>Cấu hình TT</span>
-            </a>
-        </li>
     </c:if>
 
 </ul>
@@ -188,7 +182,7 @@
 <li class="nav-item dropdown no-arrow">
     <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
         <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-            ${sessionScope.currentUser.username}
+            ${not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username}
         </span>
 
         <c:choose>

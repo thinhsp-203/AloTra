@@ -1,0 +1,51 @@
+package stnw.service;
+
+import stnw.model.User;
+
+/**
+ * Service xử lý logic quản lý User cho Admin
+ */
+public interface AdminUserService {
+    
+    /**
+     * Tạo user mới
+     * @throws IllegalArgumentException nếu email/username/phone đã tồn tại hoặc dữ liệu không hợp lệ
+     */
+    void createUser(String username, String email, String password, 
+                   String fullname, String phone, String address, 
+                   Integer roleId, boolean isActive);
+    
+    /**
+     * Cập nhật thông tin user
+     * @param newPassword Mật khẩu mới (null nếu không đổi)
+     * @throws IllegalArgumentException nếu email/phone trùng với user khác
+     */
+    void updateUser(int userId, String email, String fullname, 
+                   String phone, String address, Integer roleId, 
+                   boolean isActive, String newPassword);
+    
+    /**
+     * Đổi trạng thái active/inactive
+     * @param userId ID của user cần đổi trạng thái
+     * @param currentUserId ID của user đang thực hiện thao tác
+     * @throws IllegalArgumentException nếu cố inactive chính mình
+     */
+    void toggleUserStatus(int userId, Integer currentUserId);
+    
+    /**
+     * Xóa mềm một user (set isActive = false)
+     * @throws IllegalArgumentException nếu cố xóa chính mình hoặc admin
+     */
+    void softDeleteUser(int userId, Integer currentUserId);
+    
+    /**
+     * Xóa vĩnh viễn một user khỏi database
+     * @throws IllegalArgumentException nếu cố xóa chính mình hoặc admin
+     */
+    void hardDeleteUser(int userId, Integer currentUserId);
+    
+    /**
+     * Lấy thông tin user theo ID
+     */
+    User getUserById(int userId);
+}

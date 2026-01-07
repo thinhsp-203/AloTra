@@ -20,4 +20,17 @@
 		</jsp-property-group>
 	</jsp-config>
 
+	<!-- Cấu hình Session -->
+	<session-config>
+		<!-- Session timeout: 5 phút (tính bằng phút) -->
+		<session-timeout>5</session-timeout>
+		<!-- Cookie configuration -->
+		<cookie-config>
+			<http-only>true</http-only>
+			<secure>false</secure>
+		</cookie-config>
+		<!-- Tracking mode: URL hoặc COOKIE -->
+		<tracking-mode>COOKIE</tracking-mode>
+	</session-config>
+
 </web-app>

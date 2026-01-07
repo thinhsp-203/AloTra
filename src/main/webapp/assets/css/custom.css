@@ -273,6 +273,8 @@ header .container.py-2 {
     display: flex;
     flex-direction: column;
     height: 100%;
+    position: relative;
+    overflow: hidden;
 }
 
 .product-card:hover {
@@ -320,6 +322,7 @@ header .container.py-2 {
     min-height: 2.5rem; /* Đảm bảo tiêu đề có chiều cao tối thiểu */
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -327,12 +330,14 @@ header .container.py-2 {
 
 .product-card .card-text {
     margin-bottom: 0;
+    line-height: 1.2;
 }
 
 .product-card .card-footer {
     padding: 0 1rem 1rem;
     background: transparent;
     border: none;
+    margin-top: auto;
 }
 
 /* Card link styling */
@@ -358,122 +363,8 @@ header .container.py-2 {
     width: 100%;
 }
 
-/* === HERO SECTION === */
-.hero-section {
-    position: relative;
-    padding: 5rem 1rem;
-    background-image: url('https://static.phuclong.com.vn/storage/5/2022/10/20/richtea-damvi-2_1666236962.jpg');
-    background-size: cover;
-    background-position: center;
-    border-radius: 0.5rem;
-    text-align: center;
-    overflow: hidden;
-}
-.hero-overlay {
-    position: absolute; top: 0; left: 0;
-    right: 0; bottom: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-}
-.hero-content {
-    position: relative;
-    z-index: 2;
-}
-.hero-search-form {
-    max-width: 700px;
-    margin: 1.5rem auto 0;
-    background: white; border-radius: 99px; padding: 0.5rem;
-}
-.hero-search-form .form-control {
-    border: none; box-shadow: none; font-size: 1.1rem;
-}
-.hero-search-form .btn {
-    border-radius: 99px;
-}
-
-/* === STORE SEARCH FORM === */
-.store-search-wrapper {
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    background: white;
-    border-radius: 50px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
-    transition: box-shadow 0.3s ease;
-    gap: 0.5rem;
-    width: 100%;
-    flex-wrap: nowrap;
-}
-
-.store-search-wrapper:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
-
-.store-search-input {
-    flex: 1 1 auto;
-    border: none;
-    outline: none;
-    background: transparent;
-    padding: 0.75rem 0;
-    font-size: 1.1rem;
-    color: #333;
-    min-width: 0;
-    width: auto;
-}
-
-.store-search-input::placeholder {
-    color: #999;
-}
-
-.store-search-input:focus {
-    border: none;
-    outline: none;
-    box-shadow: none;
-}
-
-.store-search-btn {
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-    margin-left: 0;
-}
-
-.store-search-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 102, 51, 0.3);
-}
-
-.store-search-btn i {
-    font-size: 1.2rem;
-}
-
-@media (max-width: 768px) {
-    .store-search-wrapper {
-        padding: 0.5rem 0.5rem 0.5rem 1.25rem;
-    }
-    
-    .store-search-input {
-        font-size: 1rem;
-        padding: 0.65rem 0;
-    }
-    
-    .store-search-btn {
-        width: 45px;
-        height: 45px;
-        margin-left: 0;
-    }
-    
-    .store-search-btn i {
-        font-size: 1.1rem;
-    }
-}
+/* REMOVED: Unused CSS - .hero-section, .hero-overlay, .hero-content, .hero-search-form - Not found in any JSP */
+/* REMOVED: Unused CSS - .store-search-wrapper, .store-search-input, .store-search-btn - Not found in any JSP */
 
 /* === PRODUCT DETAIL PAGE STYLES === */
 .product-description {
@@ -506,85 +397,11 @@ header .container.py-2 {
     border-color: var(--bs-primary);
     color: white;
 }
-.btn-size {
-    padding: 0.4rem 0.5rem;
-    min-width: 75px;
-    text-align: center;
-    font-size: 0.95rem;
-    border-radius: 0.5rem;
-}
-.btn-size .small {
-    font-size: 0.8rem;
-    line-height: 1;
-    margin-top: 2px;
-}
 .btn-check:checked + .btn-outline-primary .small {
     color: white;
 }
 
-.shadow-top {
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
-}
-
-/* === SUGGESTION SLIDER STYLES === */
-.suggestion-section {
-    position: relative;
-    padding: 0 30px; 
-}
-
-.suggestion-slider-container {
-    position: relative;
-}
-
-.suggestion-slider {
-    overflow: hidden;
-}
-
-.slider-track {
-    display: flex;
-    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.slider-item {
-    flex: 0 0 20%; 
-    padding: 0 0.75rem;
-    box-sizing: border-box;
-}
-
-.slider-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-70%);
-    background-color: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    z-index: 10;
-    font-size: 2rem;
-    line-height: 1;
-    color: #555;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-.slider-btn:hover {
-    background-color: #f8f8f8;
-}
-
-.slider-btn.prev-btn {
-    left: -15px;
-}
-
-.slider-btn.next-btn {
-    right: -15px;
-}
-
-@media (max-width: 992px) {
-    .slider-item { flex: 0 0 33.33%; }
-}
-@media (max-width: 768px) {
-    .slider-item { flex: 0 0 50%; } 
-}
+/* REMOVED: Unused CSS - .suggestion-section, .suggestion-slider, .slider-track, .slider-item, .slider-btn - Not found in any JSP */
 
 /* === START FIX: Compact and Scrollable Modal === */
 #productModal .modal-body .col-md-7 > div,
@@ -1025,12 +842,6 @@ header .container.py-2 {
     color: #6c757d;
     padding: 0.25rem 0.5rem;
 }
-/* Thêm CSS cho card sản phẩm */
-.product-card {
-    position: relative;
-    overflow: hidden;
-}
-
 /* Nút Wishlist */
 .btn-wishlist {
     border-radius: 50%;
@@ -1058,48 +869,7 @@ header .container.py-2 {
     color: white !important;
     border-color: var(--bs-danger) !important;
 }
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700&display=swap');
-
-body {
-    font-family: 'Be Vietnam Pro', sans-serif;
-    background-color: #fcfaf6; /* Màu nền hơi kem/vàng nhạt */
-}
-
-/* Định nghĩa lại màu primary của Bootstrap thành màu vàng của trang mẫu */
-:root {
-    --bs-primary: #d3a439;
-    --bs-primary-rgb: 211, 164, 57;
-    
-    /* Bạn có thể định nghĩa lại màu secondary nếu muốn */
-    --bs-secondary: #4a3f35; /* Màu nâu đậm */
-}
-
-/* Ghi đè màu nút primary */
-.btn-primary {
-    background-color: var(--bs-primary);
-    border-color: var(--bs-primary);
-}
-.btn-primary:hover {
-    background-color: #c29532; /* Tối hơn một chút khi hover */
-    border-color: #c29532;
-}
-
-/* Thêm hiệu ứng cho card sản phẩm */
-.product-card {
-    border: 1px solid #eee;
-    transition: all 0.3s ease;
-}
-
-.product-card:hover {
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transform: translateY(-5px); /* Hiệu ứng nhấc lên */
-}
-
-/* Chỉnh lại màu tiêu đề sản phẩm */
-.product-card .card-title {
-    color: var(--bs-secondary); /* Màu nâu đậm */
-    font-weight: 500;
-}
+/* REMOVED: Unused theme CSS (Be Vietnam Pro font, yellow theme #d3a439) - Not used in any JSP */
 /* =============================================== */
 /* === FIX BANNER CAROUSEL - CỐ ĐỊNH KÍCH THƯỚC === */
 /* =============================================== */

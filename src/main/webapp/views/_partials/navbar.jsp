@@ -1,18 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
-<%@ page import="config.JpaUtil, model.Category, java.util.List" %>
-
-<%
-
-    List<Category> categories = null;
-try (var em = JpaUtil.em()) {
-        categories = em.createQuery("SELECT c FROM Category c ORDER BY c.name", Category.class).getResultList();
-} catch (Exception e) {
-        e.printStackTrace();
-    }
-    request.setAttribute("navbarCategories", categories);
-%>
 
 <style>
 /* (Giữ nguyên toàn bộ CSS của bạn từ dòng 5 đến 20) */
@@ -151,7 +139,24 @@ try (var em = JpaUtil.em()) {
                 <a class="navbar-brand" href="${pageContext.request.contextPath}/home">
 				    <c:choose>
 				        <c:when test="${not empty siteSettings.LOGO_URL}">
-				            <img src="${siteSettings.LOGO_URL}" alt="AloTra">
+				            <c:choose>
+				                <%-- Nếu là URL external (bắt đầu bằng http/https) --%>
+				                <c:when test="${fn:startsWith(siteSettings.LOGO_URL, 'http')}">
+				                    <img src="${siteSettings.LOGO_URL}" alt="AloTra">
+				                </c:when>
+				                <%-- Nếu đã có prefix uploads/ (không có / ở đầu) --%>
+				                <c:when test="${fn:startsWith(siteSettings.LOGO_URL, 'uploads/')}">
+				                    <img src="${pageContext.request.contextPath}/${siteSettings.LOGO_URL}" alt="AloTra">
+				                </c:when>
+				                <%-- Nếu bắt đầu bằng /uploads/ (tương thích ngược) --%>
+				                <c:when test="${fn:startsWith(siteSettings.LOGO_URL, '/uploads/')}">
+				                    <img src="${pageContext.request.contextPath}${siteSettings.LOGO_URL}" alt="AloTra">
+				                </c:when>
+				                <%-- Trường hợp khác (tương thích ngược) --%>
+				                <c:otherwise>
+				                    <img src="${pageContext.request.contextPath}/uploads/${siteSettings.LOGO_URL}" alt="AloTra">
+				                </c:otherwise>
+				            </c:choose>
 				        </c:when>
 				    </c:choose>
 				</a>
@@ -197,7 +202,7 @@ try (var em = JpaUtil.em()) {
                        class="nav-link position-relative">
                         <i class="bi bi-cart fs-4"></i>
                         <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle" id="cart-item-count">
-                            ${not empty sessionScope.cart ? fn:length(sessionScope.cart.items) : 0}
+                            ${not empty sessionScope.CART ? fn:length(sessionScope.CART) : 0}
                         </span>
                     </a>
                     <c:if test="${not empty sessionScope.currentUser}">
@@ -235,16 +240,48 @@ try (var em = JpaUtil.em()) {
                         </c:when>
                         <c:otherwise>
                             <div class="nav-item dropdown">
-                                <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-person-circle fs-4"></i>
+                                <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" style="padding: 0.25rem 0.5rem;">
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.currentUser.avatar}">
+                                            <c:choose>
+                                                <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'http')}">
+                                                    <img src="${sessionScope.currentUser.avatar}" 
+                                                         alt="Avatar" 
+                                                         class="rounded-circle" 
+                                                         style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #dee2e6;"
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
+                                                </c:when>
+                                                <c:when test="${fn:startsWith(sessionScope.currentUser.avatar, 'uploads/')}">
+                                                    <img src="${pageContext.request.contextPath}/${sessionScope.currentUser.avatar}" 
+                                                         alt="Avatar" 
+                                                         class="rounded-circle" 
+                                                         style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #dee2e6;"
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <img src="${pageContext.request.contextPath}/uploads/${sessionScope.currentUser.avatar}" 
+                                                         alt="Avatar" 
+                                                         class="rounded-circle" 
+                                                         style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #dee2e6;"
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ccircle cx=\'16\' cy=\'16\' r=\'16\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'18\' font-weight=\'bold\'%3E${fn:substring(not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                                 style="width: 32px; height: 32px; background-color: #006633; color: white; font-size: 18px; font-weight: bold; border: 2px solid #dee2e6;">
+                                                ${fn:substring(not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username, 0, 1)}
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><span class="dropdown-item-text">Chào, <strong>${sessionScope.currentUser.username}</strong></span></li>
+                                    <li><span class="dropdown-item-text">Chào, <strong>${not empty sessionScope.currentUser.fullname ? sessionScope.currentUser.fullname : sessionScope.currentUser.username}</strong></span></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="${pageContext.request.contextPath}/user/profile"><i class="bi bi-person-fill me-2"></i> Hồ Sơ</a></li>
                                     <li><a class="dropdown-item" href="${pageContext.request.contextPath}/user/orders"><i class="bi bi-receipt me-2"></i> Đơn Mua</a></li>
                                     <li><a class="dropdown-item" href="${pageContext.request.contextPath}/user/wishlist"><i class="bi bi-heart me-2"></i> Yêu thích</a></li>
-                                    <c:if test="${sessionScope.currentUser.roleid == 1 || sessionScope.currentUser.roleid == 2}">
+                                    <c:if test="${sessionScope.currentUser.roleid == 1}">
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin/dashboard"><i class="bi bi-shield-lock me-2"></i> Quản Trị</a></li>
                                     </c:if>

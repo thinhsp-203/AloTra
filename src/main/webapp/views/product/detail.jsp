@@ -33,7 +33,12 @@
             <c:if test="${empty thumbnailSrc}">
                <c:set var="thumbnailSrc" value="https://via.placeholder.com/400"/>
             </c:if>
-            <img src="${thumbnailSrc}" class="img-fluid rounded shadow-sm" alt="${p.product_name}">
+            <div style="width: 100%; height: 500px; overflow: hidden; border-radius: 0.5rem; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                <img src="${thumbnailSrc}" 
+                     class="rounded" 
+                     alt="${p.product_name}"
+                     style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
         </div>
         
         <div class="col-lg-7">
@@ -53,19 +58,35 @@
                     <span class="text-muted">Chưa có đánh giá</span>
                 </c:if>
             </div>
-            <p class="lead text-primary fw-bold fs-3">
-                <fmt:formatNumber value="${p.price}" pattern="#,##0₫"/>
-            </p>
+            <div>
+                <c:choose>
+                    <c:when test="${p.hasDiscount()}">
+                        <div class="mb-2">
+                            <span class="badge bg-danger text-white fs-6 px-3 py-2">
+                                <i class="bi bi-tag-fill"></i> Giảm <fmt:formatNumber value="${p.discount}" pattern="#,##0"/>%
+                            </span>
+                        </div>
+                        <p class="lead text-danger fw-bold fs-2 mb-1">
+                            <fmt:formatNumber value="${p.finalPrice}" pattern="#,##0₫"/>
+                        </p>
+                        <p class="text-muted mb-0" style="text-decoration: line-through; font-size: 1.1rem;">
+                            <fmt:formatNumber value="${p.price}" pattern="#,##0₫"/>
+                        </p>
+                    </c:when>
+                    <c:otherwise>
+                        <p class="lead text-primary fw-bold fs-3">
+                            <fmt:formatNumber value="${p.price}" pattern="#,##0₫"/>
+                        </p>
+                    </c:otherwise>
+                </c:choose>
+            </div>
             
             <p class="text-muted">
-                <span class="me-3">
+                <span>
                     <i class="bi bi-tag"></i> Danh mục: 
                     <a href="${pageContext.request.contextPath}/products?cate=${p.category.id}">
                         ${p.category.name}
                     </a>
-                </span>
-                <span>
-                    <i class="bi bi-eye"></i> Lượt xem: ${p.views}
                 </span>
             </p>
             
@@ -145,14 +166,28 @@
                                 <c:set var="avatarSrc">
                                     <c:choose>
                                         <c:when test="${not empty r.user.avatar}">
-                                            ${pageContext.request.contextPath}/uploads/${r.user.avatar}
+                                            <c:choose>
+                                                <c:when test="${fn:startsWith(r.user.avatar, 'http')}">
+                                                    ${r.user.avatar}
+                                                </c:when>
+                                                <c:when test="${fn:startsWith(r.user.avatar, 'uploads/')}">
+                                                    ${pageContext.request.contextPath}/${r.user.avatar}
+                                                </c:when>
+                                                <c:otherwise>
+                                                    ${pageContext.request.contextPath}/uploads/${r.user.avatar}
+                                                </c:otherwise>
+                                            </c:choose>
                                         </c:when>
                                         <c:otherwise>
-                                            https://via.placeholder.com/60/4e73df/FFFFFF?text=${fn:substring(r.user.username, 0, 1)}
+                                            https://via.placeholder.com/60/006633/FFFFFF?text=${fn:substring(r.user.username, 0, 1)}
                                         </c:otherwise>
                                     </c:choose>
                                 </c:set>
-                                <img src="${avatarSrc}" alt="${r.user.username}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
+                                <img src="${avatarSrc}" 
+                                     alt="${r.user.username}" 
+                                     class="rounded-circle" 
+                                     style="width: 60px; height: 60px; object-fit: cover; border: 2px solid #dee2e6;"
+                                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'60\' height=\'60\' viewBox=\'0 0 60 60\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'30\' fill=\'%23006633\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'central\' text-anchor=\'middle\' fill=\'white\' font-size=\'24\' font-weight=\'bold\'%3E${fn:substring(r.user.username, 0, 1)}%3C/text%3E%3C/svg%3E';">
                             </div>
                             <div class="ms-3 flex-grow-1">
                                 <h6 class="fw-bold mb-0">${r.user.fullname != null ? r.user.fullname : r.user.username}</h6>
