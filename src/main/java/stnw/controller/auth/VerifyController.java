@@ -13,7 +13,8 @@ import stnw.service.impl.UserServiceImpl;
 @WebServlet(urlPatterns = {"/verify-otp"})
 public class VerifyController extends HttpServlet {
 
-    UserService userService = new UserServiceImpl();
+    private static final long serialVersionUID = 1L;
+	UserService userService = new UserServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
