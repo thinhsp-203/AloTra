@@ -97,27 +97,42 @@
                         </div>
                     </c:when>
                     <c:otherwise>
-                        <%-- Hiển thị 6 sản phẩm đầu tiên --%>
-                        <c:forEach var="product" items="${products}" varStatus="status" begin="0" end="5">
-                            <div class="col">
-                                <c:set var="p" value="${product}" scope="request"/>
-                                <jsp:include page="/views/_partials/product_card.jsp" />
-                            </div>
-                        </c:forEach>
-                        <%-- Render các sản phẩm còn lại nhưng ẩn đi --%>
-                        <c:forEach var="product" items="${products}" begin="6">
-                            <div class="col hidden-product-item" style="display: none;">
-                                <c:set var="p" value="${product}" scope="request"/>
-                                <jsp:include page="/views/_partials/product_card.jsp" />
-                            </div>
-                        </c:forEach>
+                        <%-- Nếu là menu click (không keyword, không phân trang thủ công) thì hiển thị tất cả, ngược lại hiển thị 6 sản phẩm đầu --%>
+                        <c:choose>
+                            <c:when test="${isMenuClick}">
+                                <%-- Click vào menu: Hiển thị TẤT CẢ sản phẩm ngay lập tức --%>
+                                <c:forEach var="product" items="${products}">
+                                    <div class="col">
+                                        <c:set var="p" value="${product}" scope="request"/>
+                                        <jsp:include page="/views/_partials/product_card.jsp" />
+                                    </div>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <%-- Các trường hợp khác: Hiển thị 6 sản phẩm đầu tiên --%>
+                                <c:forEach var="product" items="${products}" varStatus="status" begin="0" end="5">
+                                    <div class="col">
+                                        <c:set var="p" value="${product}" scope="request"/>
+                                        <jsp:include page="/views/_partials/product_card.jsp" />
+                                    </div>
+                                </c:forEach>
+                                <%-- Render các sản phẩm còn lại nhưng ẩn đi --%>
+                                <c:forEach var="product" items="${products}" begin="6">
+                                    <div class="col hidden-product-item" style="display: none;">
+                                        <c:set var="p" value="${product}" scope="request"/>
+                                        <jsp:include page="/views/_partials/product_card.jsp" />
+                                    </div>
+                                </c:forEach>
+                            </c:otherwise>
+                        </c:choose>
                     </c:otherwise>
                 </c:choose>
             </div>
         </div>
     </div>
 </div>
-<c:if test="${fn:length(products) > 6}">
+<%-- Chỉ hiển thị nút "Xem thêm" khi không phải menu click và có nhiều hơn 6 sản phẩm --%>
+<c:if test="${not isMenuClick && fn:length(products) > 6}">
 <div class="text-center mt-4" id="loadMoreContainer">
     <button class="btn btn-outline-primary" onclick="showMoreProducts(this)">
         Xem thêm sản phẩm <i class="bi bi-chevron-down"></i>

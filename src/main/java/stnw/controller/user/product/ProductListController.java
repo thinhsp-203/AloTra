@@ -58,10 +58,6 @@ public class ProductListController extends HttpServlet {
         String pageParam = req.getParameter("page");
         String pageSizeParam = req.getParameter("pageSize");
 
-        int page = (pageParam != null && !pageParam.isEmpty()) ? Integer.parseInt(pageParam) : 1;
-        int pageSize = (pageSizeParam != null && !pageSizeParam.isEmpty()) ? Integer.parseInt(pageSizeParam) : 12;
-        int offset = (page - 1) * pageSize;
-
         Integer categoryId = null;
         if (categoryIdParam != null && !categoryIdParam.isEmpty()) {
             try {
@@ -71,12 +67,39 @@ public class ProductListController extends HttpServlet {
             }
         }
 
+        // Nếu truy cập từ menu (không nhập keyword, không phân trang thủ công)
+        // thì hiển thị TẤT CẢ sản phẩm (bao gồm cả trường hợp không chọn category và trường hợp chọn category)
+        boolean isMenuClick = ((keyword == null || keyword.isEmpty())
+                                && (pageSizeParam == null || pageSizeParam.isEmpty())
+                                && (pageParam == null || pageParam.isEmpty() || "1".equals(pageParam)));
+        
+        int page = (pageParam != null && !pageParam.isEmpty()) ? Integer.parseInt(pageParam) : 1;
+        int pageSize;
+        int offset;
+        if (isMenuClick) {
+            // Lấy tất cả sản phẩm (limit = -1)
+            pageSize = -1;
+            offset = 0; // Reset offset khi lấy tất cả
+        } else {
+            pageSize = (pageSizeParam != null && !pageSizeParam.isEmpty()) ? Integer.parseInt(pageSizeParam) : 12;
+            offset = (page - 1) * pageSize;
+        }
+
         List<Product> products = productQueryService.findProducts(categoryId, keyword, sortBy, priceRange, offset, pageSize);
         
-        // Tính tổng số sản phẩm bằng cách lấy tất cả (không giới hạn)
-        List<Product> allProducts = productQueryService.findProducts(categoryId, keyword, sortBy, priceRange, 0, -1);
-        int totalProducts = allProducts.size();
-        int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
+        // Tính tổng số sản phẩm
+        int totalProducts;
+        int totalPages;
+        if (isMenuClick) {
+            // Nếu là menu click, products đã chứa tất cả sản phẩm
+            totalProducts = products.size();
+            totalPages = 1; // Chỉ 1 trang vì hiển thị tất cả
+        } else {
+            // Tính tổng số sản phẩm bằng cách lấy tất cả (không giới hạn) để tính phân trang
+            List<Product> allProducts = productQueryService.findProducts(categoryId, keyword, sortBy, priceRange, 0, -1);
+            totalProducts = allProducts.size();
+            totalPages = (int) Math.ceil((double) totalProducts / pageSize);
+        }
 
         // Lấy category object nếu có categoryId
         stnw.model.Category selectedCategoryObj = null;
@@ -105,6 +128,8 @@ public class ProductListController extends HttpServlet {
             req.setAttribute("selectedCategory", categoryId);
             req.setAttribute("selectedCateId", categoryId); // Để JSP sử dụng
         }
+        // Để JSP biết đang hiển thị kiểu "show all"
+        req.setAttribute("isMenuClick", isMenuClick);
 
         req.getRequestDispatcher("/views/product/list.jsp").forward(req, resp);
     }
