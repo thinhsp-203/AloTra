@@ -7,8 +7,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import stnw.model.AboutUs;
-import stnw.service.AdminAboutService;
-import stnw.service.impl.AdminAboutServiceImpl;
 
 import java.io.IOException;
 
@@ -20,12 +18,6 @@ import java.io.IOException;
 )
 public class AboutAddController extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private AdminAboutService aboutService;
-    
-    @Override
-    public void init() throws ServletException {
-        aboutService = new AdminAboutServiceImpl();
-    }
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
