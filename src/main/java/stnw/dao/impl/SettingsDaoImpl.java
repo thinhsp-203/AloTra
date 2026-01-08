@@ -4,7 +4,6 @@ import stnw.utils.JpaUtils;
 import stnw.dao.SettingsDao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.TypedQuery;
 import stnw.model.Settings;
 
 import java.util.List;
