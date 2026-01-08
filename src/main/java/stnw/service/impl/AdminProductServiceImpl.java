@@ -4,14 +4,10 @@ import stnw.dao.CategoryDao;
 import stnw.dao.OrderDao;
 import stnw.dao.ProductDao;
 import stnw.dao.ProductSizeDao;
-import stnw.dao.ReviewDao;
-import stnw.dao.WishlistDao;
 import stnw.dao.impl.CategoryDaoImpl;
 import stnw.dao.impl.OrderDaoImpl;
 import stnw.dao.impl.ProductDaoImpl;
 import stnw.dao.impl.ProductSizeDaoImpl;
-import stnw.dao.impl.ReviewDaoImpl;
-import stnw.dao.impl.WishlistDaoImpl;
 import jakarta.servlet.http.Part;
 import stnw.model.Category;
 import stnw.model.Product;
@@ -29,8 +25,6 @@ public class AdminProductServiceImpl implements AdminProductService {
     private final ProductDao productDao = new ProductDaoImpl();
     private final CategoryDao categoryDao = new CategoryDaoImpl();
     private final OrderDao orderDao = new OrderDaoImpl();
-    private final ReviewDao reviewDao = new ReviewDaoImpl();
-    private final WishlistDao wishlistDao = new WishlistDaoImpl();
     private final ProductSizeDao productSizeDao = new ProductSizeDaoImpl();
     
     // Constants cho giá size mặc định (không hard-code trong logic)

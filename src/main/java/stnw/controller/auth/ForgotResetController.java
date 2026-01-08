@@ -12,7 +12,8 @@ import java.io.IOException;
 @WebServlet(urlPatterns = {"/auth/forgot", "/auth/reset"})
 public class ForgotResetController extends HttpServlet {
 
-    private AuthRecoveryService authRecoveryService;
+    private static final long serialVersionUID = 1L;
+	private AuthRecoveryService authRecoveryService;
 
     @Override
     public void init() throws ServletException {

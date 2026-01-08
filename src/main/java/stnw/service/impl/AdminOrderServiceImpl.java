@@ -1,7 +1,5 @@
 package stnw.service.impl;
 
-import stnw.dao.OrderDao;
-import stnw.dao.impl.OrderDaoImpl;
 import stnw.model.*;
 import stnw.service.*;
 import stnw.enums.OrderStatus;
