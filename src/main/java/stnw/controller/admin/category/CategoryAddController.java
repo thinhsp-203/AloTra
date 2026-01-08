@@ -21,6 +21,7 @@ public class CategoryAddController extends HttpServlet {
     req.getRequestDispatcher("/views/admin/category-form.jsp").forward(req, resp);
   }
 
+  // Xử lý POST: thêm danh mục mới
   @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
     req.setCharacterEncoding("UTF-8");

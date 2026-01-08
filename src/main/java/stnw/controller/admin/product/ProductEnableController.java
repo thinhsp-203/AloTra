@@ -20,6 +20,7 @@ public class ProductEnableController extends HttpServlet {
         productService = new AdminProductServiceImpl();
     }
 
+    // Xử lý request POST: kích hoạt (enable) sản phẩm
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {

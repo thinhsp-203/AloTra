@@ -24,6 +24,7 @@ public class PromotionAddController extends HttpServlet {
         promotionService = new AdminPromotionServiceImpl();
     }
     
+    // Xử lý POST: thêm mới khuyến mãi
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
         throws ServletException, IOException {

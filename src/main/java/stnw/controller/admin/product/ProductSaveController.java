@@ -13,6 +13,7 @@ import stnw.service.impl.AdminProductServiceImpl;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+// Cấu hình upload file (ảnh thumbnail sản phẩm)
 @WebServlet(urlPatterns = "/admin/products/save")
 @MultipartConfig(
     fileSizeThreshold = 2 * 1024 * 1024,
@@ -28,6 +29,7 @@ public class ProductSaveController extends HttpServlet {
         productService = new AdminProductServiceImpl();
     }
 
+    // Xử lý POST: lưu thông tin sản phẩm (thêm mới hoặc cập nhật)
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {

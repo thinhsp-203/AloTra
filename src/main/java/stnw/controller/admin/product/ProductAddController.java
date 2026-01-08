@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+// Cấu hình upload file (ảnh sản phẩm, v.v.)
 @WebServlet(urlPatterns = "/admin/products/create")
 @MultipartConfig(
     fileSizeThreshold = 2 * 1024 * 1024,
@@ -28,6 +29,7 @@ public class ProductAddController extends HttpServlet {
         productService = new AdminProductServiceImpl();
     }
 
+    // Xử lý request GET: hiển thị form thêm sản phẩm
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {

@@ -21,6 +21,7 @@ public class AboutController extends HttpServlet {
         aboutService = new AboutServiceImpl();
     }
     
+    // Xử lý GET: hiển thị trang About Us
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {

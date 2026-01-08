@@ -20,6 +20,7 @@ public class StoreAddController extends HttpServlet {
         storeService = new AdminStoreServiceImpl();
     }
     
+    // Xử lý POST: thêm mới cửa hàng
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
         throws ServletException, IOException {
