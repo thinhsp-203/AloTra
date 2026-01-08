@@ -1,26 +1,31 @@
 package stnw.utils;
 
-import javax.mail.Authenticator;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 /**
  * Utility class cho việc gửi email
  * Sử dụng Gmail SMTP server
+ * Jakarta Mail (jakarta.mail.*) - phù hợp Tomcat 10+ / Jakarta EE
  */
 public class EmailUtils {
-    
+
     // Cấu hình Gmail
     private static final String FROM_EMAIL = "hoang.anhe173@gmail.com";
-    private static final String PASSWORD = "yyyt yhku glio vazj"; // App Password
-    
+    private static final String PASSWORD = ""; // App Password
+
+    // Bật debug nếu cần xem log SMTP
+    private static final boolean SMTP_DEBUG = false;
+
     /**
      * Gửi email
      * @param toEmail Email người nhận
@@ -37,6 +42,14 @@ public class EmailUtils {
             props.put("mail.smtp.auth", "true");
             props.put("mail.smtp.starttls.enable", "true");
 
+            // (Khuyến nghị) ép dùng TLS 1.2/1.3 để tránh lỗi handshake ở một số môi trường
+            props.put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
+
+            // Timeout để tránh treo
+            props.put("mail.smtp.connectiontimeout", "10000");
+            props.put("mail.smtp.timeout", "10000");
+            props.put("mail.smtp.writetimeout", "10000");
+
             // Tạo Session
             Session session = Session.getInstance(props, new Authenticator() {
                 @Override
@@ -45,17 +58,20 @@ public class EmailUtils {
                 }
             });
 
+            session.setDebug(SMTP_DEBUG);
+
             // Tạo nội dung Email
             MimeMessage msg = new MimeMessage(session);
-            
+
             msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
             msg.addHeader("format", "flowed");
             msg.addHeader("Content-Transfer-Encoding", "8bit");
 
             try {
-                msg.setFrom(new InternetAddress(FROM_EMAIL, "AloTra Support"));
+                msg.setFrom(new InternetAddress(FROM_EMAIL, "AloTra Support", "UTF-8"));
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                // fallback nếu lỗi encoding tên hiển thị
+                msg.setFrom(new InternetAddress(FROM_EMAIL));
             }
 
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
@@ -74,4 +90,3 @@ public class EmailUtils {
         }
     }
 }
-
